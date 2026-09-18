@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="在浏览器本地识别并非破坏性编辑图片文字。">
+  <meta name="theme-color" content="#2856d8">
+  <title>图层字工坊</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232856d8'/%3E%3Cpath d='M8 9.5h16M8 16h11M8 22.5h16' stroke='white' stroke-width='2.8' stroke-linecap='round'/%3E%3Cpath d='M22.5 13v6' stroke='%239effcb' stroke-width='2.8' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="m12 2 8 4-8 4-8-4 8-4Zm-8 9 8 4 8-4M4 16l8 4 8-4"/></svg>
+        </span>
+        <div><h1>图层字工坊</h1><p>本地识别 · 非破坏性编辑</p></div>
+      </div>
+      <div class="top-actions">
+        <span class="privacy-pill"><i></i>图片不上传</span>
+        <button class="btn secondary" type="button" id="addTextButton" disabled>
+          <svg viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M8 20h8"/></svg>新增文字
+        </button>
+        <button class="btn secondary" type="button" id="exportButton" disabled>
+          <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>导出
+        </button>
+        <button class="btn primary" type="button" id="importButtonTop">
+          <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 11l2-2 5 5 2-2 3 3M15 8h.01"/></svg>导入图片
+        </button>
+      </div>
+    </header>
+
+    <section class="editor-shell">
+      <aside class="panel left-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">图层</p><h2>对象列表</h2></div><span class="count" id="layerCount">0</span>
+        </div>
+        <div class="layer-list" id="layerList">
+          <div class="layer-placeholder">导入图片后显示图层</div>
+        </div>
+        <div class="layer-actions">
+          <button class="mini-button" id="addTextButtonSide" type="button" disabled>
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>新增文字
+          </button>
+          <button class="mini-button danger" id="deleteButton" type="button" disabled>
+            <svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M8 7l1 13h6l1-13"/></svg>删除所选
+          </button>
+        </div>
+        <div class="layer-hint">蓝色线框是 OCR 编辑区域，只用于定位，不会出现在导出的图片中。</div>
+      </aside>
+
+      <section class="stage-wrap" aria-label="图片编辑画布">
+        <div class="stage-toolbar">
+          <strong>画布</strong><span class="dimension" id="dimensionLabel">等待导入图片</span>
+          <button class="toolbar-button" type="button" id="recognizeButton" hidden>重新识别</button>
+          <span class="zoom" id="zoomLabel">100%</span>
+        </div>
+        <div class="stage" id="stage">
+          <div class="drop-card" id="dropCard">
+            <span class="scan-icon"><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 9h8M8 12h8M8 15h5"/></svg></span>
+            <h2>从一张图片开始</h2>
+            <p>支持 PNG、JPEG、WebP，识别和编辑都在当前浏览器完成。</p>
+            <button class="btn primary large" type="button" id="importButtonMain">
+              <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 11l2-2 5 5 2-2 3 3M15 8h.01"/></svg>选择本地图片
+            </button>
+            <small>最大 20 MB、25 MP；画布和导出尺寸保持原图大小</small>
+          </div>
+          <div class="canvas-shell" id="canvasShell" hidden>
+            <canvas id="editorCanvas" aria-label="可编辑图片画布"></canvas>
+          </div>
+          <div class="progress-card" id="progressCard" hidden role="status" aria-live="polite">
+            <div class="progress-copy"><strong id="progressTitle">正在识别文字</strong><span id="progressText">准备 OCR 引擎…</span></div>
+            <div class="progress-track"><i id="progressBar"></i></div>
+            <button class="text-button" type="button" id="cancelOcrButton">取消识别</button>
+          </div>
+        </div>
+        <footer class="stage-footer"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>原图锁定；修改旧文字会创建独立遮盖层</footer>
+      </section>
+
+      <aside class="panel right-panel">
+        <div class="panel-heading"><div><p class="eyebrow">属性</p><h2 id="inspectorTitle">文字样式</h2></div><span class="confidence" id="confidenceBadge" hidden></span></div>
+        <div class="empty-inspector" id="emptyInspector">
+          <span><svg viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M8 9h8M8 12h8M8 15h5"/></svg></span>
+          <p>完成识别后，选择蓝色文字区域进行替换；也可以直接新增文字。</p>
+        </div>
+
+        <form class="inspector-form" id="textInspector" hidden onsubmit="return false">
+          <label class="field"><span>文字内容</span><textarea id="textContent" rows="4" maxlength="1000"></textarea></label>
+          <label class="field"><span>字体</span><select id="fontFamily">
+            <option value="Microsoft YaHei">微软雅黑</option><option value="SimSun">宋体</option><option value="SimHei">黑体</option><option value="KaiTi">楷体</option><option value="Arial">Arial</option><option value="Georgia">Georgia</option>
+          </select></label>
+          <div class="field-row">
+            <label class="field"><span>字号</span><input id="fontSize" type="number" min="6" max="400" value="32"></label>
+            <label class="field color-field"><span>颜色</span><input id="textColor" type="color" value="#172033"></label>
+          </div>
+          <div class="region-actions" id="regionActions" hidden>
+            <button class="btn primary grow" id="replaceTextButton" type="button">替换原文字</button>
+            <button class="btn secondary grow" id="maskOnlyButton" type="button">仅遮盖</button>
+          </div>
+          <p class="helper" id="regionHelper" hidden>系统会保留原始图片，并在旧文字上方增加遮盖和新文字两个独立图层。</p>
+        </form>
+
+        <form class="inspector-form" id="maskInspector" hidden onsubmit="return false">
+          <label class="field color-wide"><span>遮盖颜色</span><input id="maskColor" type="color" value="#ffffff"></label>
+          <label class="field"><span>不透明度 <output id="maskOpacityValue">100%</output></span><input id="maskOpacity" type="range" min="0" max="100" value="100"></label>
+          <p class="helper">复杂背景可能需要外部 AI 修复；当前遮盖层始终可删除，以恢复原图。</p>
+        </form>
+
+        <div class="safety-note"><strong>原文件始终只读</strong><span>OCR 区域、遮盖层和新文字都是独立对象；导出时才合成为新图片。</span></div>
+      </aside>
+    </section>
+  </main>
+
+  <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <script src="./tesseract.min.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
