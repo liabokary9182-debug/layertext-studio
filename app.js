@@ -2,7 +2,8 @@ import { Canvas, FabricImage, Rect, Textbox } from "./fabric.min.mjs";
 
 const MAX_FILE_BYTES = 20 * 1024 * 1024;
 const MAX_PIXELS = 25_000_000;
-const OCR_MAX_PIXELS = 4_000_000;
+// OCR uses a downscaled analysis copy only; exported pixels remain at original size.
+const OCR_MAX_PIXELS = 2_500_000;
 
 const $ = (id) => document.getElementById(id);
 const el = {
@@ -27,6 +28,7 @@ let nextLayerId = 1;
 let imageState = null;
 let selected = null;
 let worker = null;
+let workerLanguage = "";
 let ocrCancelled = false;
 let toastTimer = null;
 
@@ -183,10 +185,9 @@ function renderInspector() {
     el.inspectorTitle.textContent = "识别到的文字";
     el.confidence.textContent = `${Math.round(selected.confidence || 0)}%`;
     el.content.value = selected.originalText || "";
-    const h = selected.regionBox?.height || 32;
-    el.fontSize.value = String(Math.max(10, Math.round(h * 0.78)));
-    const colors = sampleColors(selected.regionBox);
-    el.textColor.value = colors.foreground;
+    const inferred = inferredTextStyle(selected.regionBox || { height: 32, width: 32, x: 0, y: 0 });
+    el.fontSize.value = String(inferred.fontSize);
+    el.textColor.value = inferred.colors.foreground;
     el.fontFamily.value = "Microsoft YaHei";
   } else if (type === "text") {
     el.inspectorTitle.textContent = selected.replacement ? "替换文字" : "新增文字";
@@ -223,10 +224,24 @@ function sampleColors(box) {
       const i = (y * 72 + x) * 4; r += data[i]; g += data[i + 1]; b += data[i + 2]; count++;
     }
   }
-  const toHex = (value) => Math.round(value / count).toString(16).padStart(2, "0");
-  const background = `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-  const luminance = (r / count) * 0.2126 + (g / count) * 0.7152 + (b / count) * 0.0722;
-  return { background, foreground: luminance > 150 ? "#172033" : "#ffffff" };
+  const bg = { r: r / count, g: g / count, b: b / count };
+  let fr = 0, fg = 0, fb = 0, foregroundCount = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    const distance = Math.abs(data[i] - bg.r) + Math.abs(data[i + 1] - bg.g) + Math.abs(data[i + 2] - bg.b);
+    if (distance > 78) { fr += data[i]; fg += data[i + 1]; fb += data[i + 2]; foregroundCount++; }
+  }
+  const toHex = (value) => Math.max(0, Math.min(255, Math.round(value))).toString(16).padStart(2, "0");
+  const background = `#${toHex(bg.r)}${toHex(bg.g)}${toHex(bg.b)}`;
+  if (!foregroundCount) {
+    const luminance = bg.r * 0.2126 + bg.g * 0.7152 + bg.b * 0.0722;
+    return { background, foreground: luminance > 150 ? "#172033" : "#ffffff", coverage: 0 };
+  }
+  return { background, foreground: `#${toHex(fr / foregroundCount)}${toHex(fg / foregroundCount)}${toHex(fb / foregroundCount)}`, coverage: foregroundCount / (probe.width * probe.height) };
+}
+
+function inferredTextStyle(box) {
+  const colors = sampleColors(box);
+  return { colors, fontSize: Math.max(8, Math.round(box.height * 0.92)), fontWeight: colors.coverage > 0.2 ? "700" : "400" };
 }
 
 function createMask(box, color) {
@@ -244,14 +259,15 @@ function createMask(box, color) {
 function replaceRegion(region, onlyMask = false) {
   if (!region || region.editorType !== "region") return;
   const box = region.regionBox;
-  const colors = sampleColors(box);
+  const inferred = inferredTextStyle(box);
+  const { colors } = inferred;
   const mask = createMask(box, colors.background);
   if (!onlyMask) {
     const content = el.content.value.trim() || region.originalText || "文字";
-    const fontSize = Math.max(6, Math.min(400, Number(el.fontSize.value) || Math.round(box.height * 0.78)));
+    const fontSize = Math.max(6, Math.min(400, Number(el.fontSize.value) || inferred.fontSize));
     const text = assignLayer(new Textbox(content, {
-      left: box.x, top: box.y, width: Math.max(20, box.width), originX: "left", originY: "top",
-      fontFamily: el.fontFamily.value || "Microsoft YaHei", fontSize,
+      left: box.x, top: Math.max(0, box.y - Math.round(fontSize * 0.08)), width: Math.max(20, box.width), originX: "left", originY: "top",
+      fontFamily: el.fontFamily.value || "Microsoft YaHei", fontSize, fontWeight: inferred.fontWeight,
       fill: safeHex(el.textColor.value, colors.foreground), lineHeight: 1.05,
       editable: true, transparentCorners: false, cornerColor: "#2856d8", borderColor: "#2856d8",
     }), "text", { replacement: true, linkedMaskId: mask.layerId });
@@ -375,32 +391,42 @@ function addOcrRegions(blocks, xScale, yScale) {
 async function stopWorker() {
   const active = worker;
   worker = null;
+  workerLanguage = "";
   if (active) {
     try { await active.terminate(); } catch { /* already stopped */ }
   }
 }
 
+async function getOcrWorker() {
+  const language = "chi_sim+eng";
+  if (worker && workerLanguage === language) return worker;
+  await stopWorker();
+  const root = new URL(".", window.location.href);
+  worker = await window.Tesseract.createWorker(language, window.Tesseract.OEM.LSTM_ONLY, {
+    workerPath: new URL("worker.min.js", root).href,
+    corePath: new URL("./", root).href,
+    langPath: new URL("./", root).href,
+    logger: ({ status, progress }) => setProgress("正在识别文字", humanOcrStatus(status), progress || 0.1),
+    errorHandler: () => {},
+  });
+  await worker.setParameters({ tessedit_pageseg_mode: window.Tesseract.PSM.SPARSE_TEXT });
+  workerLanguage = language;
+  return worker;
+}
+
 async function runOcr() {
   if (!imageState) return;
-  await stopWorker();
   ocrCancelled = false;
   editableObjects().forEach((object) => canvas.remove(object));
   selected = null;
   setBusy(true); setProgress("正在识别文字", "正在加载本地 OCR 引擎…", 0.04);
   try {
     if (!window.Tesseract?.createWorker) throw new Error("OCR 引擎未能加载。");
-    const root = new URL(".", window.location.href);
-    worker = await window.Tesseract.createWorker("chi_sim+eng", window.Tesseract.OEM.LSTM_ONLY, {
-      workerPath: new URL("worker.min.js", root).href,
-      corePath: new URL("./", root).href,
-      langPath: new URL("./", root).href,
-      logger: ({ status, progress }) => setProgress("正在识别文字", humanOcrStatus(status), progress || 0.1),
-      errorHandler: () => {},
-    });
+    await getOcrWorker();
     if (ocrCancelled) return;
     const { source, xScale, yScale } = makeOcrSource();
     setProgress("正在识别文字", "正在分析文字位置…", 0.2);
-    const result = await worker.recognize(source, {}, { text: true, blocks: true });
+    const result = await worker.recognize(source, {}, { blocks: true });
     if (ocrCancelled) return;
     const found = addOcrRegions(result.data?.blocks, xScale, yScale);
     canvas.requestRenderAll(); renderLayers(); renderInspector();
@@ -408,7 +434,6 @@ async function runOcr() {
   } catch (error) {
     if (!ocrCancelled) toast(`OCR 识别失败：${error.message || "请重新识别"}`, "error");
   } finally {
-    await stopWorker();
     setBusy(false);
     renderLayers();
   }
@@ -419,7 +444,7 @@ async function loadImageFile(file) {
   const accepted = ["image/png", "image/jpeg", "image/webp"];
   if (!accepted.includes(file.type)) return toast("仅支持 PNG、JPEG 或 WebP 图片。", "error");
   if (file.size > MAX_FILE_BYTES) return toast("图片超过 20 MB 限制。", "error");
-  await stopWorker();
+  // Keep the worker warm so repeated recognition does not reload local language data.
   const objectUrl = URL.createObjectURL(file);
   try {
     const image = new Image();
