@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="本地优先的健身训练表：自定义项目、记录完成情况并获取下一次训练建议。">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+  <title>练成计划 · 健身训练表</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f766e'/%3E%3Cpath d='M15 29h7v-7h6v20h-6v-7h-7zm34 0h-7v-7h-6v20h6v-7h7zM28 27h8v10h-8z' fill='white'/%3E%3C/svg%3E">
+  <style>
+    :root { color-scheme: light; --ink:#102a2d; --muted:#617377; --line:#d9e6e5; --paper:#f5f9f8; --card:#fff; --teal:#0f766e; --teal-dark:#0c5d57; --mint:#dff5ee; --amber:#f59e0b; --danger:#b42318; --radius:18px; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif; background:linear-gradient(135deg,#edf7f4 0%,var(--paper) 50%,#f3f9f7 100%); color:var(--ink); min-height:100vh; }
+    button,input,textarea { font:inherit; }
+    button { cursor:pointer; }
+    .shell { width:min(1120px,calc(100% - 32px)); margin:0 auto; padding:32px 0 52px; }
+    header { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; margin-bottom:28px; }
+    .brand { display:flex; align-items:center; gap:12px; }
+    .logo { display:grid; place-items:center; width:46px; height:46px; border-radius:14px; background:var(--teal); color:#fff; font-size:25px; box-shadow:0 9px 20px #0f766e33; }
+    h1 { margin:0; font-size:clamp(1.45rem,3vw,2rem); letter-spacing:-.04em; }
+    .eyebrow { color:var(--teal); font-size:.85rem; font-weight:800; letter-spacing:.08em; margin:0 0 3px; }
+    .privacy { margin:2px 0 0; padding:9px 12px; border:1px solid var(--line); border-radius:999px; color:var(--muted); background:#ffffffa8; font-size:.82rem; white-space:nowrap; }
+    .grid { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(280px,.85fr); gap:22px; align-items:start; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 10px 30px #123b3910; }
+    .plan { overflow:hidden; }
+    .plan-head { padding:24px 24px 18px; display:flex; align-items:center; justify-content:space-between; gap:16px; border-bottom:1px solid var(--line); }
+    h2 { margin:0; font-size:1.14rem; letter-spacing:-.02em; }
+    .date { color:var(--muted); margin:5px 0 0; font-size:.9rem; }
+    .progress-wrap { padding:18px 24px 10px; }
+    .progress-text { display:flex; justify-content:space-between; font-size:.88rem; color:var(--muted); margin-bottom:9px; }
+    .progress-text strong { color:var(--teal-dark); }
+    .progress { height:10px; border-radius:100px; background:#e6efed; overflow:hidden; }
+    .progress > span { display:block; height:100%; width:0; border-radius:inherit; background:linear-gradient(90deg,#14b8a6,var(--teal)); transition:width .25s ease; }
+    .items { padding:3px 14px 16px; }
+    .item { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:12px; padding:14px 10px; border-bottom:1px solid #edf2f1; }
+    .item:last-child { border-bottom:0; }
+    .check { appearance:none; width:25px; height:25px; border:2px solid #bdcdca; border-radius:8px; display:grid; place-content:center; margin:0; background:#fff; }
+    .check:checked { background:var(--teal); border-color:var(--teal); }
+    .check:checked::after { content:"✓"; color:#fff; font-weight:900; font-size:.95rem; }
+    .check:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible { outline:3px solid #34d39988; outline-offset:2px; }
+    .item-name { min-width:0; color:var(--ink); font-weight:700; overflow-wrap:anywhere; }
+    .item.done .item-name { color:#768887; text-decoration:line-through; text-decoration-thickness:1.5px; }
+    .item-note { display:block; color:var(--muted); font-size:.81rem; font-weight:400; margin-top:2px; }
+    .remove { border:0; background:transparent; color:#8da09d; padding:7px; border-radius:8px; line-height:1; }
+    .remove:hover { background:#fff1f0; color:var(--danger); }
+    .add-row { display:flex; gap:10px; padding:16px 24px 24px; border-top:1px solid var(--line); }
+    .add-row input { flex:1; border:1px solid #b9ccca; border-radius:10px; padding:11px 12px; min-width:0; color:var(--ink); }
+    .btn { border:0; border-radius:10px; padding:11px 15px; font-weight:800; background:var(--teal); color:#fff; transition:background .15s, transform .15s; }
+    .btn:hover { background:var(--teal-dark); }
+    .btn:active { transform:translateY(1px); }
+    .btn.secondary { background:#e8f1ef; color:#27504d; }
+    .btn.secondary:hover { background:#dcebe7; }
+    .side { display:grid; gap:16px; }
+    .tip { padding:22px; }
+    .tip-kicker { color:var(--teal); font-weight:800; font-size:.78rem; letter-spacing:.08em; margin:0 0 9px; }
+    .tip h2 { font-size:1.25rem; }
+    .tip p { color:#4d6565; line-height:1.65; margin:10px 0 0; font-size:.92rem; }
+    .tip .suggestion { background:var(--mint); border-radius:12px; padding:13px; margin-top:15px; color:#135f58; font-weight:650; line-height:1.55; font-size:.9rem; }
+    .week { padding:18px; }
+    .week-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .week-header p { margin:4px 0 0; color:var(--muted); font-size:.81rem; }
+    .day-list { display:grid; gap:7px; }
+    .day { border:1px solid var(--line); background:#fff; border-radius:11px; padding:10px 11px; text-align:left; color:var(--ink); display:flex; align-items:center; gap:9px; }
+    .day:hover { border-color:#94bbb4; }
+    .day.active { background:#e8f6f1; border-color:var(--teal); }
+    .day-dot { width:9px; height:9px; background:#c0d0ce; border-radius:50%; flex:none; }.day.complete .day-dot{background:#14b8a6}.day.active .day-dot{background:var(--teal)}
+    .day span { font-weight:750; font-size:.9rem; }.day small { margin-left:auto; color:var(--muted); }
+    .settings { padding:18px; }.settings h2 { margin-bottom:12px; }.settings label { display:block; font-size:.82rem; font-weight:750; color:#4e6564; margin:10px 0 5px; }
+    textarea { width:100%; min-height:70px; resize:vertical; border:1px solid #b9ccca; border-radius:10px; padding:10px; line-height:1.5; color:var(--ink); }
+    .settings-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:13px; }.settings-actions .btn { font-size:.85rem; padding:9px 11px; }
+    .notice { display:none; margin:18px 24px 0; padding:13px 14px; border-radius:12px; background:#fff8e6; color:#8a5a06; font-size:.91rem; line-height:1.55; }.notice.show{display:block}.notice.success{background:#dcfce7;color:#166534;}
+    .footer { color:#6d8180; font-size:.78rem; text-align:center; margin:24px 0 0; line-height:1.6; }
+    @media (max-width:820px) { .grid{grid-template-columns:1fr}.side{grid-template-columns:1fr 1fr}.settings{grid-column:1/-1} }
+    @media (max-width:580px) { .shell{width:min(100% - 20px,1120px);padding-top:18px} header{margin-bottom:18px;gap:12px}.privacy{font-size:.72rem;padding:7px 9px}.plan-head,.progress-wrap{padding-left:16px;padding-right:16px}.items{padding-left:7px;padding-right:7px}.add-row{padding:14px 16px 18px}.side{grid-template-columns:1fr}.item{gap:9px}.remove{padding:6px} }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div class="brand"><div class="logo" aria-hidden="true">⌁</div><div><p class="eyebrow">TRAINING, SIMPLIFIED</p><h1>练成计划</h1></div></div>
+      <p class="privacy">你的计划只保存在此设备</p>
+    </header>
+    <div class="grid">
+      <section class="card plan" aria-labelledby="plan-title">
+        <div class="plan-head"><div><h2 id="plan-title">今日训练</h2><p class="date" id="date-label"></p></div><button class="btn secondary" id="complete-day" type="button">检查完成情况</button></div>
+        <div class="progress-wrap"><div class="progress-text"><span>训练进度</span><strong id="progress-label">0 / 0 项</strong></div><div class="progress" aria-label="训练完成进度"><span id="progress-bar"></span></div></div>
+        <div id="notice" class="notice" role="status" aria-live="polite"></div>
+        <div class="items" id="items" aria-live="polite"></div>
+        <form class="add-row" id="add-form"><input id="new-item" maxlength="80" autocomplete="off" placeholder="添加训练项目，例如：深蹲 3 组 × 10 次" aria-label="新的训练项目"><button class="btn" type="submit">添加项目</button></form>
+      </section>
+      <aside class="side">
+        <section class="card tip" aria-labelledby="tip-title"><p class="tip-kicker">完成后反馈</p><h2 id="tip-title">准备好记录今天</h2><p id="tip-copy">逐项勾选你完成的训练。全部完成后，这里会给出恢复重点和明天的训练建议。</p><div class="suggestion" id="suggestion">先设置今天的训练项目，从小目标开始。</div></section>
+        <section class="card week" aria-labelledby="week-title"><div class="week-header"><div><h2 id="week-title">本周训练表</h2><p>点击任一天编辑项目</p></div></div><div class="day-list" id="day-list"></div></section>
+        <section class="card settings" aria-labelledby="goal-title"><h2 id="goal-title">训练目标（可选）</h2><label for="goal">用一句话写下本周期目标</label><textarea id="goal" maxlength="240" placeholder="例如：提升基础力量，并保持每周 4 次训练"></textarea><div class="settings-actions"><button class="btn secondary" id="export-data" type="button">导出备份</button><button class="btn secondary" id="reset-data" type="button">重置本周</button></div></section>
+      </aside>
+    </div>
+    <p class="footer">动作建议仅作一般训练规划参考；如有伤病、妊娠或疾病，请先咨询专业医疗或运动康复人员。数据不会上传到服务器。</p>
+  </main>
+  <script>
+  (() => {
+    'use strict';
+    const STORAGE_KEY = 'liancheng-training-plan-v1';
+    const DAYS = ['周一','周二','周三','周四','周五','周六','周日'];
+    const defaults = () => ({ activeDay: Math.max(0, new Date().getDay() - 1), goal:'', days:DAYS.map((label,i)=>({ label, items: i===0 ? [{id:cryptoId(),name:'热身与动态拉伸 8–10 分钟',done:false},{id:cryptoId(),name:'填写你的主训练项目',done:false}] : [] })) });
+    const cryptoId = () => (window.crypto && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+    const safeLoad = () => { try { const raw=localStorage.getItem(STORAGE_KEY); if(!raw) return defaults(); const d=JSON.parse(raw); if(!Array.isArray(d.days)||d.days.length!==7) return defaults(); return {activeDay:Number.isInteger(d.activeDay)&&d.activeDay>=0&&d.activeDay<7?d.activeDay:0,goal:typeof d.goal==='string'?d.goal:'',days:d.days.map((day,i)=>({label:DAYS[i],items:Array.isArray(day.items)?day.items.filter(x=>x&&typeof x.name==='string').slice(0,40).map(x=>({id:typeof x.id==='string'?x.id:cryptoId(),name:x.name.slice(0,80),done:Boolean(x.done)})):[]}))}; } catch { return defaults(); } };
+    let state=safeLoad();
+    const el = id => document.getElementById(id);
+    const dayItems = () => state.days[state.activeDay].items;
+    const save = () => { try { localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); } catch { showNotice('浏览器没有保存空间，当前更改只会保留到关闭页面前。',false); } };
+    const showNotice = (msg, success=false) => { const n=el('notice'); n.textContent=msg; n.className=`notice show${success?' success':''}`; };
+    const focusSuggestion = () => { const items=dayItems(), done=items.filter(x=>x.done).length, all=items.length>0&&done===items.length; const tip=el('tip-title'),copy=el('tip-copy'),s=el('suggestion'); if(all){ const next=(state.activeDay+1)%7; const keywords=items.map(x=>x.name).join(' '); let advice='建议安排轻量活动：20–30 分钟步行、活动度练习和睡眠恢复。'; if(/腿|蹲|硬拉|臀|跑/.test(keywords)) advice='明天建议以胸、背、肩等上肢训练为主；今天安排 8–10 分钟拉伸并保证恢复。'; else if(/卧推|胸|肩|背|引体|划船|臂/.test(keywords)) advice='明天建议下肢或低强度有氧：选择深蹲、髋主导动作，或 20–30 分钟轻松骑行。'; else if(items.length) advice='明天建议换一个主要肌群，维持中等强度；若明显疲劳，改为低强度有氧和活动度练习。'; tip.textContent='今天完成得很扎实'; copy.textContent=`已完成 ${done} 项训练。下一个训练日是${state.days[next].label}，请根据身体状态调整。`; s.textContent=advice; } else { tip.textContent=items.length?'稳步完成今天的训练':'从一项训练开始'; copy.textContent=items.length?`已完成 ${done} / ${items.length} 项。完成所有项目后将生成次日建议。`:'添加训练项目后，可逐项标记完成。'; s.textContent=items.length?'注意动作质量、补水和休息；不适时停止训练。':'可以按训练日分别建立力量、有氧、拉伸或休息安排。'; } };
+    const render = () => { const date=new Intl.DateTimeFormat('zh-CN',{month:'long',day:'numeric',weekday:'long'}).format(new Date()); el('date-label').textContent=date; const items=dayItems(),done=items.filter(x=>x.done).length; el('progress-label').textContent=`${done} / ${items.length} 项`; el('progress-bar').style.width=items.length?`${Math.round(done/items.length*100)}%`:'0%'; const box=el('items'); box.replaceChildren(); if(!items.length){const p=document.createElement('p');p.style.cssText='padding:20px 10px;color:#617377;text-align:center;font-size:.92rem';p.textContent='今天还没有训练项目，输入后添加即可。';box.append(p);} items.forEach(item=>{const row=document.createElement('div');row.className=`item${item.done?' done':''}`; const check=document.createElement('input');check.type='checkbox';check.className='check';check.checked=item.done;check.setAttribute('aria-label',`标记${item.name}是否完成`);check.addEventListener('change',()=>{item.done=check.checked;save();render();}); const name=document.createElement('div');name.className='item-name';name.textContent=item.name; const note=document.createElement('span');note.className='item-note';note.textContent=item.done?'已完成':'待进行';name.append(note); const remove=document.createElement('button');remove.className='remove';remove.type='button';remove.setAttribute('aria-label',`删除${item.name}`);remove.textContent='×';remove.addEventListener('click',()=>{state.days[state.activeDay].items=items.filter(x=>x.id!==item.id);save();render();});row.append(check,name,remove);box.append(row);}); const list=el('day-list');list.replaceChildren();state.days.forEach((day,index)=>{const complete=day.items.length>0&&day.items.every(x=>x.done);const b=document.createElement('button');b.className=`day${index===state.activeDay?' active':''}${complete?' complete':''}`;b.type='button';const dot=document.createElement('i');dot.className='day-dot';const label=document.createElement('span');label.textContent=day.label;const meta=document.createElement('small');meta.textContent=day.items.length?`${day.items.filter(x=>x.done).length}/${day.items.length}`:'未安排';b.append(dot,label,meta);b.addEventListener('click',()=>{state.activeDay=index;save();el('notice').className='notice';render();});list.append(b);});el('goal').value=state.goal;focusSuggestion(); };
+    el('add-form').addEventListener('submit',event=>{event.preventDefault();const input=el('new-item');const name=input.value.trim().replace(/\s+/g,' ');if(!name){input.focus();showNotice('请先填写一个训练项目。');return;}if(dayItems().length>=40){showNotice('每天最多可添加 40 个项目。');return;}dayItems().push({id:cryptoId(),name,done:false});input.value='';save();el('notice').className='notice';render();input.focus();});
+    el('complete-day').addEventListener('click',()=>{const items=dayItems();if(!items.length){showNotice('先添加今天的训练项目，再检查完成情况。');return;}const remaining=items.filter(x=>!x.done).length;if(remaining){showNotice(`还有 ${remaining} 项待完成。根据身体状态继续，或将其调整到其他训练日。`);return;}showNotice('今日所有项目已完成。恢复建议和明日安排已更新。',true);focusSuggestion();});
+    el('goal').addEventListener('input',event=>{state.goal=event.target.value.slice(0,240);save();});
+    el('export-data').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='liancheng-training-backup.json';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);showNotice('备份文件已下载。',true);});
+    el('reset-data').addEventListener('click',()=>{if(!window.confirm('确定清空本周训练表吗？此操作只影响当前浏览器中的数据。'))return;state=defaults();save();el('notice').className='notice';render();});
+    const registerTools=()=>{const context=document.modelContext;if(!context||!context.registerTool)return;const controller=new AbortController();try{Promise.resolve(context.registerTool({name:'get_training_plan',title:'读取训练表',description:'读取当前周的训练项目和完成情况，不修改数据。',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true,untrustedContentHint:true},execute:()=>({activeDay:state.days[state.activeDay].label,days:state.days.map(d=>({day:d.label,items:d.items.map(i=>({name:i.name,done:i.done}))}))})},{signal:controller.signal})).catch(()=>{});}catch{};try{Promise.resolve(context.registerTool({name:'add_training_item',title:'添加训练项目',description:'为指定训练日添加一个未完成的训练项目。',inputSchema:{type:'object',properties:{dayIndex:{type:'integer',minimum:0,maximum:6},name:{type:'string',minLength:1,maxLength:80}},required:['dayIndex','name'],additionalProperties:false},annotations:{readOnlyHint:false,untrustedContentHint:true},execute:(input)=>{if(!input||!Number.isInteger(input.dayIndex)||input.dayIndex<0||input.dayIndex>6||typeof input.name!=='string'||!input.name.trim())throw new Error('输入无效');const name=input.name.trim().replace(/\s+/g,' ').slice(0,80);if(state.days[input.dayIndex].items.length>=40)throw new Error('该日项目已达上限');state.days[input.dayIndex].items.push({id:cryptoId(),name,done:false});save();render();return {day:state.days[input.dayIndex].label,name,added:true};}},{signal:controller.signal})).catch(()=>{});}catch{};};
+    render();registerTools();
+  })();
+  </script>
+</body>
+</html>
+
