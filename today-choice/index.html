@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="今日选择：一个为犹豫时刻而生的精致随机转盘。" />
+    <meta name="theme-color" content="#11121e" />
+    <title>今日选择 · 随机转盘</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop stop-color='%23ffce65'/%3E%3Cstop offset='1' stop-color='%23ff7e76'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='29' fill='%23111425' stroke='url(%23g)' stroke-width='5'/%3E%3Cpath d='M32 11v42M11 32h42M17 17l30 30M47 17L17 47' stroke='%23ffce65' stroke-width='2.6' opacity='.9'/%3E%3Ccircle cx='32' cy='32' r='6' fill='%23ff7e76'/%3E%3C/svg%3E" />
+    <style>
+      :root { color-scheme: dark; --ink:#f8f7fb; --muted:#a9aab9; --panel:rgba(28,29,48,.75); --line:rgba(255,255,255,.11); --gold:#ffd36f; --coral:#ff8786; --lav:#9a91ff; --mint:#67d7c1; --danger:#ff8786; }
+      * { box-sizing: border-box; }
+      body { margin:0; min-width:320px; min-height:100vh; color:var(--ink); font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; background:#10111e; overflow-x:hidden; }
+      body::before, body::after { content:""; position:fixed; width:48rem; height:48rem; border-radius:50%; filter:blur(90px); pointer-events:none; opacity:.22; z-index:-1; }
+      body::before { background:#625ae9; top:-29rem; left:-19rem; } body::after { background:#d45b72; bottom:-33rem; right:-20rem; }
+      button, textarea, input { font:inherit; } button { cursor:pointer; }
+      .page { width:min(1160px, calc(100% - 32px)); margin:auto; padding:28px 0 44px; }
+      header { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:36px; }
+      .brand { display:flex; align-items:center; gap:11px; font-weight:750; letter-spacing:.02em; }
+      .brand-mark { display:grid; place-items:center; width:36px; height:36px; border-radius:12px; background:linear-gradient(135deg,var(--gold),var(--coral)); color:#241726; box-shadow:0 7px 22px rgba(255,145,105,.22); }
+      .brand-mark svg { width:22px; height:22px; } .eyebrow { color:#bfc0ca; font-size:.82rem; letter-spacing:.08em; }
+      .local-note { font-size:.82rem; color:var(--muted); padding:8px 12px; border:1px solid var(--line); border-radius:999px; background:rgba(255,255,255,.035); }
+      .app { display:grid; grid-template-columns:340px minmax(0,1fr); gap:28px; align-items:start; }
+      .panel { background:linear-gradient(135deg,rgba(43,44,69,.86),rgba(24,25,41,.78)); border:1px solid var(--line); border-radius:24px; box-shadow:0 20px 60px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.07); backdrop-filter:blur(16px); }
+      .editor { padding:22px; } .section-heading { display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:14px; }
+      h1,h2,p { margin:0; } h1 { font-size:clamp(1.7rem, 3vw, 2.5rem); letter-spacing:-.045em; line-height:1.1; } h2 { font-size:1rem; letter-spacing:.01em; } .hint { font-size:.78rem; color:var(--muted); }
+      textarea { display:block; width:100%; min-height:205px; resize:vertical; border:1px solid var(--line); border-radius:16px; padding:14px; outline:none; color:var(--ink); background:rgba(8,9,18,.34); line-height:1.75; transition:border-color .2s, box-shadow .2s; }
+      textarea:focus { border-color:rgba(255,211,111,.68); box-shadow:0 0 0 4px rgba(255,211,111,.09); }
+      .option-summary { margin:10px 2px 20px; color:var(--muted); font-size:.82rem; }
+      .control-row { display:grid; gap:10px; padding:16px 0; border-top:1px solid var(--line); }
+      .row-label { display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:.91rem; }
+      .stepper { display:flex; align-items:center; border:1px solid var(--line); background:rgba(9,10,20,.28); border-radius:11px; overflow:hidden; }
+      .stepper button { width:30px; height:30px; border:0; color:var(--ink); background:transparent; font-size:1.05rem; } .stepper button:hover { background:rgba(255,255,255,.08); }
+      .stepper input { width:35px; padding:0; border:0; text-align:center; color:var(--ink); background:transparent; outline:none; -moz-appearance:textfield; } .stepper input::-webkit-inner-spin-button { appearance:none; }
+      .switch-row { display:flex; justify-content:space-between; align-items:center; gap:10px; padding-top:3px; } .switch-copy { font-size:.9rem; } .switch-copy small { display:block; color:var(--muted); font-size:.75rem; margin-top:4px; }
+      .switch { position:relative; display:inline-block; flex:0 0 auto; width:47px; height:27px; } .switch input { opacity:0; width:0; height:0; }
+      .slider { position:absolute; inset:0; background:#4a4b5b; border-radius:999px; transition:.2s; } .slider::before { content:""; position:absolute; height:21px; width:21px; left:3px; bottom:3px; border-radius:50%; background:#fff; transition:.2s; box-shadow:0 2px 4px rgba(0,0,0,.25); } .switch input:checked + .slider { background:linear-gradient(90deg,var(--lav),var(--coral)); } .switch input:checked + .slider::before { transform:translateX(20px); }
+      .workspace { min-height:650px; padding:clamp(22px,4vw,42px); display:flex; flex-direction:column; align-items:center; position:relative; overflow:hidden; }
+      .workspace::after { content:""; position:absolute; width:380px; height:150px; border-radius:50%; background:rgba(99,93,238,.22); filter:blur(35px); bottom:-100px; z-index:0; }
+      .intro { text-align:center; position:relative; z-index:1; } .intro p { color:var(--muted); margin-top:9px; font-size:.94rem; }
+      .wheel-stage { width:min(100%,480px); aspect-ratio:1; margin:27px 0 14px; display:grid; place-items:center; position:relative; z-index:1; }
+      .halo { position:absolute; inset:7%; border-radius:50%; background:radial-gradient(circle,transparent 48%,rgba(255,211,111,.3) 69%,transparent 70%); filter:blur(11px); opacity:.72; }
+      .pointer { position:absolute; z-index:4; top:1.8%; left:50%; transform:translateX(-50%); width:0; height:0; border-left:16px solid transparent; border-right:16px solid transparent; border-top:40px solid #fff6df; filter:drop-shadow(0 5px 5px rgba(0,0,0,.38)); }
+      .pointer::after { content:""; position:absolute; left:-7px; top:-37px; width:14px; height:14px; border-radius:50%; background:var(--gold); box-shadow:0 0 0 4px #171826; }
+      .wheel-rim { width:88%; height:88%; padding:10px; border-radius:50%; background:linear-gradient(145deg,#fff0b1,#cf914d 20%,#463749 51%,#e7a85a 81%,#fff0bd); box-shadow:0 20px 36px rgba(0,0,0,.35),0 0 0 1px rgba(255,244,196,.45), inset 0 1px 4px white; }
+      .wheel { width:100%; height:100%; border-radius:50%; position:relative; overflow:hidden; background:conic-gradient(#6f75e9 0deg 60deg,#e6788c 60deg 120deg,#e9b762 120deg 180deg,#63c4b2 180deg 240deg,#8b70dd 240deg 300deg,#d975a0 300deg 360deg); transition:transform 4.6s cubic-bezier(.08,.73,.11,1); box-shadow:inset 0 0 0 2px rgba(20,19,38,.5),inset 0 0 45px rgba(0,0,0,.19); }
+      .wheel::after { content:""; position:absolute; inset:0; border-radius:50%; background:repeating-radial-gradient(circle at center,transparent 0 24px,rgba(255,255,255,.025) 25px 26px); mix-blend-mode:overlay; pointer-events:none; }
+      .wheel-labels { position:absolute; inset:0; z-index:1; pointer-events:none; } .wheel-label { position:absolute; color:rgba(255,255,255,.96); font-size:var(--label-size,.9rem); font-weight:700; line-height:1.2; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-shadow:0 1px 2px rgba(0,0,0,.3); transform:translate(-50%,-50%) rotate(var(--label-rotation,0deg)); transition:transform 4.6s cubic-bezier(.08,.73,.11,1); }
+      .hub { width:21%; aspect-ratio:1; position:absolute; z-index:3; display:grid; place-items:center; border-radius:50%; color:#2a2032; font-weight:800; font-size:.72rem; letter-spacing:.05em; background:radial-gradient(circle at 34% 29%,#fff8d9,#f7c460 57%,#aa623f); border:5px solid #422f3e; box-shadow:0 2px 3px rgba(255,255,255,.4),0 4px 11px rgba(0,0,0,.4); }
+      .draw-button { position:relative; z-index:2; min-width:184px; border:0; color:#2c2133; padding:14px 26px; border-radius:15px; background:linear-gradient(105deg,#ffe389,#ff9d83); box-shadow:0 10px 24px rgba(255,139,110,.25),inset 0 1px rgba(255,255,255,.55); font-weight:800; letter-spacing:.06em; transition:transform .18s,filter .18s; } .draw-button:hover:not(:disabled) { transform:translateY(-2px); filter:brightness(1.05); } .draw-button:active:not(:disabled) { transform:translateY(1px); } .draw-button:disabled { cursor:not-allowed; opacity:.55; }
+      .result-area { position:relative; z-index:1; width:min(100%,480px); margin-top:22px; } .result-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; font-size:.79rem; color:var(--muted); letter-spacing:.05em; }
+      .clear { border:0; background:transparent; color:#c9c7d6; font-size:.78rem; padding:4px 0; } .clear:hover { color:#fff; }
+      .result-list { display:flex; flex-wrap:wrap; gap:8px; min-height:43px; align-content:start; } .empty-result { color:#8d8e9f; font-size:.88rem; padding:11px 0; }
+      .result-chip { display:inline-flex; align-items:center; gap:6px; padding:9px 12px; border-radius:999px; background:rgba(255,209,111,.12); border:1px solid rgba(255,209,111,.3); color:#fff1c7; font-size:.88rem; animation:pop .38s cubic-bezier(.2,1.5,.4,1); } .result-chip i { width:6px; height:6px; background:var(--gold); border-radius:50%; }
+      @keyframes pop { from { opacity:0; transform:scale(.65) translateY(7px); } to { opacity:1; transform:scale(1); } }
+      .toast { position:fixed; left:50%; bottom:24px; transform:translate(-50%,20px); opacity:0; pointer-events:none; padding:10px 14px; border-radius:12px; color:#fff; background:#292a3e; border:1px solid var(--line); box-shadow:0 12px 28px rgba(0,0,0,.25); font-size:.86rem; transition:.25s; } .toast.show { opacity:1; transform:translate(-50%,0); }
+      @media (max-width:800px) { .app { grid-template-columns:1fr; } .editor { order:2; } .workspace { min-height:0; } .wheel-stage { width:min(100%,430px); } }
+      @media (max-width:500px) { .page { width:min(100% - 20px, 1160px); padding-top:15px; } header { margin-bottom:22px; } .local-note { display:none; } .workspace { padding:24px 14px 28px; border-radius:20px; } .editor { border-radius:20px; } .wheel-stage { margin:19px 0 11px; } .pointer { border-left-width:13px; border-right-width:13px; border-top-width:33px; } .wheel-label { font-size:.64rem; } }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <div class="brand"><span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M12 4v16M4 12h16M6.3 6.3l11.4 11.4M17.7 6.3L6.3 17.7"/></svg></span><span>今日选择</span></div>
+        <span class="local-note">你的选项仅保存在此设备</span>
+      </header>
+      <section class="app">
+        <aside class="panel editor" aria-label="转盘设置">
+          <div class="section-heading"><h2>填入你的选项</h2><span class="hint">每行一个</span></div>
+          <textarea id="optionsInput" aria-label="选项列表" placeholder="例如：&#10;火锅&#10;烧烤&#10;寿司&#10;今天吃什么？"></textarea>
+          <p class="option-summary" id="optionSummary">还没有选项</p>
+          <div class="control-row">
+            <div class="row-label"><span>连续抽取</span><div class="stepper"><button type="button" id="minus" aria-label="减少抽取次数">−</button><input id="drawCount" type="number" min="1" max="30" value="1" aria-label="本次连续抽取数量"><button type="button" id="plus" aria-label="增加抽取次数">＋</button></div></div>
+            <span class="hint">每一次都会单独转动、逐个揭晓</span>
+          </div>
+          <div class="switch-row">
+            <div class="switch-copy">抽中后移除<small>关闭后允许重复抽取</small></div>
+            <label class="switch"><input id="removeOnDraw" type="checkbox" checked><span class="slider"></span></label>
+          </div>
+        </aside>
+        <section class="panel workspace" aria-label="今日选择转盘">
+          <div class="intro"><div class="eyebrow">TODAY'S PICK</div><h1>让转盘替你决定</h1><p id="statusText">填好选项，交给一点随机与期待。</p></div>
+          <div class="wheel-stage">
+            <div class="halo"></div><div class="pointer" aria-hidden="true"></div><div class="wheel-rim"><div class="wheel" id="wheel"><div class="wheel-labels" id="wheelLabels"></div></div></div><div class="hub">PICK</div>
+          </div>
+          <button class="draw-button" id="drawButton" type="button">开始转动</button>
+          <div class="result-area"><div class="result-head"><span>本次选择</span><button class="clear" id="clearResults" type="button">清空记录</button></div><div class="result-list" id="resultList"><span class="empty-result">结果会在这里出现</span></div></div>
+        </section>
+      </section>
+    </main>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script>
+      (() => {
+        const colors = ['#6f75e9','#df7890','#e5b35f','#5fc1af','#8a70d9','#d675a0','#61a9d2','#cc855b','#7ebb79','#b579d9','#d75b77','#6fbfc4'];
+        const input = document.querySelector('#optionsInput'), countInput = document.querySelector('#drawCount'), removeInput = document.querySelector('#removeOnDraw');
+        const wheel = document.querySelector('#wheel'), labels = document.querySelector('#wheelLabels'), summary = document.querySelector('#optionSummary'), status = document.querySelector('#statusText'), btn = document.querySelector('#drawButton'), results = document.querySelector('#resultList'), toast = document.querySelector('#toast');
+        let options = [], currentRotation = 0, spinning = false, resultLog = [], saveTimer;
+        const readOptions = () => input.value.split(/\n/).map(x => x.trim()).filter(Boolean);
+        const escapeHtml = text => text.replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+        const persist = () => { localStorage.setItem('today-choice-state', JSON.stringify({text:input.value, count:countInput.value, remove:removeInput.checked, results:resultLog})); };
+        const showToast = message => { toast.textContent = message; toast.classList.add('show'); clearTimeout(saveTimer); saveTimer = setTimeout(() => toast.classList.remove('show'), 2200); };
+        function renderWheel() {
+          // The painted segments and the random pool deliberately share this same array.
+          // This keeps the fixed pointer, the visible name and the returned result in lockstep.
+          options = readOptions(); const shown = options; const n = Math.max(shown.length, 1); const step = 360 / n;
+          summary.textContent = options.length ? `已加入 ${options.length} 个选项` : '还没有选项';
+          btn.disabled = options.length < 2 || spinning;
+          btn.textContent = options.length < 2 ? '至少填入两个选项' : spinning ? '转动中…' : '开始转动';
+          if (!options.length) { wheel.style.background = 'conic-gradient(#43455d 0deg 180deg,#323449 180deg 360deg)'; labels.innerHTML = ''; persist(); return; }
+          wheel.style.background = `conic-gradient(${shown.map((_,i)=>`${colors[i%colors.length]} ${i*step}deg ${(i+1)*step}deg`).join(',')})`;
+          labels.innerHTML = shown.map((name,i) => { const angle=i*step+step/2; const radians=angle*Math.PI/180; const radius=31; const x=50+Math.sin(radians)*radius; const y=50-Math.cos(radians)*radius; const width=n>18?10:n>12?13:n>6?18:28; const size=n>18?'.55rem':n>12?'.68rem':'.9rem'; return `<span class="wheel-label" style="--label-size:${size};--label-rotation:${-(currentRotation%360)}deg;left:${x}%;top:${y}%;width:${width}%">${escapeHtml(name)}</span>`; }).join('');
+          persist();
+        }
+        function renderResults() { results.innerHTML = resultLog.length ? resultLog.map(x=>`<span class="result-chip"><i></i>${escapeHtml(x)}</span>`).join('') : '<span class="empty-result">结果会在这里出现</span>'; }
+        function keepLabelsUpright() { const angle=-(currentRotation%360); labels.querySelectorAll('.wheel-label').forEach(label=>label.style.setProperty('--label-rotation',`${angle}deg`)); }
+        const clampCount = () => { let n = Math.max(1, Math.min(30, Number(countInput.value)||1)); countInput.value=n; persist(); return n; };
+        async function spinOnce() {
+          if (options.length < 2) throw new Error('至少需要两个选项');
+          const index = Math.floor(Math.random()*options.length); const target = options[index]; const n = options.length; const step=360/n;
+          // segment center must reach the fixed pointer at 12 o'clock; add five full laps for a weighty finish.
+          const targetRotation = (360 - (index*step + step/2)) % 360; const correction = (targetRotation - (currentRotation % 360) + 360) % 360; currentRotation += 1800 + correction; wheel.style.transform = `rotate(${currentRotation}deg)`; keepLabelsUpright();
+          await new Promise(resolve => setTimeout(resolve, 4700)); resultLog.push(target); renderResults(); status.textContent = `今日选择：${target}`;
+          if (removeInput.checked) { const pos=options.indexOf(target); if (pos>-1) { options.splice(pos,1); input.value=options.join('\n'); renderWheel(); } }
+          persist(); return target;
+        }
+        btn.addEventListener('click', async () => {
+          if (spinning || options.length < 2) return; spinning=true; renderWheel(); const requested=clampCount(); const maximum=removeInput.checked ? Math.min(requested, options.length) : requested;
+          if (maximum < requested) showToast(`可抽选项不足，本次抽取 ${maximum} 个`);
+          try { for (let i=0;i<maximum;i++) { await spinOnce(); if (i<maximum-1) await new Promise(r=>setTimeout(r,650)); } } catch (e) { showToast(e.message); } finally { spinning=false; renderWheel(); }
+        });
+        input.addEventListener('input', () => { if (!spinning) renderWheel(); });
+        removeInput.addEventListener('change', persist); countInput.addEventListener('change', clampCount);
+        document.querySelector('#minus').addEventListener('click',()=>{ countInput.value=Math.max(1,(+countInput.value||1)-1); clampCount(); });
+        document.querySelector('#plus').addEventListener('click',()=>{ countInput.value=Math.min(30,(+countInput.value||1)+1); clampCount(); });
+        document.querySelector('#clearResults').addEventListener('click',()=>{ resultLog=[]; renderResults(); persist(); });
+        // Expose the same two primary actions to WebMCP-capable assistants.
+        const modelContext = document.modelContext;
+        if (modelContext?.registerTool) {
+          const lifecycle = new AbortController();
+          const register = tool => Promise.resolve(modelContext.registerTool(tool, { signal: lifecycle.signal })).catch(() => {});
+          register({
+            name:'configure_today_choice', title:'设置今日选择转盘',
+            description:'用一组候选项设置可见转盘，并选择抽中后是否移除该选项。',
+            inputSchema:{ type:'object', properties:{ options:{type:'array',items:{type:'string'},minItems:2,maxItems:100}, removeOnDraw:{type:'boolean'} }, required:['options'], additionalProperties:false },
+            annotations:{readOnlyHint:false,untrustedContentHint:true},
+            execute(payload) { if (!payload || !Array.isArray(payload.options) || payload.options.length < 2 || payload.options.some(x=>typeof x!=='string'||!x.trim())) throw new Error('请提供至少两个非空选项。'); input.value=payload.options.map(x=>x.trim()).join('\n'); if (typeof payload.removeOnDraw==='boolean') removeInput.checked=payload.removeOnDraw; renderWheel(); return { optionCount:options.length, removeOnDraw:removeInput.checked }; }
+          });
+          register({
+            name:'spin_today_choice', title:'转动今日选择',
+            description:'逐个转动当前转盘并返回本次随机抽到的选项。',
+            inputSchema:{ type:'object', properties:{ draws:{type:'integer',minimum:1,maximum:30} }, additionalProperties:false },
+            annotations:{readOnlyHint:false,untrustedContentHint:true},
+            async execute(payload) { if (spinning) throw new Error('转盘正在转动。'); if (options.length<2) throw new Error('至少需要两个选项。'); const requested=Math.max(1,Math.min(30,Number(payload?.draws)||1)); const total=removeInput.checked?Math.min(requested,options.length):requested; spinning=true; renderWheel(); const picked=[]; try { for(let i=0;i<total;i++){ picked.push(await spinOnce()); if(i<total-1) await new Promise(r=>setTimeout(r,650)); } return { picked, remainingOptions:options.length }; } finally { spinning=false; renderWheel(); } }
+          });
+        }
+        try { const saved=JSON.parse(localStorage.getItem('today-choice-state')); if (saved) { input.value=saved.text||''; countInput.value=saved.count||1; removeInput.checked=saved.remove!==false; resultLog=Array.isArray(saved.results)?saved.results:[]; } } catch(_) {}
+        renderWheel(); renderResults();
+      })();
+    </script>
+  </body>
+</html>
+
