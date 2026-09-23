@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#10121a">
+  <meta name="description" content="把狂徒皮肤拖入夯、顶级、人上人、NPC、拉完了，制作属于你的皮肤排行。">
+  <title>狂徒皮肤排行</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%2310121a'/%3E%3Cpath d='M10 39h17l6-9h21v7H37l-5 8H10z' fill='%23ff675d'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="loading" class="loading" aria-live="polite">
+    <div class="loading-inner"><div class="loading-symbol">V<span>／</span></div><div class="loading-title">狂徒皮肤排行</div><div class="loading-track"><i></i></div><p>正在整理皮肤库…</p></div>
+  </div>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">V<span>／</span></div><div><strong>狂徒皮肤排行</strong><small>VANDAL TIER LIST</small></div></div>
+      <div class="top-actions"><span class="save-state"><span class="save-dot"></span>自动保存在本机</span><button id="reset" type="button" class="button button-quiet">重置排行</button></div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="page-title">
+        <div class="eyebrow"><span class="eyebrow-line"></span> 给你的狂徒皮肤排个名</div>
+        <h1 id="page-title">你的审美，<em>你来定级。</em></h1>
+        <p>把下方皮肤拖进对应等级；手机上也可以点选皮肤，再选择等级。同一行内拖动可调整先后。</p>
+        <div class="intro-stats"><div><strong id="ranked-count">0</strong><span>已上榜</span></div><div><strong id="skin-count">—</strong><span>款狂徒皮肤</span></div><div><strong>5</strong><span>个等级</span></div></div>
+      </section>
+
+      <section class="board-section" aria-labelledby="board-title">
+        <div class="section-heading"><div><span class="section-kicker">01 / RANKING</span><h2 id="board-title">我的排行</h2></div><p>从上到下，越靠前越喜欢</p></div>
+        <div class="board" id="board">
+          <div class="tier-row" data-zone="hang"><div class="tier-label tier-hang"><span class="tier-index">S+</span><strong>夯</strong></div><div class="tier-drop" data-zone="hang" aria-label="夯等级"><span class="drop-hint">把最爱的皮肤放在这里</span></div></div>
+          <div class="tier-row" data-zone="top"><div class="tier-label tier-top"><span class="tier-index">S</span><strong>顶级</strong></div><div class="tier-drop" data-zone="top" aria-label="顶级等级"><span class="drop-hint">拖动皮肤到此处</span></div></div>
+          <div class="tier-row" data-zone="great"><div class="tier-label tier-great"><span class="tier-index">A</span><strong>人上人</strong></div><div class="tier-drop" data-zone="great" aria-label="人上人等级"><span class="drop-hint">拖动皮肤到此处</span></div></div>
+          <div class="tier-row" data-zone="npc"><div class="tier-label tier-npc"><span class="tier-index">B</span><strong>NPC</strong></div><div class="tier-drop" data-zone="npc" aria-label="NPC等级"><span class="drop-hint">拖动皮肤到此处</span></div></div>
+          <div class="tier-row" data-zone="last"><div class="tier-label tier-last"><span class="tier-index">C</span><strong>拉完了</strong></div><div class="tier-drop" data-zone="last" aria-label="拉完了等级"><span class="drop-hint">拖动皮肤到此处</span></div></div>
+        </div>
+      </section>
+
+      <section class="pool-section" aria-labelledby="pool-title">
+        <div class="section-heading"><div><span class="section-kicker">02 / COLLECTION</span><h2 id="pool-title">待排行皮肤 <span id="pool-count" class="pool-count"></span></h2></div><label class="search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.6"/><path d="m16 16 5 5"/></svg><input id="search" type="search" placeholder="搜索皮肤名称" autocomplete="off" aria-label="搜索皮肤名称"></label></div>
+        <div id="pool" class="skin-pool tier-drop" data-zone="pool" aria-label="待排行皮肤"></div>
+        <div id="no-results" class="no-results" hidden>没有找到匹配的皮肤，试试其他关键词。</div>
+      </section>
+    </main>
+    <footer>皮肤名称与图片来自 <a href="https://valorant-api.com/" target="_blank" rel="noopener noreferrer">Valorant API</a>，排行仅保存在当前浏览器。本站为玩家制作的非官方工具。</footer>
+  </div>
+
+  <dialog id="choose-dialog" class="choose-dialog" aria-labelledby="choose-title">
+    <form method="dialog"><button class="dialog-close" aria-label="关闭" value="cancel" type="submit">×</button></form>
+    <p class="dialog-kicker">调整位置</p><h2 id="choose-title">放到哪个等级？</h2><div id="chosen-skin" class="chosen-skin"></div>
+    <div id="tier-choices" class="tier-choices"></div>
+    <p class="dialog-tip">也可以直接拖动卡片，自由调整顺序。</p>
+  </dialog>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
+
