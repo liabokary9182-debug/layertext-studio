@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#071326">
-  <meta name="description" content="一轮明月，一颗由中秋祝福组成的心。把这份团圆与思念送给你。">
-  <title>月满心间 · 中秋祝福</title>
+  <meta name="description" content="今夜共婵娟：中秋祝福语汇成一颗会发光的心，把团圆与思念送给你。">
+  <title>今夜共婵娟 · 中秋祝福</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23071326'/%3E%3Ccircle cx='32' cy='32' r='21' fill='%23f6d894'/%3E%3Cpath d='M25 19a19 19 0 1 0 20 29A22 22 0 0 1 25 19Z' fill='%23071326'/%3E%3C/svg%3E">
   <style>
     :root{color-scheme:dark;font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",system-ui,sans-serif;background:#071326;color:#fff7e9}
@@ -22,18 +22,19 @@
     .eyebrow{font-size:12px;letter-spacing:.45em;color:#e8ca8c;opacity:.82;margin:0 0 8px;padding-left:.45em}
     h1{font-family:"STKaiti","KaiTi","Kaiti SC",serif;font-size:clamp(38px,6vw,66px);font-weight:500;letter-spacing:.16em;margin:0;padding-left:.16em;text-shadow:0 3px 24px #d4a65077}
     .subtitle{font-size:clamp(13px,2vw,16px);letter-spacing:.2em;color:#e7d6bd;margin:9px 0 0}
-    .scene{position:relative;width:min(100%,620px);height:clamp(400px,56vw,510px);margin:auto 0 8px;isolation:isolate}
+    .scene{position:relative;width:min(100%,720px);height:clamp(440px,60vw,570px);margin:auto 0 8px;isolation:isolate;perspective:850px}
     .halo{position:absolute;left:50%;top:44%;width:65%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#f2dca92e,transparent 68%);filter:blur(12px)}
     .moon{position:absolute;z-index:0;top:5%;left:50%;width:clamp(76px,14vw,126px);aspect-ratio:1;border-radius:50%;transform:translateX(-50%);background:radial-gradient(circle at 36% 31%,#fff4cb,#e9c877 60%,#a47a4b);box-shadow:0 0 24px #f5d99199,0 0 96px #f2cc6d5e;opacity:.86;animation:moon-glow 5s ease-in-out infinite alternate}
     .moon:after{content:"";position:absolute;inset:12% 20% 29% 16%;border-radius:50%;box-shadow:14px 5px 0 7px #e4c07833,31px 24px 0 -1px #ffe9aa36;opacity:.55}
     @keyframes moon-glow{to{box-shadow:0 0 35px #f5d991bb,0 0 115px #f2cc6d7e;transform:translateX(-50%) translateY(-5px)}}
-    .heart{position:absolute;inset:0;z-index:2;filter:drop-shadow(0 5px 20px #ff918044)}
-    .wish{--r:0deg;position:absolute;left:var(--x);top:var(--y);min-width:68px;max-width:112px;padding:5px 8px;border:1px solid #ffffff71;border-radius:8px;background:var(--bg);color:var(--ink);font-size:clamp(10px,1.65vw,13px);font-weight:700;line-height:1.15;white-space:nowrap;box-shadow:0 4px 13px #06102075,inset 0 1px 0 #ffffffa0;opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(calc(var(--r) * 2)) scale(.28);transition:transform .8s cubic-bezier(.17,.85,.25,1.28),opacity .55s ease;transition-delay:var(--delay);will-change:transform,opacity}
-    .wish.show{opacity:1;transform:translate(-50%,-50%) rotate(var(--r)) scale(1)}
-    .wish.show:hover{z-index:3;transform:translate(-50%,-50%) rotate(0deg) scale(1.12)}
+    .heart{position:absolute;inset:0;z-index:2;transform-style:preserve-3d;filter:drop-shadow(0 8px 26px #ff91805c)}
+    .wish{--r:0deg;--tilt:0deg;--depth:0px;--size:1;position:absolute;left:var(--x);top:var(--y);min-width:68px;max-width:112px;padding:5px 8px;border:1px solid #ffffff9e;border-radius:8px;background:linear-gradient(145deg,#ffffff85,transparent 43%),var(--bg);color:var(--ink);font-size:clamp(10px,1.65vw,13px);font-weight:700;line-height:1.15;white-space:nowrap;box-shadow:1px 2px 0 #ffffff6b,4px 5px 0 #6d4b5466,8px 13px 21px #0610209c,inset 0 1px 0 #fffbdc;opacity:0;backface-visibility:hidden;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(calc(var(--r) * 2)) translateZ(-150px) scale(.28);transition:transform .88s cubic-bezier(.17,.85,.25,1.24),opacity .55s ease;will-change:transform,opacity}
+    .wish.show{opacity:1;transform:translate(-50%,-50%) rotate(var(--r)) rotateY(var(--tilt)) translateZ(var(--depth)) scale(var(--size))}
+    .wish.show:hover{z-index:5;transform:translate(-50%,-50%) rotate(0deg) rotateY(0deg) translateZ(70px) scale(1.13)}
+    .wish.ambient.show{opacity:.62}
     .wish.pulse{animation:float 3.8s ease-in-out infinite alternate;animation-delay:var(--float-delay)}
     @keyframes float{to{translate:0 -5px;filter:brightness(1.08)}}
-    .center-line{position:absolute;z-index:1;top:50%;left:50%;transform:translate(-50%,-50%);width:72%;font-family:"STKaiti","KaiTi","Kaiti SC",serif;font-size:clamp(17px,3.4vw,26px);letter-spacing:.12em;line-height:1.7;color:#fff5d6;text-shadow:0 2px 10px #09192b,0 0 22px #ffcd86;opacity:0;transition:opacity 1.2s ease;pointer-events:none}
+    .center-line{position:absolute;z-index:3;top:50%;left:50%;transform:translate(-50%,-50%);width:72%;font-family:"STKaiti","KaiTi","Kaiti SC",serif;font-size:clamp(17px,3.4vw,26px);letter-spacing:.12em;line-height:1.7;color:#fff5d6;text-shadow:0 2px 10px #09192b,0 0 22px #ffcd86;opacity:0;transition:opacity 1.2s ease;pointer-events:none}
     .center-line.show{opacity:1}
     .center-line span{display:block;font-size:.65em;color:#f4dcb0;letter-spacing:.25em}
     .bottom{position:relative;width:100%;display:flex;flex-direction:column;align-items:center;gap:18px;margin-top:auto}
@@ -56,9 +57,9 @@
     .progress{width:150px;height:2px;background:#e5c4863b;overflow:hidden;border-radius:2px}
     .progress:after{content:"";display:block;width:40%;height:100%;background:#f5d995;animation:progress 1.7s ease-in-out infinite}
     @keyframes progress{from{transform:translateX(-100%)}to{transform:translateX(375%)}}
-    @media(max-width:600px){.page{padding:24px 8px 20px}.experience{min-height:calc(100svh - 44px)}.scene{height:min(55svh,470px);min-height:330px;margin:15px 0 2px}.moon{top:6%}.wish{min-width:55px;max-width:90px;padding:4px 5px;font-size:10px;border-radius:6px}.center-line{font-size:17px;top:51%}.featured{height:50px;font-size:20px}.bottom{gap:10px}.hint{font-size:11px}.controls{gap:9px}.control{min-width:118px;font-size:13px;padding:8px 13px}}
+    @media(max-width:600px){.page{padding:24px 8px 20px}.experience{min-height:calc(100svh - 44px)}.scene{height:min(61svh,520px);min-height:365px;margin:10px 0 2px}.moon{top:3%}.wish{min-width:55px;max-width:88px;padding:4px 5px;font-size:10px;border-radius:6px}.wish.ambient{display:none}.center-line{font-size:17px;top:51%}.featured{height:50px;font-size:20px}.bottom{gap:10px}.hint{font-size:11px}.controls{gap:9px}.control{min-width:118px;font-size:13px;padding:8px 13px}}
     @media(max-height:700px){.scene{height:340px;min-height:300px}.experience{min-height:calc(100svh - 40px)}.eyebrow{margin-bottom:2px}.subtitle{margin-top:3px}.bottom{gap:7px}}
-    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.wish{opacity:1;transform:translate(-50%,-50%) rotate(var(--r))}.center-line{opacity:1}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.wish{opacity:1;transform:translate(-50%,-50%) rotate(var(--r)) rotateY(var(--tilt)) translateZ(var(--depth)) scale(var(--size))}.center-line{opacity:1}}
   </style>
 </head>
 <body>
@@ -73,8 +74,8 @@
     <div class="experience">
       <header>
         <p class="eyebrow">MID-AUTUMN FESTIVAL</p>
-        <h1>月满心间</h1>
-        <p class="subtitle">一颗心，盛满今夜的祝福</p>
+        <h1>今夜共婵娟</h1>
+        <p class="subtitle">把今夜的祝福，送到你心上</p>
       </header>
       <section class="scene" aria-label="逐渐形成爱心形状的中秋祝福语">
         <div class="halo" aria-hidden="true"></div>
@@ -99,7 +100,9 @@
       '良辰美景','千里共婵娟','长长久久','思念如月','佳节安康','灯火可亲','团圆有时','月色温柔',
       '日日皆欢喜','家人常相伴','心愿都实现','共赏今宵月','月明情更浓','好景常在','团圆美满','自在欢喜',
       '月下皆故人','平安常相随','月色映归途','年年有今夕','好梦皆成真','笑意盈盈','此夜最团圆','山海皆可赴',
-      '月光照万家','念念有回响','月圆情意浓','喜乐又一年','把酒话团圆','愿你皆如意','人间小团圆','同看一轮月'
+      '月光照万家','念念有回响','月圆情意浓','喜乐又一年','把酒话团圆','愿你皆如意','人间小团圆','同看一轮月',
+      '明月照归途','家和万事兴','相逢正当时','今宵月更明','团圆在心间','好时光常在','明月伴你行','心中有暖阳',
+      '共此好月色','好事如月圆','温柔予家人','月下话家常','日日有好梦','岁月皆安然','团圆满人间','一生皆顺意'
     ];
     const featuredLines = [
       '愿月圆，愿人圆，愿心愿皆圆',
@@ -117,22 +120,23 @@
     const centerLine = document.getElementById('centerLine');
     const featured = document.getElementById('featured');
     const soundButton = document.getElementById('sound');
-    let audioContext, soundOn = false, currentRun = 0, timers = [], featureTimer, featureIndex = 0;
+    let audioContext, audioBus, masterGain, melodyTimer, melodyStep = 0;
+    let soundOn = false, currentRun = 0, timers = [], featureTimer, featureIndex = 0;
     const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function setTimer(fn, delay){const id=setTimeout(fn,delay);timers.push(id);return id}
     function clearRun(){timers.forEach(clearTimeout);timers=[];clearInterval(featureTimer)}
     function points(){
       const all=[];
-      // The classic parametric heart, with two offset rows of wishes for the layered effect.
-      for(let ring=0;ring<2;ring++){
-        const count=ring===0?24:10;
+      // A full-size heart, a recessed heart, and a faint halo of distant wishes.
+      for(let ring=0;ring<3;ring++){
+        const count=[26,14,12][ring];
         for(let i=0;i<count;i++){
           const t=(i/count)*Math.PI*2+(ring?Math.PI/count:0);
           const x=16*Math.pow(Math.sin(t),3);
           const y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
-          const scale=ring===0?1:.81;
-          all.push({x:50+x*scale*2.05,y:49-y*scale*2.02,ring,i});
+          const scale=[1,.78,1.08][ring];
+          all.push({x:50+x*scale*2.16,y:49-y*scale*2.18,ring,i});
         }
       }
       return all;
@@ -141,28 +145,50 @@
     locations.forEach((point,index)=>{
       const tag=document.createElement('span');
       const palette=colors[(index*3+Math.floor(index/5))%colors.length];
-      tag.className='wish';tag.textContent=greetings[index];
+      tag.className='wish'+(point.ring===2?' ambient':'');tag.textContent=greetings[index];
       tag.style.setProperty('--x',point.x+'%');tag.style.setProperty('--y',point.y+'%');
       tag.style.setProperty('--dx',((index%4-1.5)*115)+'px');
       tag.style.setProperty('--dy',(index%3===0?-175:175)+'px');
       tag.style.setProperty('--r',((index%7)-3)*3+'deg');
+      tag.style.setProperty('--tilt',((index%5)-2)*5+'deg');
+      tag.style.setProperty('--depth',[28,-32,-105][point.ring]+'px');
+      tag.style.setProperty('--size',[1,.9,.74][point.ring]);
       tag.style.setProperty('--bg',palette[0]);tag.style.setProperty('--ink',palette[1]);
       tag.style.setProperty('--float-delay',-(index%9)*.4+'s');
       heart.appendChild(tag);
     });
     const tags=[...heart.children];
-    function chime(note=0){
+    function initAudio(){
+      if(audioContext){audioContext.resume();masterGain.gain.setTargetAtTime(.72,audioContext.currentTime,.08);return}
+      audioContext=new (window.AudioContext||window.webkitAudioContext)();
+      masterGain=audioContext.createGain();masterGain.gain.value=.72;masterGain.connect(audioContext.destination);
+      audioBus=audioContext.createGain();audioBus.connect(masterGain);
+      const delay=audioContext.createDelay(.8);delay.delayTime.value=.27;
+      const feedback=audioContext.createGain();feedback.gain.value=.19;
+      const wet=audioContext.createGain();wet.gain.value=.22;
+      audioBus.connect(delay);delay.connect(feedback);feedback.connect(delay);delay.connect(wet);wet.connect(masterGain);
+    }
+    function chime(note=0,volume=.024){
       if(!soundOn)return;
       try{
-        audioContext ||= new (window.AudioContext||window.webkitAudioContext)();
-        if(audioContext.state==='suspended')audioContext.resume();
+        initAudio();
         const now=audioContext.currentTime;
-        const oscillator=audioContext.createOscillator();
-        const gain=audioContext.createGain();
-        oscillator.type='sine';oscillator.frequency.setValueAtTime([523.25,659.25,783.99,1046.5][note%4],now);
-        gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.045,now+.02);gain.gain.exponentialRampToValueAtTime(.0001,now+.75);
-        oscillator.connect(gain).connect(audioContext.destination);oscillator.start(now);oscillator.stop(now+.78);
-      }catch(e){soundOn=false;updateSoundButton()}
+        const frequency=[392,440,523.25,587.33,659.25,783.99][note%6];
+        const noteGain=audioContext.createGain();
+        const filter=audioContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=1900;
+        noteGain.gain.setValueAtTime(.0001,now);
+        noteGain.gain.exponentialRampToValueAtTime(volume,now+.035);
+        noteGain.gain.exponentialRampToValueAtTime(.0001,now+1.35);
+        const primary=audioContext.createOscillator();primary.type='sine';primary.frequency.value=frequency;
+        const overtone=audioContext.createOscillator();overtone.type='triangle';overtone.frequency.value=frequency*2;
+        const overtoneGain=audioContext.createGain();overtoneGain.gain.value=.13;
+        primary.connect(filter);overtone.connect(overtoneGain).connect(filter);filter.connect(noteGain).connect(audioBus);
+        primary.start(now);overtone.start(now);primary.stop(now+1.4);overtone.stop(now+1.4);
+      }catch(e){soundOn=false;clearInterval(melodyTimer);updateSoundButton()}
+    }
+    function startMelody(){
+      clearInterval(melodyTimer);
+      melodyTimer=setInterval(()=>chime([0,2,3,5,4,2,1,3][melodyStep++%8],.012),1550);
     }
     function play(){
       clearRun();const run=++currentRun;centerLine.classList.remove('show');
@@ -171,20 +197,25 @@
       requestAnimationFrame(()=>requestAnimationFrame(()=>{
         if(run!==currentRun)return;
         tags.forEach((tag,index)=>{
-          setTimer(()=>{if(run!==currentRun)return;tag.classList.add('show');if(index%6===0)chime(index/6|0)},reduceMotion?0:index*64);
+          setTimer(()=>{if(run!==currentRun)return;tag.classList.add('show');if(index%7===0)chime(index/7|0,.018)},reduceMotion?0:index*58);
         });
-        setTimer(()=>{centerLine.classList.add('show');tags.forEach(tag=>tag.classList.add('pulse'));chime(3)},reduceMotion?0:tags.length*64+450);
+        setTimer(()=>{centerLine.classList.add('show');tags.forEach(tag=>tag.classList.add('pulse'));chime(3,.028)},reduceMotion?0:tags.length*58+450);
       }));
       featureIndex=0;featured.textContent=featuredLines[0];featured.classList.remove('changing');
-      featureTimer=setInterval(()=>{featured.classList.add('changing');setTimer(()=>{featureIndex=(featureIndex+1)%featuredLines.length;featured.textContent=featuredLines[featureIndex];featured.classList.remove('changing');chime(featureIndex)},340)},5200);
+      featureTimer=setInterval(()=>{featured.classList.add('changing');setTimer(()=>{featureIndex=(featureIndex+1)%featuredLines.length;featured.textContent=featuredLines[featureIndex];featured.classList.remove('changing');chime(featureIndex,.016)},340)},5200);
     }
     function updateSoundButton(){
       soundButton.setAttribute('aria-pressed',String(soundOn));
       soundButton.querySelector('span').textContent=soundOn?'关闭音效':'开启音效';
       soundButton.querySelector('svg').innerHTML=soundOn?'<path d="M11 5 6 9H3v6h3l5 4V5ZM15 9a4 4 0 0 1 0 6m3-9a8 8 0 0 1 0 12"/>':'<path d="M11 5 6 9H3v6h3l5 4V5ZM16 9l5 6m0-6-5 6"/>';
     }
-    soundButton.addEventListener('click',()=>{soundOn=!soundOn;updateSoundButton();if(soundOn)chime(0)});
-    document.getElementById('replay').addEventListener('click',()=>{chime(1);play()});
+    soundButton.addEventListener('click',()=>{
+      soundOn=!soundOn;
+      if(soundOn){chime(0,.024);startMelody()}
+      else{clearInterval(melodyTimer);masterGain?.gain.setTargetAtTime(0,audioContext.currentTime,.06)}
+      updateSoundButton();
+    });
+    document.getElementById('replay').addEventListener('click',()=>{chime(1,.024);play()});
     window.addEventListener('load',()=>setTimeout(()=>{veil.classList.add('hide');play()},reduceMotion?100:1900));
   </script>
 </body>
