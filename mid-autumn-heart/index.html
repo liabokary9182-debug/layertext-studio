@@ -23,15 +23,26 @@
     h1{font-family:"STKaiti","KaiTi","Kaiti SC",serif;font-size:clamp(38px,6vw,66px);font-weight:500;letter-spacing:.16em;margin:0;padding-left:.16em;text-shadow:0 3px 24px #d4a65077}
     .subtitle{font-size:clamp(13px,2vw,16px);letter-spacing:.2em;color:#e7d6bd;margin:9px 0 0}
     .scene{position:relative;width:min(100%,720px);height:clamp(440px,60vw,570px);margin:auto 0 8px;isolation:isolate;perspective:850px}
-    .halo{position:absolute;left:50%;top:44%;width:65%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#f2dca92e,transparent 68%);filter:blur(12px)}
+    .halo{position:absolute;left:50%;top:48%;width:85%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#f2dca927,#f6b47912 45%,transparent 72%);filter:blur(14px);animation:halo-breathe 7s ease-in-out infinite alternate}
+    @keyframes halo-breathe{to{opacity:.65;scale:1.07}}
     .moon{position:absolute;z-index:0;top:5%;left:50%;width:clamp(76px,14vw,126px);aspect-ratio:1;border-radius:50%;transform:translateX(-50%);background:radial-gradient(circle at 36% 31%,#fff4cb,#e9c877 60%,#a47a4b);box-shadow:0 0 24px #f5d99199,0 0 96px #f2cc6d5e;opacity:.86;animation:moon-glow 5s ease-in-out infinite alternate}
     .moon:after{content:"";position:absolute;inset:12% 20% 29% 16%;border-radius:50%;box-shadow:14px 5px 0 7px #e4c07833,31px 24px 0 -1px #ffe9aa36;opacity:.55}
     @keyframes moon-glow{to{box-shadow:0 0 35px #f5d991bb,0 0 115px #f2cc6d7e;transform:translateX(-50%) translateY(-5px)}}
+    .heart-ribbon{position:absolute;inset:0;width:100%;height:100%;z-index:1;overflow:visible;pointer-events:none}
+    .heart-ribbon .glow{fill:none;stroke:#f7b9a5;stroke-width:1.9;opacity:.42;filter:blur(4px)}
+    .heart-ribbon .line{fill:none;stroke:url(#heartGold);stroke-width:.36;stroke-linecap:round;stroke-dasharray:2 1.2;opacity:.72;animation:ribbon-flow 17s linear infinite}
+    @keyframes ribbon-flow{to{stroke-dashoffset:-72}}
+    .spark-field{position:absolute;inset:0;z-index:2;pointer-events:none}
+    .spark{position:absolute;left:var(--x);top:var(--y);width:var(--s);height:var(--s);border-radius:50%;background:#fff6ca;box-shadow:0 0 6px 2px #f9d8948c,0 0 16px #f8b48187;opacity:0;animation:spark-drift var(--life) ease-in-out infinite;animation-delay:var(--delay)}
+    @keyframes spark-drift{0%,100%{opacity:0;transform:translate(0,7px) scale(.55)}40%{opacity:.8;transform:translate(var(--dx),-7px) scale(1)}70%{opacity:.28;transform:translate(var(--dx),-17px) scale(.7)}}
     .heart{position:absolute;inset:0;z-index:2;transform-style:preserve-3d;filter:drop-shadow(0 8px 26px #ff91805c)}
-    .wish{--r:0deg;--tilt:0deg;--depth:0px;--size:1;position:absolute;left:var(--x);top:var(--y);min-width:68px;max-width:112px;padding:5px 8px;border:1px solid #ffffff9e;border-radius:8px;background:linear-gradient(145deg,#ffffff85,transparent 43%),var(--bg);color:var(--ink);font-size:clamp(10px,1.65vw,13px);font-weight:700;line-height:1.15;white-space:nowrap;box-shadow:1px 2px 0 #ffffff6b,4px 5px 0 #6d4b5466,8px 13px 21px #0610209c,inset 0 1px 0 #fffbdc;opacity:0;backface-visibility:hidden;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(calc(var(--r) * 2)) translateZ(-150px) scale(.28);transition:transform .88s cubic-bezier(.17,.85,.25,1.24),opacity .55s ease;will-change:transform,opacity}
+    .wish{--r:0deg;--tilt:0deg;--depth:0px;--size:1;position:absolute;left:var(--x);top:var(--y);min-width:68px;max-width:112px;padding:5px 8px;border:1px solid #ffffff9e;border-radius:8px;background:linear-gradient(145deg,#ffffff85,transparent 43%),var(--bg);color:var(--ink);font-size:clamp(10px,1.65vw,13px);font-weight:700;line-height:1.15;white-space:nowrap;box-shadow:1px 2px 0 #ffffff6b,4px 5px 0 #6d4b5466,8px 13px 21px #0610209c,inset 0 1px 0 #fffbdc;opacity:0;backface-visibility:hidden;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(calc(var(--r) * 2)) translateZ(-150px) scale(.28);transition:transform .96s cubic-bezier(.18,.78,.22,1),opacity .68s ease;will-change:transform,opacity}
     .wish.show{opacity:1;transform:translate(-50%,-50%) rotate(var(--r)) rotateY(var(--tilt)) translateZ(var(--depth)) scale(var(--size))}
     .wish.show:hover{z-index:5;transform:translate(-50%,-50%) rotate(0deg) rotateY(0deg) translateZ(70px) scale(1.13)}
-    .wish.ambient.show{opacity:.62}
+    .wish.spotlit.show{z-index:4;transform:translate(-50%,-50%) rotate(0deg) rotateY(0deg) translateZ(82px) scale(1.17);box-shadow:0 0 0 1px #fff0c0,0 0 23px #ffcf88a6,8px 16px 24px #061020a6}
+    .wish.inner.show{opacity:.89}
+    .wish.core.show{opacity:.78}
+    .wish.ambient.show{opacity:.53}
     .wish.pulse{animation:float 3.8s ease-in-out infinite alternate;animation-delay:var(--float-delay)}
     @keyframes float{to{translate:0 -5px;filter:brightness(1.08)}}
     .center-line{position:absolute;z-index:3;top:50%;left:50%;transform:translate(-50%,-50%);width:72%;font-family:"STKaiti","KaiTi","Kaiti SC",serif;font-size:clamp(17px,3.4vw,26px);letter-spacing:.12em;line-height:1.7;color:#fff5d6;text-shadow:0 2px 10px #09192b,0 0 22px #ffcd86;opacity:0;transition:opacity 1.2s ease;pointer-events:none}
@@ -57,7 +68,8 @@
     .progress{width:150px;height:2px;background:#e5c4863b;overflow:hidden;border-radius:2px}
     .progress:after{content:"";display:block;width:40%;height:100%;background:#f5d995;animation:progress 1.7s ease-in-out infinite}
     @keyframes progress{from{transform:translateX(-100%)}to{transform:translateX(375%)}}
-    @media(max-width:600px){.page{padding:24px 8px 20px}.experience{min-height:calc(100svh - 44px)}.scene{height:min(61svh,520px);min-height:365px;margin:10px 0 2px}.moon{top:3%}.wish{min-width:55px;max-width:88px;padding:4px 5px;font-size:10px;border-radius:6px}.wish.ambient{display:none}.center-line{font-size:17px;top:51%}.featured{height:50px;font-size:20px}.bottom{gap:10px}.hint{font-size:11px}.controls{gap:9px}.control{min-width:118px;font-size:13px;padding:8px 13px}}
+    @media(max-width:600px){.page{padding:24px 8px 20px}.experience{min-height:calc(100svh - 44px)}.scene{height:min(61svh,520px);min-height:365px;margin:10px 0 2px}.moon{top:3%}.wish{min-width:55px;max-width:88px;padding:4px 5px;font-size:10px;border-radius:6px}.wish.ambient.show{opacity:.45}.center-line{font-size:17px;top:51%}.featured{height:50px;font-size:20px}.bottom{gap:10px}.hint{font-size:11px}.controls{gap:9px}.control{min-width:118px;font-size:13px;padding:8px 13px}}
+    @media(max-width:350px){.wish.core,.wish.ambient{display:none}}
     @media(max-height:700px){.scene{height:340px;min-height:300px}.experience{min-height:calc(100svh - 40px)}.eyebrow{margin-bottom:2px}.subtitle{margin-top:3px}.bottom{gap:7px}}
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.wish{opacity:1;transform:translate(-50%,-50%) rotate(var(--r)) rotateY(var(--tilt)) translateZ(var(--depth)) scale(var(--size))}.center-line{opacity:1}}
   </style>
@@ -80,6 +92,8 @@
       <section class="scene" aria-label="逐渐形成爱心形状的中秋祝福语">
         <div class="halo" aria-hidden="true"></div>
         <div class="moon" aria-hidden="true"></div>
+        <svg class="heart-ribbon" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="heartGold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffe3aa"/><stop offset=".5" stop-color="#ffc0bc"/><stop offset="1" stop-color="#f4d993"/></linearGradient></defs><path class="glow" id="ribbonGlow"/><path class="line" id="ribbonLine"/></svg>
+        <div class="spark-field" id="sparkField" aria-hidden="true"></div>
         <div class="heart" id="heart" aria-hidden="true"></div>
         <div class="center-line" id="centerLine">但愿人长久<span>千里共婵娟</span></div>
       </section>
@@ -102,7 +116,12 @@
       '月下皆故人','平安常相随','月色映归途','年年有今夕','好梦皆成真','笑意盈盈','此夜最团圆','山海皆可赴',
       '月光照万家','念念有回响','月圆情意浓','喜乐又一年','把酒话团圆','愿你皆如意','人间小团圆','同看一轮月',
       '明月照归途','家和万事兴','相逢正当时','今宵月更明','团圆在心间','好时光常在','明月伴你行','心中有暖阳',
-      '共此好月色','好事如月圆','温柔予家人','月下话家常','日日有好梦','岁月皆安然','团圆满人间','一生皆顺意'
+      '共此好月色','好事如月圆','温柔予家人','月下话家常','日日有好梦','岁月皆安然','团圆满人间','一生皆顺意',
+      '花灯映笑颜','桂香满人间','玉兔送福来','月华照庭前','相守好时光','远方皆安好','把思念寄月','今夜喜相逢',
+      '归家有明灯','此心常温暖','愿你多欢笑','家宴暖人心','清辉伴好梦','月下尽欢颜','年年皆团聚','共赴好时光',
+      '万家灯火暖','月亮替我想你','喜事正当时','佳期如约至','团圆不缺席','月色入心怀','清风寄祝愿','愿你常开怀',
+      '今夕共欢聚','天涯共此时','一路有月光','桂影伴君行','人圆事事圆','团圆无尽时','笑语满庭芳','喜乐盈家门',
+      '心安即归处','愿你被珍爱','千里寄相思','月光拥抱你','家人皆康健','美满又一年','欢喜在身边','明月知我心'
     ];
     const featuredLines = [
       '愿月圆，愿人圆，愿心愿皆圆',
@@ -121,38 +140,59 @@
     const featured = document.getElementById('featured');
     const soundButton = document.getElementById('sound');
     let audioContext, audioBus, masterGain, melodyTimer, melodyStep = 0;
-    let soundOn = false, currentRun = 0, timers = [], featureTimer, featureIndex = 0;
+    let soundOn = false, currentRun = 0, timers = [], featureTimer, spotlightTimer, featureIndex = 0, spotlightIndex = 0;
     const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function setTimer(fn, delay){const id=setTimeout(fn,delay);timers.push(id);return id}
-    function clearRun(){timers.forEach(clearTimeout);timers=[];clearInterval(featureTimer)}
+    function clearRun(){timers.forEach(clearTimeout);timers=[];clearInterval(featureTimer);clearInterval(spotlightTimer)}
+    function heartCoordinates(t,scale=1){
+      const x=16*Math.pow(Math.sin(t),3);
+      const y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
+      return {x:50+x*scale*2.16,y:49-y*scale*2.18};
+    }
     function points(){
       const all=[];
-      // A full-size heart, a recessed heart, and a faint halo of distant wishes.
-      for(let ring=0;ring<3;ring++){
-        const count=[26,14,12][ring];
+      // Four staggered depths keep the outline clear while filling it with wishes.
+      for(let ring=0;ring<4;ring++){
+        const count=[34,26,22,18][ring];
         for(let i=0;i<count;i++){
           const t=(i/count)*Math.PI*2+(ring?Math.PI/count:0);
-          const x=16*Math.pow(Math.sin(t),3);
-          const y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
-          const scale=[1,.78,1.08][ring];
-          all.push({x:50+x*scale*2.16,y:49-y*scale*2.18,ring,i});
+          const position=heartCoordinates(t,[1,.81,.60,1.10][ring]);
+          all.push({...position,ring,i});
         }
       }
       return all;
+    }
+    const ribbonPath=Array.from({length:129},(_,i)=>{
+      const p=heartCoordinates(i/128*Math.PI*2,1.015);
+      return (i?'L':'M')+p.x.toFixed(2)+' '+p.y.toFixed(2);
+    }).join(' ')+' Z';
+    document.getElementById('ribbonGlow').setAttribute('d',ribbonPath);
+    document.getElementById('ribbonLine').setAttribute('d',ribbonPath);
+    const sparkField=document.getElementById('sparkField');
+    for(let i=0;i<44;i++){
+      const p=heartCoordinates(i/44*Math.PI*2,[.64,.87,1.04][i%3]);
+      const spark=document.createElement('span');spark.className='spark';
+      spark.style.setProperty('--x',(p.x+(i%5-2)*1.7)+'%');
+      spark.style.setProperty('--y',(p.y+(i%7-3)*1.1)+'%');
+      spark.style.setProperty('--s',(1+i%3)+'px');
+      spark.style.setProperty('--dx',((i%5)-2)*3+'px');
+      spark.style.setProperty('--life',(2.6+(i%6)*.47)+'s');
+      spark.style.setProperty('--delay',-(i%11)*.43+'s');
+      sparkField.appendChild(spark);
     }
     const locations=points().sort((a,b)=>a.y-b.y || a.x-b.x);
     locations.forEach((point,index)=>{
       const tag=document.createElement('span');
       const palette=colors[(index*3+Math.floor(index/5))%colors.length];
-      tag.className='wish'+(point.ring===2?' ambient':'');tag.textContent=greetings[index];
+      tag.className='wish'+(['',' inner',' core',' ambient'][point.ring]);tag.textContent=greetings[index];
       tag.style.setProperty('--x',point.x+'%');tag.style.setProperty('--y',point.y+'%');
       tag.style.setProperty('--dx',((index%4-1.5)*115)+'px');
       tag.style.setProperty('--dy',(index%3===0?-175:175)+'px');
       tag.style.setProperty('--r',((index%7)-3)*3+'deg');
       tag.style.setProperty('--tilt',((index%5)-2)*5+'deg');
-      tag.style.setProperty('--depth',[28,-32,-105][point.ring]+'px');
-      tag.style.setProperty('--size',[1,.9,.74][point.ring]);
+      tag.style.setProperty('--depth',[42,-12,-58,-112][point.ring]+'px');
+      tag.style.setProperty('--size',[1,.84,.70,.57][point.ring]);
       tag.style.setProperty('--bg',palette[0]);tag.style.setProperty('--ink',palette[1]);
       tag.style.setProperty('--float-delay',-(index%9)*.4+'s');
       heart.appendChild(tag);
@@ -175,31 +215,69 @@
         const now=audioContext.currentTime;
         const frequency=[392,440,523.25,587.33,659.25,783.99][note%6];
         const noteGain=audioContext.createGain();
-        const filter=audioContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=1900;
+        const filter=audioContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=1650;
         noteGain.gain.setValueAtTime(.0001,now);
-        noteGain.gain.exponentialRampToValueAtTime(volume,now+.035);
-        noteGain.gain.exponentialRampToValueAtTime(.0001,now+1.35);
+        noteGain.gain.exponentialRampToValueAtTime(volume,now+.055);
+        noteGain.gain.exponentialRampToValueAtTime(.0001,now+1.75);
         const primary=audioContext.createOscillator();primary.type='sine';primary.frequency.value=frequency;
         const overtone=audioContext.createOscillator();overtone.type='triangle';overtone.frequency.value=frequency*2;
-        const overtoneGain=audioContext.createGain();overtoneGain.gain.value=.13;
+        const overtoneGain=audioContext.createGain();overtoneGain.gain.value=.10;
         primary.connect(filter);overtone.connect(overtoneGain).connect(filter);filter.connect(noteGain).connect(audioBus);
-        primary.start(now);overtone.start(now);primary.stop(now+1.4);overtone.stop(now+1.4);
+        primary.start(now);overtone.start(now);primary.stop(now+1.8);overtone.stop(now+1.8);
+      }catch(e){soundOn=false;clearInterval(melodyTimer);updateSoundButton()}
+    }
+    function padChord(index){
+      if(!soundOn)return;
+      try{
+        initAudio();
+        const chord=[
+          [196,261.63,329.63],
+          [174.61,220,261.63],
+          [196,246.94,293.66],
+          [164.81,220,261.63]
+        ][index%4];
+        const now=audioContext.currentTime;
+        chord.forEach((frequency,i)=>{
+          const voice=audioContext.createOscillator();voice.type='sine';voice.frequency.value=frequency;voice.detune.value=(i-1)*3;
+          const lowpass=audioContext.createBiquadFilter();lowpass.type='lowpass';lowpass.frequency.value=700;
+          const envelope=audioContext.createGain();
+          envelope.gain.setValueAtTime(.0001,now);
+          envelope.gain.linearRampToValueAtTime(.0042,now+1.5);
+          envelope.gain.setValueAtTime(.0042,now+7.8);
+          envelope.gain.exponentialRampToValueAtTime(.0001,now+10.8);
+          voice.connect(lowpass).connect(envelope).connect(audioBus);
+          voice.start(now);voice.stop(now+10.9);
+        });
       }catch(e){soundOn=false;clearInterval(melodyTimer);updateSoundButton()}
     }
     function startMelody(){
       clearInterval(melodyTimer);
-      melodyTimer=setInterval(()=>chime([0,2,3,5,4,2,1,3][melodyStep++%8],.012),1550);
+      melodyStep=0;padChord(0);
+      const melody=[0,2,4,-1,3,2,0,-1,1,3,5,4,2,-1,1,-1];
+      melodyTimer=setInterval(()=>{
+        const step=melodyStep++;
+        if(step>0 && step%melody.length===0)padChord(step/melody.length);
+        const note=melody[step%melody.length];
+        if(note>=0)chime(note,.011);
+      },700);
     }
     function play(){
       clearRun();const run=++currentRun;centerLine.classList.remove('show');
-      tags.forEach(tag=>{tag.classList.remove('show','pulse');tag.style.setProperty('--delay','0ms')});
+      tags.forEach(tag=>{tag.classList.remove('show','pulse','spotlit');tag.style.setProperty('--delay','0ms')});
       // Let the browser paint the reset state before beginning another reveal.
       requestAnimationFrame(()=>requestAnimationFrame(()=>{
         if(run!==currentRun)return;
         tags.forEach((tag,index)=>{
-          setTimer(()=>{if(run!==currentRun)return;tag.classList.add('show');if(index%7===0)chime(index/7|0,.018)},reduceMotion?0:index*58);
+          setTimer(()=>{if(run!==currentRun)return;tag.classList.add('show');if(index%11===0)chime(index/11|0,.012)},reduceMotion?0:index*38);
         });
-        setTimer(()=>{centerLine.classList.add('show');tags.forEach(tag=>tag.classList.add('pulse'));chime(3,.028)},reduceMotion?0:tags.length*58+450);
+        setTimer(()=>{
+          centerLine.classList.add('show');tags.forEach(tag=>tag.classList.add('pulse'));chime(3,.023);
+          if(!reduceMotion)spotlightTimer=setInterval(()=>{
+            tags[spotlightIndex%tags.length].classList.remove('spotlit');
+            spotlightIndex=(spotlightIndex+7)%tags.length;
+            tags[spotlightIndex].classList.add('spotlit');
+          },2100);
+        },reduceMotion?0:tags.length*38+600);
       }));
       featureIndex=0;featured.textContent=featuredLines[0];featured.classList.remove('changing');
       featureTimer=setInterval(()=>{featured.classList.add('changing');setTimer(()=>{featureIndex=(featureIndex+1)%featuredLines.length;featured.textContent=featuredLines[featureIndex];featured.classList.remove('changing');chime(featureIndex,.016)},340)},5200);
