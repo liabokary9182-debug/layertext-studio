@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071326">
+  <meta name="description" content="一轮明月，一颗由中秋祝福组成的心。把这份团圆与思念送给你。">
+  <title>月满心间 · 中秋祝福</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23071326'/%3E%3Ccircle cx='32' cy='32' r='21' fill='%23f6d894'/%3E%3Cpath d='M25 19a19 19 0 1 0 20 29A22 22 0 0 1 25 19Z' fill='%23071326'/%3E%3C/svg%3E">
+  <style>
+    :root{color-scheme:dark;font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",system-ui,sans-serif;background:#071326;color:#fff7e9}
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%}
+    body{overflow-x:hidden;background:radial-gradient(ellipse 75% 52% at 50% 41%,#173257 0%,#0b1b34 53%,#071326 100%)}
+    button{font:inherit}
+    .sky{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+    .sky:before,.sky:after{content:"";position:absolute;inset:0;background-image:radial-gradient(2px 2px at 9% 16%,#fff6d9 60%,transparent 100%),radial-gradient(2px 2px at 82% 12%,#fff6d9 60%,transparent 100%),radial-gradient(1px 1px at 31% 30%,#fff 70%,transparent 100%),radial-gradient(2px 2px at 63% 64%,#ffe8ad 60%,transparent 100%),radial-gradient(1px 1px at 91% 76%,#fff 70%,transparent 100%),radial-gradient(2px 2px at 16% 79%,#fff2c7 60%,transparent 100%);background-size:390px 490px;opacity:.48;animation:stars 8s ease-in-out infinite alternate}
+    .sky:after{transform:translate(100px,150px) scale(.85);opacity:.24;animation-delay:-4s}
+    @keyframes stars{to{opacity:.85;transform:translateY(-9px)}}
+    .page{position:relative;z-index:1;min-height:100svh;display:flex;align-items:center;justify-content:center;padding:max(22px,env(safe-area-inset-top)) 18px max(24px,env(safe-area-inset-bottom))}
+    .experience{width:min(100%,950px);min-height:min(780px,calc(100svh - 44px));display:flex;flex-direction:column;align-items:center;text-align:center;position:relative}
+    .eyebrow{font-size:12px;letter-spacing:.45em;color:#e8ca8c;opacity:.82;margin:0 0 8px;padding-left:.45em}
+    h1{font-family:"STKaiti","KaiTi","Kaiti SC",serif;font-size:clamp(38px,6vw,66px);font-weight:500;letter-spacing:.16em;margin:0;padding-left:.16em;text-shadow:0 3px 24px #d4a65077}
+    .subtitle{font-size:clamp(13px,2vw,16px);letter-spacing:.2em;color:#e7d6bd;margin:9px 0 0}
+    .scene{position:relative;width:min(100%,620px);height:clamp(400px,56vw,510px);margin:auto 0 8px;isolation:isolate}
+    .halo{position:absolute;left:50%;top:44%;width:65%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,#f2dca92e,transparent 68%);filter:blur(12px)}
+    .moon{position:absolute;z-index:0;top:5%;left:50%;width:clamp(76px,14vw,126px);aspect-ratio:1;border-radius:50%;transform:translateX(-50%);background:radial-gradient(circle at 36% 31%,#fff4cb,#e9c877 60%,#a47a4b);box-shadow:0 0 24px #f5d99199,0 0 96px #f2cc6d5e;opacity:.86;animation:moon-glow 5s ease-in-out infinite alternate}
+    .moon:after{content:"";position:absolute;inset:12% 20% 29% 16%;border-radius:50%;box-shadow:14px 5px 0 7px #e4c07833,31px 24px 0 -1px #ffe9aa36;opacity:.55}
+    @keyframes moon-glow{to{box-shadow:0 0 35px #f5d991bb,0 0 115px #f2cc6d7e;transform:translateX(-50%) translateY(-5px)}}
+    .heart{position:absolute;inset:0;z-index:2;filter:drop-shadow(0 5px 20px #ff918044)}
+    .wish{--r:0deg;position:absolute;left:var(--x);top:var(--y);min-width:68px;max-width:112px;padding:5px 8px;border:1px solid #ffffff71;border-radius:8px;background:var(--bg);color:var(--ink);font-size:clamp(10px,1.65vw,13px);font-weight:700;line-height:1.15;white-space:nowrap;box-shadow:0 4px 13px #06102075,inset 0 1px 0 #ffffffa0;opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) rotate(calc(var(--r) * 2)) scale(.28);transition:transform .8s cubic-bezier(.17,.85,.25,1.28),opacity .55s ease;transition-delay:var(--delay);will-change:transform,opacity}
+    .wish.show{opacity:1;transform:translate(-50%,-50%) rotate(var(--r)) scale(1)}
+    .wish.show:hover{z-index:3;transform:translate(-50%,-50%) rotate(0deg) scale(1.12)}
+    .wish.pulse{animation:float 3.8s ease-in-out infinite alternate;animation-delay:var(--float-delay)}
+    @keyframes float{to{translate:0 -5px;filter:brightness(1.08)}}
+    .center-line{position:absolute;z-index:1;top:50%;left:50%;transform:translate(-50%,-50%);width:72%;font-family:"STKaiti","KaiTi","Kaiti SC",serif;font-size:clamp(17px,3.4vw,26px);letter-spacing:.12em;line-height:1.7;color:#fff5d6;text-shadow:0 2px 10px #09192b,0 0 22px #ffcd86;opacity:0;transition:opacity 1.2s ease;pointer-events:none}
+    .center-line.show{opacity:1}
+    .center-line span{display:block;font-size:.65em;color:#f4dcb0;letter-spacing:.25em}
+    .bottom{position:relative;width:100%;display:flex;flex-direction:column;align-items:center;gap:18px;margin-top:auto}
+    .featured{height:53px;margin:0;display:grid;place-items:center;font-family:"STKaiti","KaiTi","Kaiti SC",serif;font-size:clamp(19px,3vw,26px);letter-spacing:.08em;color:#ffe7b5;transition:opacity .35s ease,transform .35s ease;text-shadow:0 0 18px #e6aa6877}
+    .featured.changing{opacity:0;transform:translateY(8px)}
+    .controls{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+    .control{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-width:126px;min-height:43px;padding:9px 17px;border-radius:999px;border:1px solid #e5c98673;background:#fff5dc13;color:#f8e7c5;cursor:pointer;backdrop-filter:blur(8px);transition:background .2s,transform .2s,border-color .2s}
+    .control:hover{background:#f8e1ad30;border-color:#f7d994;transform:translateY(-2px)}
+    .control:focus-visible{outline:2px solid #ffe7a5;outline-offset:3px}
+    .control svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+    .hint{margin:0;color:#baa98f;font-size:12px;letter-spacing:.08em}
+    .veil{position:fixed;inset:0;z-index:10;background:radial-gradient(circle at 50% 42%,#142e50,#071326 65%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;text-align:center;transition:opacity .9s ease,visibility .9s ease}
+    .veil.hide{opacity:0;visibility:hidden;pointer-events:none}
+    .load-moon{width:90px;height:90px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff1c0,#d5ab65);box-shadow:0 0 35px #ffdb8a99,0 0 100px #c3915580;position:relative;animation:loading 2s ease-in-out infinite}
+    .load-moon:after{content:"";position:absolute;inset:-12px;border:1px solid #f3d29842;border-radius:50%;animation:ring 2s ease-in-out infinite}
+    @keyframes loading{50%{transform:scale(1.09)}}
+    @keyframes ring{50%{transform:scale(1.15);opacity:.35}}
+    .veil strong{font-family:"STKaiti","KaiTi","Kaiti SC",serif;font-size:29px;letter-spacing:.25em;font-weight:500;padding-left:.25em}
+    .veil p{margin:0;color:#d2bd9f;font-size:14px;letter-spacing:.19em}
+    .progress{width:150px;height:2px;background:#e5c4863b;overflow:hidden;border-radius:2px}
+    .progress:after{content:"";display:block;width:40%;height:100%;background:#f5d995;animation:progress 1.7s ease-in-out infinite}
+    @keyframes progress{from{transform:translateX(-100%)}to{transform:translateX(375%)}}
+    @media(max-width:600px){.page{padding:24px 8px 20px}.experience{min-height:calc(100svh - 44px)}.scene{height:min(55svh,470px);min-height:330px;margin:15px 0 2px}.moon{top:6%}.wish{min-width:55px;max-width:90px;padding:4px 5px;font-size:10px;border-radius:6px}.center-line{font-size:17px;top:51%}.featured{height:50px;font-size:20px}.bottom{gap:10px}.hint{font-size:11px}.controls{gap:9px}.control{min-width:118px;font-size:13px;padding:8px 13px}}
+    @media(max-height:700px){.scene{height:340px;min-height:300px}.experience{min-height:calc(100svh - 40px)}.eyebrow{margin-bottom:2px}.subtitle{margin-top:3px}.bottom{gap:7px}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.wish{opacity:1;transform:translate(-50%,-50%) rotate(var(--r))}.center-line{opacity:1}}
+  </style>
+</head>
+<body>
+  <div class="sky" aria-hidden="true"></div>
+  <div class="veil" id="veil" aria-live="polite">
+    <div class="load-moon" aria-hidden="true"></div>
+    <strong>月色正在抵达</strong>
+    <p>把思念，写成一颗心</p>
+    <div class="progress" aria-hidden="true"></div>
+  </div>
+  <main class="page">
+    <div class="experience">
+      <header>
+        <p class="eyebrow">MID-AUTUMN FESTIVAL</p>
+        <h1>月满心间</h1>
+        <p class="subtitle">一颗心，盛满今夜的祝福</p>
+      </header>
+      <section class="scene" aria-label="逐渐形成爱心形状的中秋祝福语">
+        <div class="halo" aria-hidden="true"></div>
+        <div class="moon" aria-hidden="true"></div>
+        <div class="heart" id="heart" aria-hidden="true"></div>
+        <div class="center-line" id="centerLine">但愿人长久<span>千里共婵娟</span></div>
+      </section>
+      <div class="bottom">
+        <p class="featured" id="featured" aria-live="polite">愿月圆，愿人圆，愿心愿皆圆</p>
+        <div class="controls">
+          <button class="control" id="replay" type="button" aria-label="重新播放爱心祝福动画"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11a8 8 0 1 1 2.3 6M4 5v6h6"/></svg>再看一次</button>
+          <button class="control" id="sound" type="button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5ZM16 9l5 6m0-6-5 6"/></svg><span>开启音效</span></button>
+        </div>
+        <p class="hint">轻触开启音效 · 把这轮明月送给想念的人</p>
+      </div>
+    </div>
+  </main>
+  <script>
+    const greetings = [
+      '中秋快乐','花好月圆','阖家团圆','月圆人安','平安喜乐','岁岁团圆','月满中秋','喜乐常伴',
+      '所愿皆圆','人间好时节','一切顺遂','幸福安康','团团圆圆','月光予你','万事胜意','心有归处',
+      '良辰美景','千里共婵娟','长长久久','思念如月','佳节安康','灯火可亲','团圆有时','月色温柔',
+      '日日皆欢喜','家人常相伴','心愿都实现','共赏今宵月','月明情更浓','好景常在','团圆美满','自在欢喜',
+      '月下皆故人','平安常相随','月色映归途','年年有今夕','好梦皆成真','笑意盈盈','此夜最团圆','山海皆可赴',
+      '月光照万家','念念有回响','月圆情意浓','喜乐又一年','把酒话团圆','愿你皆如意','人间小团圆','同看一轮月'
+    ];
+    const featuredLines = [
+      '愿月圆，愿人圆，愿心愿皆圆',
+      '今夜月明，把最好的祝福送给你',
+      '无论相隔多远，我们共赏一轮月',
+      '愿所念之人平安，所盼之事圆满',
+      '中秋快乐，岁岁年年常团圆'
+    ];
+    const colors = [
+      ['#ffe8b2','#533620'],['#ffd2ca','#66333b'],['#d8eaff','#264366'],['#d8f4df','#2c5940'],
+      ['#f5d8ff','#583760'],['#fff0c8','#63452b'],['#d8f0f4','#315a60']
+    ];
+    const heart = document.getElementById('heart');
+    const veil = document.getElementById('veil');
+    const centerLine = document.getElementById('centerLine');
+    const featured = document.getElementById('featured');
+    const soundButton = document.getElementById('sound');
+    let audioContext, soundOn = false, currentRun = 0, timers = [], featureTimer, featureIndex = 0;
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function setTimer(fn, delay){const id=setTimeout(fn,delay);timers.push(id);return id}
+    function clearRun(){timers.forEach(clearTimeout);timers=[];clearInterval(featureTimer)}
+    function points(){
+      const all=[];
+      // The classic parametric heart, with two offset rows of wishes for the layered effect.
+      for(let ring=0;ring<2;ring++){
+        const count=ring===0?24:10;
+        for(let i=0;i<count;i++){
+          const t=(i/count)*Math.PI*2+(ring?Math.PI/count:0);
+          const x=16*Math.pow(Math.sin(t),3);
+          const y=13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t);
+          const scale=ring===0?1:.81;
+          all.push({x:50+x*scale*2.05,y:49-y*scale*2.02,ring,i});
+        }
+      }
+      return all;
+    }
+    const locations=points().sort((a,b)=>a.y-b.y || a.x-b.x);
+    locations.forEach((point,index)=>{
+      const tag=document.createElement('span');
+      const palette=colors[(index*3+Math.floor(index/5))%colors.length];
+      tag.className='wish';tag.textContent=greetings[index];
+      tag.style.setProperty('--x',point.x+'%');tag.style.setProperty('--y',point.y+'%');
+      tag.style.setProperty('--dx',((index%4-1.5)*115)+'px');
+      tag.style.setProperty('--dy',(index%3===0?-175:175)+'px');
+      tag.style.setProperty('--r',((index%7)-3)*3+'deg');
+      tag.style.setProperty('--bg',palette[0]);tag.style.setProperty('--ink',palette[1]);
+      tag.style.setProperty('--float-delay',-(index%9)*.4+'s');
+      heart.appendChild(tag);
+    });
+    const tags=[...heart.children];
+    function chime(note=0){
+      if(!soundOn)return;
+      try{
+        audioContext ||= new (window.AudioContext||window.webkitAudioContext)();
+        if(audioContext.state==='suspended')audioContext.resume();
+        const now=audioContext.currentTime;
+        const oscillator=audioContext.createOscillator();
+        const gain=audioContext.createGain();
+        oscillator.type='sine';oscillator.frequency.setValueAtTime([523.25,659.25,783.99,1046.5][note%4],now);
+        gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.045,now+.02);gain.gain.exponentialRampToValueAtTime(.0001,now+.75);
+        oscillator.connect(gain).connect(audioContext.destination);oscillator.start(now);oscillator.stop(now+.78);
+      }catch(e){soundOn=false;updateSoundButton()}
+    }
+    function play(){
+      clearRun();const run=++currentRun;centerLine.classList.remove('show');
+      tags.forEach(tag=>{tag.classList.remove('show','pulse');tag.style.setProperty('--delay','0ms')});
+      // Let the browser paint the reset state before beginning another reveal.
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        if(run!==currentRun)return;
+        tags.forEach((tag,index)=>{
+          setTimer(()=>{if(run!==currentRun)return;tag.classList.add('show');if(index%6===0)chime(index/6|0)},reduceMotion?0:index*64);
+        });
+        setTimer(()=>{centerLine.classList.add('show');tags.forEach(tag=>tag.classList.add('pulse'));chime(3)},reduceMotion?0:tags.length*64+450);
+      }));
+      featureIndex=0;featured.textContent=featuredLines[0];featured.classList.remove('changing');
+      featureTimer=setInterval(()=>{featured.classList.add('changing');setTimer(()=>{featureIndex=(featureIndex+1)%featuredLines.length;featured.textContent=featuredLines[featureIndex];featured.classList.remove('changing');chime(featureIndex)},340)},5200);
+    }
+    function updateSoundButton(){
+      soundButton.setAttribute('aria-pressed',String(soundOn));
+      soundButton.querySelector('span').textContent=soundOn?'关闭音效':'开启音效';
+      soundButton.querySelector('svg').innerHTML=soundOn?'<path d="M11 5 6 9H3v6h3l5 4V5ZM15 9a4 4 0 0 1 0 6m3-9a8 8 0 0 1 0 12"/>':'<path d="M11 5 6 9H3v6h3l5 4V5ZM16 9l5 6m0-6-5 6"/>';
+    }
+    soundButton.addEventListener('click',()=>{soundOn=!soundOn;updateSoundButton();if(soundOn)chime(0)});
+    document.getElementById('replay').addEventListener('click',()=>{chime(1);play()});
+    window.addEventListener('load',()=>setTimeout(()=>{veil.classList.add('hide');play()},reduceMotion?100:1900));
+  </script>
+</body>
+</html>
+
