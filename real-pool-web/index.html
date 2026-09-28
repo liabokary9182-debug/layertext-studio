@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07191b">
+  <meta name="description" content="标准比例袋口的八球与九球网页台球游戏。">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23121a20'/%3E%3Ccircle cx='16' cy='16' r='7' fill='white'/%3E%3Ctext x='16' y='20' text-anchor='middle' font-size='12'%3E8%3C/text%3E%3C/svg%3E">
+  <title>真实台球 · 八球 / 九球</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">●</span><div><strong>真实台球</strong><small>8 BALL / 9 BALL</small></div></div>
+      <div class="top-actions"><button id="rulesBtn" class="quiet" type="button">规则</button><button id="newBtn" class="quiet" type="button">新开一局</button><button id="fullBtn" class="quiet" type="button" aria-label="全屏">⛶</button></div>
+    </header>
+    <main class="layout">
+      <section class="arena" aria-label="台球桌">
+        <div class="scorebar"><div class="player active" id="player0"><span class="player-number">01</span><div><b>玩家 1</b><small id="group0">待分组</small></div><span id="score0" class="score">0</span></div><div class="game-label"><span id="modeLabel">八球</span><small id="turnLabel">准备开球</small></div><div class="player" id="player1"><span class="player-number">02</span><div><b id="player2Name">玩家 2</b><small id="group1">待分组</small></div><span id="score1" class="score">0</span></div></div>
+        <div class="table-wrap"><canvas id="game" width="1400" height="790" aria-label="台球游戏画面"></canvas></div>
+        <div class="status"><span class="status-dot"></span><span id="statusText">选择八球或九球开始</span></div>
+      </section>
+      <aside class="controls">
+        <div class="control-head"><span>击球控制</span><small>拖动球台调整瞄准</small></div>
+        <div class="aim-controls"><button id="aimLeft" type="button" aria-label="向左微调">−</button><span>精细瞄准 <b id="angleReadout">0.0°</b></span><button id="aimRight" type="button" aria-label="向右微调">＋</button></div>
+        <div class="spin-group"><div><span>击球点</span><small>拖动白点控制旋转</small></div><div class="spin-pad" id="spinPad" role="slider" aria-label="击球点"><div class="spin-cross"></div><div id="spinDot" class="spin-dot"></div></div><button id="resetSpin" type="button" class="small-button">居中</button></div>
+        <div class="power-group"><div class="control-line"><span>击球力度</span><b id="powerReadout">56%</b></div><input id="power" type="range" min="5" max="100" value="56" aria-label="击球力度"><div class="power-ends"><span>轻推</span><span>强力</span></div></div>
+        <button id="shootBtn" class="shoot" type="button">击 球 <span>↗</span></button>
+        <div class="tip" id="tipText">拖动画面瞄准；拉动球杆松手击球，或调节力度后点击击球。</div>
+        <div class="call-pocket" id="callPocketBox" hidden><strong>指定 8 号球落袋</strong><span>请点击球台上的一个袋口</span><b id="pocketName">尚未选袋</b></div>
+        <div class="spec"><span>真实比例球台</span><small>球径 2.25″ · 角袋 4.5″ · 中袋 5″</small></div>
+      </aside>
+    </main>
+    <footer>桌面：拖动瞄准 / 拉杆击球 · ← → 微调 · 空格击球 · F 全屏　/　平板：拖动瞄准 / 拉杆击球</footer>
+  </div>
+  <div class="overlay" id="menuOverlay"><div class="menu-card"><div class="eyebrow">POOL STUDIO</div><h1>一杆入袋，<br><em>轮到你了。</em></h1><p>选择人机或同屏双人，开始一局八球或九球。球体与袋口采用标准比赛尺寸比例。</p><div class="opponent-select" aria-label="对手类型"><button id="versusAI" class="selected" type="button">挑战电脑</button><button id="versusLocal" type="button">双人同屏</button></div><div class="mode-grid"><button class="mode-card" type="button" data-mode="eight"><span class="mode-ball black">8</span><span><b>八球</b><small>先清空花色，再打进黑八</small></span><span class="arrow">↗</span></button><button class="mode-card" type="button" data-mode="nine"><span class="mode-ball yellow">9</span><span><b>九球</b><small>从最小号球开始，冲击九号</small></span><span class="arrow">↗</span></button></div><small class="menu-foot">真实游戏资源仅作为玩法参考，本页面为独立网页实现。</small></div></div>
+  <div class="overlay hidden" id="rulesOverlay"><div class="menu-card rules-card"><button id="closeRules" class="close" type="button" aria-label="关闭">×</button><div class="eyebrow">HOW TO PLAY</div><h2>玩法与操作</h2><p><b>瞄准：</b>在球台上拖动，或用左右键微调。<b>力度：</b>拖动滑杆。<b>旋转：</b>移动击球点。按空格或点击“击球”。</p><p><b>八球：</b>开球后先分配全色与花色；先打自己的球，清空后指定袋口并打进 8 号球。犯规后对手自由摆放白球。</p><p><b>九球：</b>每杆先碰当前最小号球；合法击入 9 号球获胜。犯规后对手自由摆放白球。</p><p>网页规则包含首球、无碰库、白球落袋、目标球与胜负判定。开球、叫袋和推杆使用适合双人网页对战的简化流程。</p></div></div>
+  <script src="./game.js"></script>
+</body>
+</html>
+
