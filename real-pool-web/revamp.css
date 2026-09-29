@@ -24,9 +24,10 @@ body{background:#0b1114}
 .cue-track{position:relative;width:53px;height:100%;min-height:150px;border-radius:26px;border:1px solid #e8d5a774;background:linear-gradient(90deg,#091316,#223332 50%,#071114);box-shadow:inset 0 0 12px #000,0 0 0 4px #ffffff09;overflow:hidden}
 .cue-track::before{content:"";position:absolute;top:12px;bottom:24px;left:50%;width:2px;transform:translateX(-50%);background:repeating-linear-gradient(to bottom,#f5e3b09c 0 2px,transparent 2px 24px)}
 .cue-power{position:absolute;bottom:25px;left:5px;right:5px;height:var(--power-height,56%);border-radius:12px;background:linear-gradient(0deg,#af4a22b5,#e7ab4da6,#efce76);filter:blur(7px);opacity:.68;transition:height .1s}
-.cue-stick-vertical{position:absolute;left:50%;top:9%;width:15px;height:67%;transform:translateX(-50%) translateY(var(--cue-pull,0px));border-radius:6px 6px 9px 9px;background:linear-gradient(90deg,#d5ba8f,#fff4ce 34%,#b56b30 65%,#401d16);box-shadow:2px 2px 6px #000a;pointer-events:none;transition:transform .08s}
-.cue-stick-vertical::after{content:"";position:absolute;bottom:0;left:0;right:0;height:35%;border-radius:3px 3px 8px 8px;background:repeating-linear-gradient(to bottom,#45251b 0 7px,#9b683d 7px 10px,#3c271d 10px 17px);border-bottom:4px solid #29262b}
-.cue-tip{position:absolute;top:-7px;left:2px;width:11px;height:11px;border-radius:4px 4px 2px 2px;background:#68bac2;border-top:3px solid #e2eeea}.cue-inlay{position:absolute;top:31%;left:2px;width:11px;height:2px;background:#e7ba65}
+.cue-stick-vertical{position:absolute;left:50%;top:9%;width:15px;height:67%;transform:translateX(-50%) translateY(var(--cue-pull,0px));border-radius:5px 5px 9px 9px;clip-path:polygon(33% 0,67% 0,82% 58%,100% 100%,0 100%,18% 58%);background:linear-gradient(90deg,#654325 0%,#d5b382 17%,#fff1c3 39%,#c69559 62%,#7a482a 84%,#39221c 100%);box-shadow:2px 2px 6px #000a;pointer-events:none;transition:transform .08s}
+.cue-meter.dragging .cue-stick-vertical,.cue-meter.dragging .cue-power{transition:none}
+.cue-stick-vertical::after{content:"";position:absolute;bottom:0;left:0;right:0;height:35%;border-radius:3px 3px 8px 8px;background:linear-gradient(90deg,#221916,#834e30 27%,#bc8551 49%,#663920 70%,#161619),repeating-linear-gradient(to bottom,transparent 0 11px,#e0be79 11px 13px,transparent 13px 29px);background-blend-mode:normal;border-top:3px double #e0c279;border-bottom:5px solid #1f2428}
+.cue-tip{position:absolute;top:0;left:5px;width:5px;height:11px;border-radius:4px 4px 2px 2px;background:#69abb4;border-top:3px solid #e2eeea}.cue-inlay{position:absolute;top:64%;left:1px;width:13px;height:4px;background:linear-gradient(#f9dfa0,#83512c);border-top:1px solid #fff2bb}
 .cue-bottom{position:absolute;bottom:5px;left:1px;right:1px;text-align:center;color:#e8d4aa;font-size:8px;line-height:1.1;writing-mode:vertical-rl;transform:rotate(180deg);height:76px;width:10px}
 .shoot{width:100%;height:41px;flex:none;margin:8px 0 0;padding:0 5px;border-radius:7px;font-size:12px;letter-spacing:1px;box-shadow:0 3px 15px #c8a36155}.shoot span{margin:0;font-size:14px;float:none}
 .tip{display:none}.spec{display:none}.call-pocket{width:100%;margin:5px 0;padding:7px;font-size:9px}.call-pocket span{display:none}
@@ -40,4 +41,33 @@ footer{display:none}
 .boot-ball{position:absolute;display:grid;place-items:center;width:64px;height:64px;border-radius:50%;font-size:30px;font-weight:900;color:white;box-shadow:inset -13px -14px 18px #0009,0 14px 18px #0007;animation:bootFloat 1.2s ease-in-out infinite alternate}.boot-eight{left:48px;top:50px;background:radial-gradient(circle at 30% 23%,#6a747b,#111a20 59%)}.boot-nine{right:35px;top:85px;background:radial-gradient(circle at 30% 23%,#fff4bb,#e3b62b 57%);animation-delay:.35s}.boot-cue{position:absolute;left:15px;right:45px;top:154px;height:9px;border-radius:7px;background:linear-gradient(90deg,#4c291e,#b07945,#ffe5ab,#78cbd0);transform:rotate(-24deg);animation:bootStrike 1.2s ease-in-out infinite alternate}.boot-title{font-size:clamp(38px,6vw,63px);font-weight:950;letter-spacing:8px;color:#f4f6ec}.boot-title em{font-style:normal;color:#efd27d}.boot-sub{margin-top:6px;color:#a9c6b8;font-size:12px;letter-spacing:3px}.boot-track{width:min(60vw,250px);height:5px;border-radius:10px;background:#38504a;margin-top:29px;overflow:hidden}.boot-track span{display:block;width:0;height:100%;background:linear-gradient(90deg,#8bdd78,#efd27d);box-shadow:0 0 15px #d4f083}.boot-percent{font-size:12px;color:#e8d79a;margin-top:8px}.boot button{background:transparent;border:0;color:#a5c7ad;font-size:11px;margin-top:26px;letter-spacing:1px}
 @keyframes bootFloat{from{transform:translateY(-8px) rotate(-13deg)}to{transform:translateY(8px) rotate(17deg)}}@keyframes bootStrike{from{transform:translate(-10px,8px) rotate(-24deg)}to{transform:translate(10px,-6px) rotate(-24deg)}}
 @media(max-width:700px){.layout{grid-template-columns:minmax(0,1fr) 76px}.table-wrap canvas{height:min(calc(100svh - 76px),calc((100vw - 82px)*.5642857))}.topbar{padding:0 8px}.top-actions .quiet{font-size:9px;padding:6px}.controls{padding:9px 4px}.scorebar{left:5px;right:5px;top:5px;height:42px;grid-template-columns:1fr 65px 1fr}.player b{font-size:9px}.player small{font-size:8px}.score{font-size:15px}.game-label span{font-size:10px}.game-label small{font-size:8px}.status{left:5px;bottom:5px;max-width:calc(100% - 10px);font-size:9px}.control-head span{font-size:9px}.aim-controls{gap:0}.aim-controls button{width:18px;height:22px;font-size:12px}.aim-controls span{font-size:7px}.aim-controls b{font-size:8px}.spin-pad{width:42px;height:42px}.cue-track{width:39px}.cue-stick-vertical{width:11px}.cue-tip{width:9px;left:1px}.power-group .control-line span{font-size:8px}.power-group .control-line b{font-size:14px}.shoot{font-size:9px}.menu-card{max-height:94svh;overflow:auto;padding:22px}.boot-scene{transform:scale(.76)}}
-
+@media (orientation:portrait) and (max-width:700px){
+  html{width:100vw;height:100svh;overflow:hidden}
+  body{position:fixed;top:0;left:100vw;width:100svh;height:100vw;min-height:0;overflow:hidden;transform:rotate(90deg);transform-origin:top left}
+  .app{width:100%;height:100%;padding:0}
+  .topbar{height:37px;padding:0 12px}
+  .brand-mark{width:25px;height:25px}.brand strong{font-size:12px}.brand small{font-size:7px}
+  .layout{height:100%;padding-top:37px;grid-template-columns:minmax(0,1fr) 67px}
+  .table-wrap canvas{height:min(calc(100vw - 40px),calc((100svh - 74px)*.5642857))}
+  .scorebar{height:29px;top:3px}.status{min-height:23px;padding:3px 7px;font-size:8px}
+  .controls{padding:4px}.control-head{padding:0 0 3px}.aim-controls{margin:2px 0 3px}
+  .spin-group{padding:3px 0}.spin-pad{width:30px;height:30px}.small-button{display:none}
+  .power-group{padding:3px 0}.power-group .control-line b{font-size:11px}
+  .cue-meter{min-height:70px}.cue-track{min-height:70px;width:34px}.cue-stick-vertical{height:60%}
+  .shoot{height:29px;margin-top:3px}
+  .overlay,.boot{position:absolute;inset:0;width:100%;height:100%}
+  .menu-card{max-height:95%;padding:10px 16px}.menu-card h1{font-size:20px;margin:4px 0;line-height:1}.menu-card h1 br{display:none}.menu-card p{font-size:8px;margin:3px 0}.opponent-select{margin-top:4px}.opponent-select button{padding:5px}.difficulty-select{margin:4px 0 0}.menu-card .mode-grid{grid-template-columns:1fr 1fr;margin-top:5px;gap:5px}.mode-card{padding:5px 7px}.mode-ball{width:27px;height:27px;font-size:13px}.mode-card b{font-size:11px;margin:0}.mode-card small{font-size:7px}.menu-foot{font-size:7px}
+  .boot-scene{height:105px;transform:scale(.45);margin:-35px 0}.boot-title{font-size:30px}.boot-sub{font-size:8px}.boot-track{margin-top:10px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .topbar{height:37px;padding:0 9px}.brand-mark{width:25px;height:25px}.brand strong{font-size:12px}.brand small{font-size:7px}
+  .layout{padding-top:37px;grid-template-columns:minmax(0,1fr) 67px}
+  .table-wrap canvas{height:min(calc(100svh - 40px),calc((100vw - 74px)*.5642857))}
+  .scorebar{height:29px;top:3px}.status{min-height:23px;padding:3px 7px;font-size:8px}
+  .controls{padding:4px}.control-head{padding:0 0 3px}.aim-controls{margin:2px 0 3px;gap:0}.aim-controls button{width:19px;height:20px;font-size:11px}.aim-controls span{font-size:7px}
+  .spin-group{padding:3px 0}.spin-pad{width:30px;height:30px}.small-button{display:none}
+  .power-group{padding:3px 0}.power-group .control-line b{font-size:11px}
+  .cue-meter{min-height:70px}.cue-track{min-height:70px;width:34px}.cue-stick-vertical{height:60%}
+  .shoot{height:29px;margin-top:3px;font-size:9px}
+  .menu-card{max-height:95svh;overflow:auto;padding:10px 16px}.menu-card h1{font-size:20px;margin:4px 0;line-height:1}.menu-card h1 br{display:none}.menu-card p{font-size:8px;margin:3px 0}.opponent-select{margin-top:4px}.opponent-select button{padding:5px}.difficulty-select{margin:4px 0 0}.menu-card .mode-grid{grid-template-columns:1fr 1fr;margin-top:5px;gap:5px}.mode-card{padding:5px 7px}.mode-ball{width:27px;height:27px;font-size:13px}.mode-card b{font-size:11px;margin:0}.mode-card small{font-size:7px}.menu-foot{font-size:7px}
+}
