@@ -9,7 +9,7 @@
   <title>光域台球 · 八球 / 九球</title>
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./revamp.css">
-  <link rel="stylesheet" href="./future.css">
+  <link rel="stylesheet" href="./future.css?v=20260930-music">
 </head>
 <body>
   <div class="boot" id="boot" aria-label="正在启动光域球场">
@@ -20,7 +20,7 @@
   <div class="app">
     <header class="topbar">
       <div class="brand"><span class="brand-mark">●</span><div><strong>光域台球</strong><small>NEON POOL / 8·9 BALL</small></div></div>
-      <div class="top-actions"><button id="musicBtn" class="quiet music-toggle" type="button" aria-label="导入或切换背景音乐" aria-pressed="false">♫ 导入斯诺克小曲</button><input id="musicFile" type="file" accept="audio/*" hidden><button id="rulesBtn" class="quiet" type="button">规则</button><button id="newBtn" class="quiet" type="button">新开一局</button><button id="fullBtn" class="quiet" type="button" aria-label="全屏">⛶</button></div>
+      <div class="top-actions"><button id="musicBtn" class="quiet music-toggle" type="button" aria-label="切换 Lullaby 背景音乐" aria-pressed="false">♫ Lullaby 关</button><input id="musicFile" type="file" accept="audio/*" hidden><button id="rulesBtn" class="quiet" type="button">规则</button><button id="newBtn" class="quiet" type="button">新开一局</button><button id="fullBtn" class="quiet" type="button" aria-label="全屏">⛶</button></div>
     </header>
     <main class="layout">
       <section class="arena" aria-label="台球桌">
@@ -37,15 +37,21 @@
         <button id="placeCueBtn" class="place-cue" type="button" hidden>确认白球位置</button>
         <button id="shootBtn" class="shoot" type="button">击 球 <span>→</span></button>
         <div class="tip" id="tipText">拖动画面瞄准；拉动球杆松手击球，或调节力度后点击击球。</div>
-        <div class="spec"><span>球台参数</span><small>球径 57.15 mm · 六袋入口均约 96.4 mm</small></div>
+        <div class="spec"><span>球台参数</span><small>球径 57.15 mm · 六袋入口均约 98.3 mm</small></div>
       </aside>
     </main>
     <footer>桌面：拖动瞄准 / 拖动刻度尺精调 / 拉杆击球 · ← → 每次 0.01° · 空格击球 · F 全屏　/　平板：拖动瞄准 / 刻度尺精调 / 拉杆击球</footer>
   </div>
   <div class="overlay start-overlay" id="startOverlay"><div class="start-card"><div class="start-copy"><div class="start-signal"><span class="signal-dot"></span>SYSTEM READY <b>01 / 02</b></div><div class="start-wordmark">NEON <span>POOL</span><i>∞</i></div><h1 class="start-title">光域台球<span>读懂角度，驾驭轨迹。</span></h1><p>踏入未来球场。两种经典玩法、精细击球点与可预见的球路，在这里，由你掌控。</p><button id="startBtn" class="start-btn" type="button">进入球场 <span>↗</span></button><div class="start-foot">08 / 八球对决　　09 / 九球挑战</div></div><div class="start-visual" aria-hidden="true"><div class="start-table"><i class="start-ball a">8</i><i class="start-ball b">9</i><i class="start-trace"></i><i class="start-cue"></i></div><span>TRAJECTORY READY</span></div></div></div>
   <div class="overlay hidden" id="menuOverlay"><div class="menu-card"><div class="eyebrow">MATCH PROTOCOL / 02</div><h1>选择你的<br><em>对局模式。</em></h1><p>设定对手，然后走上球台。精准瞄准，掌控每一次碰撞。</p><div class="opponent-select" aria-label="对手类型"><button id="versusAI" class="selected" type="button">挑战电脑</button><button id="versusLocal" type="button">双人同屏</button></div><div class="difficulty-select" id="difficultySelect" aria-label="电脑难度"><span>电脑难度</span><button type="button" data-difficulty="easy">入门</button><button type="button" data-difficulty="normal" class="selected">标准</button><button type="button" data-difficulty="hard">大师</button></div><div class="mode-grid"><button class="mode-card" type="button" data-mode="eight"><span class="mode-ball black">8</span><span><b>八球对决</b><small>清空己方球，决胜黑八</small></span><span class="arrow">→</span></button><button class="mode-card" type="button" data-mode="nine"><span class="mode-ball yellow">9</span><span><b>九球挑战</b><small>依次碰球，冲击九号</small></span><span class="arrow">→</span></button></div><small class="menu-foot">轨迹预测只显示首碰与碰库前路径</small></div></div>
-  <div class="overlay hidden" id="rulesOverlay"><div class="menu-card rules-card"><button id="closeRules" class="close" type="button" aria-label="关闭">×</button><div class="eyebrow">HOW TO PLAY</div><h2>玩法与操作</h2><p><b>瞄准：</b>在球台上拖动调整方向，在右侧横向拖动刻度尺作精细调整；方向键每次调整 0.01°。辅助线连接母球与首碰球，并显示两球碰后的分离实线；碰库前的预测结束后不延伸到袋口。红线表示首碰球不合法。<b>力度：</b>向下拉右侧球杆，松手击球。<b>旋转：</b>移动击球点；每次出杆后自动回到中杆。也可按空格或点击“击球”。</p><p><b>自由球：</b>点按或拖动台面摆放白球，点击“确认白球位置”；击球前可以点击“重新摆放白球”再次调整。</p><p><b>八球：</b>开球后先分配全色与花色；先打自己的球，清空后合法打进 8 号球即可获胜，无需指定袋口。犯规后对手自由摆放白球。</p><p><b>九球：</b>每杆先碰当前最小号球；合法打进 9 号球获胜。</p><p>顶部“导入斯诺克小曲”可选择本机音频并循环播放，文件只在当前浏览器里使用；球碰球、碰库与落袋音效会随击球播放。网页包含首球、无碰库、白球落袋及胜负判定。开球流程为适合网页对战的简化规则。</p></div></div>
-  <script src="./game.js?v=20260930-pocket-jaws"></script>
-  <script src="./audio.js"></script>
+  <div class="overlay hidden" id="rulesOverlay"><div class="menu-card rules-card"><button id="closeRules" class="close" type="button" aria-label="关闭">×</button><div class="eyebrow">HOW TO PLAY</div><h2>玩法与操作</h2><p><b>瞄准：</b>在球台上拖动调整方向，在右侧横向拖动刻度尺作精细调整；方向键每次调整 0.01°。辅助线连接母球与首碰球，并显示两球碰后的分离实线；碰库前的预测结束后不延伸到袋口。红线表示首碰球不合法。<b>力度：</b>向下拉右侧球杆，松手击球。<b>旋转：</b>移动击球点；每次出杆后自动回到中杆。也可按空格或点击“击球”。</p><p><b>自由球：</b>点按或拖动台面摆放白球，点击“确认白球位置”；击球前可以点击“重新摆放白球”再次调整。</p><p><b>八球：</b>开球后先分配全色与花色；先打自己的球，清空后合法打进 8 号球即可获胜，无需指定袋口。犯规后对手自由摆放白球。</p><p><b>九球：</b>每杆先碰当前最小号球；合法打进 9 号球获胜。</p><p>进入球场后尝试播放 Enzalla《Lullaby》，顶部音乐键可开关。官方播放器需要联网；浏览器限制自动播放时，点击播放器的播放键即可。也可导入本机音频并循环播放，文件只在当前浏览器里使用；球碰球、碰库与落袋音效会随击球播放。网页包含首球、无碰库、白球落袋及胜负判定。开球流程为适合网页对战的简化规则。</p></div></div>
+  <aside id="musicPanel" class="music-panel" hidden aria-label="背景音乐播放器">
+    <div class="music-panel-head"><strong>Lullaby <small>ENZALLA</small></strong><button id="closeMusic" type="button" aria-label="收起音乐播放器">×</button></div>
+    <p id="musicStatus" role="status">Enzalla · Lullaby · 官方在线播放</p>
+    <iframe id="musicFrame" title="Enzalla · Lullaby 官方播放器" width="100%" height="166" scrolling="no" frameborder="0" allow="autoplay"></iframe>
+    <div class="music-panel-foot"><a href="https://soundcloud.com/enzalla/lullaby" target="_blank" rel="noopener noreferrer">艺人官方曲目 ↗</a><button id="localMusicBtn" type="button">本机音频</button></div>
+  </aside>
+  <script src="./game.js?v=20260930-defence-music"></script>
+  <script src="./audio.js?v=20260930-lullaby"></script>
 </body>
 </html>

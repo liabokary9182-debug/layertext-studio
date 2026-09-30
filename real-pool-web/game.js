@@ -390,8 +390,11 @@
     updateUI();render();
   }
   function lineClear(x1,y1,x2,y2,ignored) {
+    return lineClearIn(live(),x1,y1,x2,y2,ignored);
+  }
+  function lineClearIn(balls,x1,y1,x2,y2,ignored) {
     const dx=x2-x1,dy=y2-y1,len2=dx*dx+dy*dy;
-    return live().every(b=>{
+    return balls.every(b=>{
       if(ignored.includes(b.n))return true;
       const t=clamp(((b.x-x1)*dx+(b.y-y1)*dy)/Math.max(len2,.01),0,1);
       return Math.hypot(b.x-x1-t*dx,b.y-y1-t*dy)>2*R+.25;
@@ -454,6 +457,39 @@
     const railDistance=Math.min(c.x,W-c.x,c.y,H-c.y);
     return nextDistance*.22+(railDistance<3?8:0);
   }
+  function safetyPosition(result){
+    const balls=result.balls.filter(b=>!b.pocketed),c=balls.find(b=>b.n===0),objects=balls.filter(b=>b.n!==0);
+    const opponentGroup=state.groups[1-state.turn];
+    let targets=state.mode==='nine'?objects.filter(b=>b.n===Math.min(...objects.map(q=>q.n))):objects.filter(b=>opponentGroup?group(b.n)===opponentGroup:b.n!==8);
+    if(!targets.length&&state.mode==='eight')targets=objects.filter(b=>b.n===8);
+    let threat=0,visible=0;
+    for(const target of targets){
+      if(lineClearIn(balls,c.x,c.y,target.x,target.y,[0,target.n]))visible++;
+      for(let pocket=0;pocket<6;pocket++){
+        const p=pocketAim(pocket),pd=Math.hypot(p.x-target.x,p.y-target.y);
+        if(pd<.1||!lineClearIn(balls,target.x,target.y,p.x,p.y,[0,target.n]))continue;
+        const nx=(p.x-target.x)/pd,ny=(p.y-target.y)/pd,gx=target.x-2*R*nx,gy=target.y-2*R*ny;
+        const cd=Math.hypot(gx-c.x,gy-c.y),cos=((gx-c.x)*nx+(gy-c.y)*ny)/Math.max(cd,.01);
+        if(gx<R||gx>W-R||gy<R||gy>H-R||cos<.28||!lineClearIn(balls,c.x,c.y,gx,gy,[0,target.n]))continue;
+        threat=Math.max(threat,cos*Math.exp(-pd/65-cd/100));
+      }
+    }
+    const distance=targets.length?Math.min(...targets.map(b=>Math.hypot(c.x-b.x,c.y-b.y))):W;
+    return {score:threat*180+visible/Math.max(1,targets.length)*35-distance*.35,blocked:visible===0,threat};
+  }
+  function escapeRoutes(c,target){
+    const walls=[{axis:'x',value:R},{axis:'x',value:W-R},{axis:'y',value:R},{axis:'y',value:H-R}];
+    const reflect=(p,w)=>({...p,[w.axis]:2*w.value-p[w.axis]});
+    const routes=[{...target,banks:0}];
+    for(const wall of walls)routes.push({...reflect(target,wall),banks:1});
+    // Unfold two successive cushions. The live simulator verifies the actual
+    // rail order, cut-outs and blockers; mirrored geometry only proposes aims.
+    for(const first of walls)for(const second of walls){
+      if(first===second)continue;
+      routes.push({...reflect(reflect(target,second),first),banks:2});
+    }
+    return routes.map(p=>({...p,distance:Math.hypot(p.x-c.x,p.y-c.y)})).sort((a,b)=>a.distance-b.distance);
+  }
   function placeAICue(targets){
     // Ball in hand: align behind an unobstructed pot instead of placing next
     // to the first numbered ball regardless of its path to the pocket.
@@ -504,20 +540,25 @@
     }
     const c=cue(),defence=[];
     for(const target of targets){
-      const direct=lineClear(c.x,c.y,target.x,target.y,[0,target.n]);
-      const routes=direct?[{x:target.x,y:target.y,bank:false}]:[
-        {x:2*R-target.x,y:target.y,bank:true},{x:2*(W-R)-target.x,y:target.y,bank:true},
-        {x:target.x,y:2*R-target.y,bank:true},{x:target.x,y:2*(H-R)-target.y,bank:true}];
-      for(const route of routes)for(const power of [28,42,58]){
-        if(!isCurrent())return null;
-        const plan={target:target.n,pocket:null,aim:Math.atan2(route.y-c.y,route.x-c.x),power,spinY:0,type:'safety'},result=simulateAIShot(plan);
-        if(result.safe)defence.push({...plan,score:power+(route.bank?20:0),description:`先碰 ${target.n} 号 · ${route.bank?'借库解球':'防守控球'}，避开被挡住的进攻线`});
+      const routes=escapeRoutes(c,target);
+      for(const route of routes){
+        const baseAim=Math.atan2(route.y-c.y,route.x-c.x);
+        const contactPower=powerForSpeed(Math.sqrt(2*ROLL_DECEL*(route.distance+9))/.72*(1+route.banks*.2));
+        for(const offset of [0,-1.35*R,1.35*R])for(const factor of [.9,1.2,1.5]){
+          if(!isCurrent())return null;
+          const plan={target:target.n,pocket:null,aim:baseAim+Math.atan2(offset,route.distance),power:clamp(contactPower*factor,15,85),spinY:0,type:'safety',banks:route.banks};
+          const result=simulateAIShot(plan);
+          if(result.safe){
+            const position=safetyPosition(result);
+            defence.push({...plan,score:position.score+plan.power*.035+route.banks*.5,description:`先碰 ${target.n} 号 · ${route.banks?`${route.banks} 库解球`:'薄球防守'} · ${position.blocked?'藏白球，挡住对手首碰线':position.threat<.15?'拉开球距，压缩进攻空间':'避开白球落袋，控制落点'}`});
+          }
+        }
+        await new Promise(resolve=>setTimeout(resolve,0));
       }
-      await new Promise(resolve=>setTimeout(resolve,0));
     }
     defence.sort((a,b)=>a.score-b.score);
     if(defence.length)return defence[0];
-    // A completely snookered layout may have no safe single-cushion route.
+    // A completely snookered layout may have no safe two-cushion route.
     // Report that limitation instead of presenting a blocked shot as a pot.
     const t=targets[0];return {target:t.n,pocket:null,aim:Math.atan2(t.y-c.y,t.x-c.x),power:42,spinY:0,type:'escape',description:`尝试解球 · 先碰 ${t.n} 号，当前没有安全进攻线`};
   }
@@ -558,7 +599,7 @@
     ctx.strokeStyle='#6c79713d';ctx.lineWidth=2;roundedRect(l-59,t-59,W*SCALE+118,H*SCALE+118,32);ctx.stroke();
     // Cloth continues under the open pocket approaches, including the small
     // corner shelves exposed between the rubber and the rail cap.
-    fillRect(l-39,t-39,W*SCALE+78,H*SCALE+78,19,'#176f97');
+    fillRect(l-39,t-39,W*SCALE+78,H*SCALE+78,19,'#10628e');
     // Dark, flat rail caps and plain pocket wells follow the top-down reference.
     for(const y of [t-58,b+35]){
       const metal=ctx.createLinearGradient(0,y,0,y+23);metal.addColorStop(0,'#515a59');metal.addColorStop(.16,'#303839');metal.addColorStop(.7,'#171f20');metal.addColorStop(1,'#0b1213');
@@ -583,12 +624,12 @@
       ctx.beginPath();ctx.moveTo(x1+7,y);ctx.quadraticCurveTo(x1-4,y,x1-5,y-sign*8);
       ctx.lineTo(x1-11,outer);ctx.lineTo(x2+11,outer);ctx.lineTo(x2+5,y-sign*8);
       ctx.quadraticCurveTo(x2+4,y,x2-7,y);ctx.closePath();
-      const g=ctx.createLinearGradient(0,outer,0,y);g.addColorStop(0,'#082943');g.addColorStop(.42,'#0c4d75');g.addColorStop(.82,'#1675a4');g.addColorStop(1,'#2698c2');ctx.fillStyle=g;ctx.fill();
-      ctx.strokeStyle='#b5ebff35';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x1+8,y-1);ctx.lineTo(x2-8,y-1);ctx.stroke();
+      const g=ctx.createLinearGradient(0,outer,0,y);g.addColorStop(0,'#082943');g.addColorStop(.42,'#0c4d75');g.addColorStop(.82,'#10577e');g.addColorStop(1,'#12628b');ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle='#b5ebff12';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x1+8,y-1);ctx.lineTo(x2-8,y-1);ctx.stroke();
     };
     for(const [a,z] of [[CUT,SIDE_L],[SIDE_R,W-CUT]]){horizontal(l+a*SCALE,l+z*SCALE,t,1);horizontal(l+a*SCALE,l+z*SCALE,b,-1);}
     // Side rails use the same tapered rubber nose as the long rails.
-    for(const x of [l,r]){const sign=x===l?-1:1,upper=t+CUT*SCALE,lower=b-CUT*SCALE;ctx.beginPath();ctx.moveTo(x,upper+7);ctx.quadraticCurveTo(x,upper-4,x+sign*8,upper-5);ctx.lineTo(x+sign*29,upper-11);ctx.lineTo(x+sign*29,lower+11);ctx.lineTo(x+sign*8,lower+5);ctx.quadraticCurveTo(x,lower+4,x,lower-7);ctx.closePath();const g=ctx.createLinearGradient(x,0,x+sign*29,0);g.addColorStop(0,'#2698c2');g.addColorStop(.25,'#1675a4');g.addColorStop(.6,'#0c4d75');g.addColorStop(1,'#082943');ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#b5ebff35';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x+sign,upper+8);ctx.lineTo(x+sign,lower-8);ctx.stroke();}
+    for(const x of [l,r]){const sign=x===l?-1:1,upper=t+CUT*SCALE,lower=b-CUT*SCALE;ctx.beginPath();ctx.moveTo(x,upper+7);ctx.quadraticCurveTo(x,upper-4,x+sign*8,upper-5);ctx.lineTo(x+sign*29,upper-11);ctx.lineTo(x+sign*29,lower+11);ctx.lineTo(x+sign*8,lower+5);ctx.quadraticCurveTo(x,lower+4,x,lower-7);ctx.closePath();const g=ctx.createLinearGradient(x,0,x+sign*29,0);g.addColorStop(0,'#12628b');g.addColorStop(.25,'#10577e');g.addColorStop(.6,'#0c4d75');g.addColorStop(1,'#082943');ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#b5ebff12';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x+sign,upper+8);ctx.lineTo(x+sign,lower-8);ctx.stroke();}
     // The visible mouth opens into a straight channel with rubber on both
     // sides. The same mouth width and depth control the physical colliders.
     for(const p of POCKETS){
@@ -601,7 +642,7 @@
       ctx.lineTo(half,-1);ctx.lineTo(half+2,-7);ctx.closePath();
       // The approach and straight shelf are blue cloth, continuous with the
       // playing surface. Only the recessed drop at the back is a dark hole.
-      const well=ctx.createLinearGradient(0,-8,0,depth+15);well.addColorStop(0,'#2088b5');well.addColorStop(.5,'#187ca8');well.addColorStop(.77,'#12668f');well.addColorStop(1,'#09364e');ctx.fillStyle=well;ctx.fill();
+      ctx.fillStyle='#10628e';ctx.fill();
       // Solid, cloth-wrapped rubber cheeks blend into the rail noses. Each
       // cheek has a rounded lip, a broad top and a shaded vertical face; it
       // is a closed volume rather than two strokes painted onto the shelf.
@@ -615,8 +656,8 @@
         // pill. The middle-pocket lip never protrudes past the rail nose.
         ctx.lineTo(half+outer,back);ctx.lineTo(half+outer+3,lip);ctx.closePath();
         const rubber=ctx.createLinearGradient(0,lip,0,back);
-        rubber.addColorStop(0,'#248eb8');rubber.addColorStop(.16,'#1c82ad');
-        rubber.addColorStop(.5,'#106287');rubber.addColorStop(1,'#083950');
+        rubber.addColorStop(0,'#12628b');rubber.addColorStop(.16,'#10577e');
+        rubber.addColorStop(.5,'#0c4d75');rubber.addColorStop(1,'#082943');
         ctx.fillStyle=rubber;ctx.fill();
         // A narrow bevel is a filled surface with a soft gradient, never an
         // outline around the inner channel.
@@ -626,7 +667,7 @@
         ctx.lineTo(half+3,depth+4);ctx.quadraticCurveTo(half+1,depth+2,half+1,depth);
         ctx.lineTo(half+2,6);ctx.quadraticCurveTo(half+2,lip+4,half+8,lip+2);ctx.closePath();
         const bevel=ctx.createLinearGradient(half-2,0,half+8,0);
-        bevel.addColorStop(0,'#7ed8ef24');bevel.addColorStop(.45,'#48b8d635');bevel.addColorStop(1,'#2698c200');
+        bevel.addColorStop(0,'#08294310');bevel.addColorStop(.45,'#08294324');bevel.addColorStop(1,'#08294300');
         ctx.fillStyle=bevel;ctx.fill();
         ctx.restore();
       }
