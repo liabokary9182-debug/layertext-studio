@@ -12,7 +12,7 @@
   const W = 100, H = 50, R = 1.125, DISPLAY_R = R * 1.035;
   // The reference is an 82 mm corner mouth. Keep the current playable opening
   // and enlarge all six mouths by the same small amount for this preview.
-  const CORNER_MOUTH = 82 * 1.05 * 1.05 * .98 * 1.02 * 1.025 * 1.02 * 1.02 / 25.4, SIDE_MOUTH = CORNER_MOUTH;
+  const CORNER_MOUTH = 82 * 1.05 * 1.05 * .98 * 1.02 * 1.025 * 1.02 * 1.02 * 1.02 / 25.4, SIDE_MOUTH = CORNER_MOUTH;
   const CUT = CORNER_MOUTH / Math.SQRT2, SIDE_L = W / 2 - SIDE_MOUTH / 2, SIDE_R = W / 2 + SIDE_MOUTH / 2;
   const THROAT_DEPTH = 1.5, THROAT_HALF = CORNER_MOUTH/2-R*.35;
   const SCALE = 11.2, OX = 140, OY = 115;
@@ -26,6 +26,9 @@
     {x:0,y:50,name:'左下角袋'}, {x:50,y:50,name:'下中袋'}, {x:100,y:50,name:'右下角袋'}
   ];
   const state = {mode:null,opponent:'ai',aiDifficulty:'normal',aiTicket:0,aiThinking:false,phase:'menu',balls:[],pocketAnimations:[],turn:0,groups:[null,null],scores:[0,0],breaking:true,rackSeed:0,ballInHand:false,repositionAllowed:false,aim:-0.02,power:56,spinX:0,spinY:0,shot:null,stopTime:0,shotTime:0,status:'启动球场，选择对局',winner:null,drag:null};
+  // Trial shots use the live collision/cloth functions, with isolated events.
+  // Never play sounds, emit pocket flashes, or edit the real shot during trials.
+  let physicsContext=null;
   const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
   const randomSeed = () => (window.crypto?.getRandomValues?.(new Uint32Array(1))[0] ?? (Math.random()*0x100000000)) >>> 0;
   function seededRandom(seed){let s=seed>>>0;return () => {s=(s+0x6D2B79F5)>>>0;let t=Math.imul(s^(s>>>15),1|s);t^=t+Math.imul(t^(t>>>7),61|t);return ((t^(t>>>14))>>>0)/4294967296;};}
@@ -45,12 +48,12 @@
   const say = text => {state.status=text; $('statusText').textContent=text;};
   function syncPowerUI() {
     $('power').value=String(state.power);
-    $('powerReadout').textContent=state.power+'%';
+    $('powerReadout').textContent=Number(state.power.toFixed(1))+'%';
     $('cueMeter').setAttribute('aria-valuenow',String(state.power));
     $('cueMeter').style.setProperty('--power-height',`${Math.round(state.power*.65)}%`);
   }
   function init(mode) {
-    state.aiTicket++;state.aiThinking=false;
+    state.aiTicket++;state.aiThinking=false;state.aiPlan=null;
     state.mode=mode; state.phase='aim'; state.turn=0; state.groups=[null,null]; state.scores=[0,0];
     state.breaking=true; state.ballInHand=false; state.repositionAllowed=false; state.aim=0; state.power=56; state.spinX=0; state.spinY=0;
     state.shot=null; state.stopTime=0; state.shotTime=0; state.winner=null;
@@ -116,27 +119,36 @@
     state.spinX=0;state.spinY=0;moveSpinDot();
     state.phase='moving';state.repositionAllowed=false;state.stopTime=0;state.shotTime=0;
     window.PoolAudio?.play('cue',Math.hypot(c.vx,c.vy));
-    say(`${actor(state.turn)}击球中…`);updateUI();render();
+    say(byAI&&state.aiPlan?`电脑：${state.aiPlan.description}`:`${actor(state.turn)}击球中…`);updateUI();render();
+  }
+  function cueLaunchSpeed(power,breaking=false,force=1){
+    // Extra acceleration is confined to the upper end of the pullback.
+    // Low-power touch shots keep their familiar response; full power is +40%.
+    const boost=1+.4*(Math.max(0,(power-60)/40))**2;
+    return (17+power*.78)*boost*(breaking?2.5+1.65*power/100:1)*force;
   }
   function launchCue(c,breakForce=1){
-    const breakMultiplier=state.breaking?2.5+1.65*state.power/100:1;
-    const speed=(17+state.power*.78)*breakMultiplier*breakForce,shotAngle=state.aim-state.spinX*.018;
-    const spinGain=1+.55*(state.power/100)**2;
+    applyCueImpulse(c,state.power,state.aim,state.spinX,state.spinY,state.breaking,breakForce);
+  }
+  function applyCueImpulse(c,power,aim,spinX=0,spinY=0,breaking=false,force=1){
+    const speed=cueLaunchSpeed(power,breaking,force),shotAngle=aim-spinX*.018;
+    const spinGain=1+.55*(power/100)**2;
     c.vx=Math.cos(shotAngle)*speed;c.vy=Math.sin(shotAngle)*speed;
-    c.rollVx=Math.cos(shotAngle)*speed*state.spinY*1.05*spinGain;
-    c.rollVy=Math.sin(shotAngle)*speed*state.spinY*1.05*spinGain;
-    c.spin=state.spinX*speed*.42*spinGain;c.english=Math.abs(state.spinX)>.03;c.rollHeading=shotAngle;
+    c.rollVx=Math.cos(shotAngle)*speed*spinY*1.05*spinGain;
+    c.rollVy=Math.sin(shotAngle)*speed*spinY*1.05*spinGain;
+    c.spin=spinX*speed*.42*spinGain;c.english=Math.abs(spinX)>.03;c.rollHeading=shotAngle;
   }
   function markPocket(b,index) {
     if(b.pocketed)return;
-    if(state.phase==='moving'&&state.balls.includes(b)){
+    if(!physicsContext&&state.phase==='moving'&&state.balls.includes(b)){
       const impact=Math.hypot(b.vx,b.vy);
       const pocket=POCKETS[index];
       state.pocketAnimations.push({visual:{...b,q:[...b.q]},entryX:b.x,entryY:b.y,effectX:pocket.x,effectY:pocket.y,pocket:index,age:0,impact});
       window.PoolAudio?.play('pocket',impact);
     }
     b.pocketed=true;b.vx=0;b.vy=0;b.rollVx=0;b.rollVy=0;b.spin=0;
-    if(state.shot)state.shot.pocketed.push({n:b.n,pocket:index});
+    const events=physicsContext||state.shot;
+    if(events)events.pocketed.push({n:b.n,pocket:index});
   }
   function pocketCheck(b) {
     // A ball falls only after travelling through the straight inner channel.
@@ -192,9 +204,10 @@
       // The cushion removes most forward roll. The brief skid afterward
       // dissipates more speed without bending a no-English bank's path.
       b.rollVx=b.vx*.25;b.rollVy=b.vy*.25;
-      if(state.phase==='moving')window.PoolAudio?.play('rail',approach);
+      if(!physicsContext&&state.phase==='moving')window.PoolAudio?.play('rail',approach);
       b.hitRail=true;
-      if(state.shot){if(state.shot.firstHit!==null)state.shot.railAfterHit=true;if(b.n!==0)state.shot.breakRails.add(b.n);}
+      const events=physicsContext||state.shot;
+      if(events){if(events.firstHit!==null)events.railAfterHit=true;if(b.n!==0)events.breakRails.add(b.n);}
     }
   }
   function collideJaw(b,x,y,side=false) {
@@ -254,10 +267,11 @@
     a.vx-=tangentImpulse*tx;a.vy-=tangentImpulse*ty;
     b.vx+=tangentImpulse*tx;b.vy+=tangentImpulse*ty;
     a.spin-=2.5*tangentImpulse;b.spin-=2.5*tangentImpulse;
-    if(state.shot && state.shot.firstHit===null && (a.n===0||b.n===0)){
-      state.shot.firstHit=a.n===0?b.n:a.n;
+    const events=physicsContext||state.shot;
+    if(events && events.firstHit===null && (a.n===0||b.n===0)){
+      events.firstHit=a.n===0?b.n:a.n;
     }
-    if(state.phase==='moving')window.PoolAudio?.play('ball',-rel);
+    if(!physicsContext&&state.phase==='moving')window.PoolAudio?.play('ball',-rel);
     return true;
   }
   function clothStep(b,dt) {
@@ -383,46 +397,142 @@
       return Math.hypot(b.x-x1-t*dx,b.y-y1-t*dy)>2*R+.25;
     });
   }
-  function queueAI() {
-    if(state.opponent!=='ai'||state.turn!==1||state.phase!=='aim')return;
-    const ticket=++state.aiTicket;state.aiThinking=true;say('电脑正在判断球路…');render();
-    setTimeout(()=>{
-      if(ticket!==state.aiTicket||state.opponent!=='ai'||state.turn!==1||state.phase!=='aim')return;
-      state.aiThinking=false;
-      const targets=state.mode==='nine'?activeBalls().filter(b=>b.n===lowestNine()):activeBalls().filter(b=>currentGroup()? (allGroupGone(currentGroup())?b.n===8:group(b.n)===currentGroup()):b.n!==8);
-      if(!targets.length)return;
-      if(state.ballInHand){
-        const target=targets[0];let placed=false;
-        for(let radius=11;radius<35&&!placed;radius+=3)for(const dy of [0,-5,5,-10,10]){
-          const x=clamp(target.x-radius,R,W-R),y=clamp(target.y+dy,R,H-R);
-          if(validCuePosition(x,y)){placeCue(x,y,true);placed=true;break;}
+  function aiTargets(){
+    return state.mode==='nine'?activeBalls().filter(b=>b.n===lowestNine()):activeBalls().filter(b=>currentGroup()?(allGroupGone(currentGroup())?b.n===8:group(b.n)===currentGroup()):b.n!==8);
+  }
+  function pocketAim(index,lateral=0){
+    const p=POCKETS[index],side=p.x===W/2;
+    const dx=side?0:(p.x===0?-Math.SQRT1_2:Math.SQRT1_2),dy=side?(p.y===0?-1:1):(p.y===0?-Math.SQRT1_2:Math.SQRT1_2);
+    return {x:(side?p.x:p.x===0?CUT/2:W-CUT/2)+dx*.3-dy*lateral,y:(side?p.y:p.y===0?CUT/2:H-CUT/2)+dy*.3+dx*lateral};
+  }
+  function aiOptions(targets){
+    const c=cue(),options=[];
+    for(const target of targets)for(let pocket=0;pocket<6;pocket++)for(const lateral of [0,-.5,.5]){
+      const p=pocketAim(pocket,lateral),pd=Math.hypot(p.x-target.x,p.y-target.y);
+      if(pd<.1||!lineClear(target.x,target.y,p.x,p.y,[0,target.n]))continue;
+      const nx=(p.x-target.x)/pd,ny=(p.y-target.y)/pd,gx=target.x-nx*2*R,gy=target.y-ny*2*R;
+      const cd=Math.hypot(gx-c.x,gy-c.y),cos=((gx-c.x)*nx+(gy-c.y)*ny)/Math.max(cd,.01);
+      if(gx<R||gx>W-R||gy<R||gy>H-R||cos<.28||!lineClear(c.x,c.y,gx,gy,[0,target.n]))continue;
+      // Wide cuts and long object-ball travel are less forgiving than cue travel.
+      options.push({target:target.n,pocket,aim:Math.atan2(gy-c.y,gx-c.x),cd,pd,cos,score:pd*.8+cd*.35+(1-cos)*70+Math.abs(lateral)*2});
+    }
+    return options.sort((a,b)=>a.score-b.score);
+  }
+  function simulateAIShot(plan){
+    const balls=live().map(b=>({...b,q:[...b.q]})),c=balls.find(b=>b.n===0);
+    const events={firstHit:null,pocketed:[],railAfterHit:false,breakRails:new Set()};
+    const previous=physicsContext;physicsContext=events;
+    try{
+      applyCueImpulse(c,plan.power,plan.aim,0,plan.spinY||0,false);
+      for(let frame=0;frame<3600;frame++){
+        const remaining=balls.filter(b=>!b.pocketed);
+        const speed=Math.max(0,...remaining.map(b=>Math.hypot(b.vx,b.vy))),subdivisions=clamp(Math.ceil(speed*STEP/(R*.45)),1,8),dt=STEP/subdivisions;
+        for(let sub=0;sub<subdivisions;sub++){
+          for(const b of remaining){if(b.pocketed)continue;clothStep(b,dt);b.x+=b.vx*dt;b.y+=b.vy*dt;rails(b);pocketCheck(b);}
+          for(let i=0;i<remaining.length;i++)for(let j=i+1;j<remaining.length;j++){
+            const a=remaining[i],b=remaining[j];
+            if(!a.pocketed&&!b.pocketed&&(a.vx||a.vy||b.vx||b.vy))ballsCollide(a,b);
+          }
         }
-        if(!placed)placeCue(25,25,true);
+        if(remaining.every(b=>b.pocketed||Math.hypot(b.vx,b.vy)<.12&&Math.hypot(b.rollVx,b.rollVy)<.12&&Math.abs(b.spin)<.12))break;
       }
-      const c=cue(),options=[];let best=null;
-      for(const target of targets)for(let i=0;i<POCKETS.length;i++){
-        const p=POCKETS[i],pd=Math.hypot(p.x-target.x,p.y-target.y);
-        if(pd<.1)continue;
-        const gx=target.x-(p.x-target.x)/pd*2*R,gy=target.y-(p.y-target.y)/pd*2*R;
-        if(gx<R||gx>W-R||gy<R||gy>H-R)continue;
-        const cd=Math.hypot(gx-c.x,gy-c.y);
-        const cueClear=lineClear(c.x,c.y,gx,gy,[0,target.n]);
-        const objectClear=lineClear(target.x,target.y,p.x,p.y,[0,target.n]);
-        const cutAngle=Math.abs(Math.atan2(p.y-target.y,p.x-target.x)-Math.atan2(target.y-c.y,target.x-c.x));
-        const score=cd+pd*.55+(cueClear?0:140)+(objectClear?0:110)+Math.abs(Math.sin(cutAngle))*12;
-        options.push({target,pocket:i,x:gx,y:gy,score,cd,pd});
+    }finally{physicsContext=previous;}
+    const legal=aiTargets().some(b=>b.n===events.firstHit),scratch=events.pocketed.some(b=>b.n===0);
+    const earlyEight=state.mode==='eight'&&events.pocketed.some(b=>b.n===8)&&!aiTargets().some(b=>b.n===8);
+    return {...events,balls,safe:legal&&!scratch&&!earlyEight&&(events.railAfterHit||events.pocketed.length>0),potted:events.pocketed.some(b=>b.n===plan.target&&b.pocket===plan.pocket)};
+  }
+  function powerForSpeed(speed){
+    let low=0,high=100;
+    for(let i=0;i<14;i++){const mid=(low+high)/2;if(cueLaunchSpeed(mid)<speed)low=mid;else high=mid;}
+    return clamp((low+high)/2,8,100);
+  }
+  function aiPositionScore(result){
+    const c=result.balls.find(b=>b.n===0);
+    const remaining=result.balls.filter(b=>!b.pocketed&&b.n!==0);
+    const own=state.mode==='nine'?remaining.filter(b=>b.n===Math.min(...remaining.map(q=>q.n))):remaining.filter(b=>currentGroup()?group(b.n)===currentGroup():b.n!==8);
+    const nextDistance=own.length?Math.min(...own.map(b=>Math.hypot(b.x-c.x,b.y-c.y))):0;
+    const railDistance=Math.min(c.x,W-c.x,c.y,H-c.y);
+    return nextDistance*.22+(railDistance<3?8:0);
+  }
+  function placeAICue(targets){
+    // Ball in hand: align behind an unobstructed pot instead of placing next
+    // to the first numbered ball regardless of its path to the pocket.
+    const options=[];
+    for(const target of targets)for(let pocket=0;pocket<6;pocket++){
+      const p=pocketAim(pocket),pd=Math.hypot(p.x-target.x,p.y-target.y);
+      if(pd<.1||!lineClear(target.x,target.y,p.x,p.y,[0,target.n]))continue;
+      for(const distance of [12,18,8]){
+        const x=target.x-(p.x-target.x)/pd*distance,y=target.y-(p.y-target.y)/pd*distance;
+        if(validCuePosition(x,y)&&lineClear(x,y,target.x,target.y,[0,target.n]))options.push({x,y,score:pd+Math.abs(distance-12)});
       }
-      options.sort((a,b)=>a.score-b.score);
-      const pool=state.aiDifficulty==='easy'?options.slice(0,Math.min(5,options.length)):state.aiDifficulty==='normal'?options.slice(0,Math.min(2,options.length)):options.slice(0,1);
-      best=pool[Math.floor(Math.random()*pool.length)]||null;
-      if(!best){const t=targets[0];best={target:t,pocket:0,x:t.x,y:t.y,cd:Math.hypot(t.x-c.x,t.y-c.y),pd:35};}
-      const error=state.aiDifficulty==='easy'?.038:state.aiDifficulty==='normal'?.013:.003;
-      state.aim=Math.atan2(best.y-c.y,best.x-c.x)+(Math.random()*2-1)*error;
-      state.spinX=0;state.spinY=0;moveSpinDot();
-      const powerError=state.aiDifficulty==='easy'?12:state.aiDifficulty==='normal'?5:2;
-      state.power=clamp(Math.round(48+best.cd*.72+best.pd*.28+(Math.random()*2-1)*powerError),38,100);
-      syncPowerUI();
-      say(`电脑瞄准 ${best.target.n} 号球。`);updateUI();render();fire(true);
+    }
+    options.sort((a,b)=>a.score-b.score);
+    if(options.length){cue().x=options[0].x;cue().y=options[0].y;return;}
+    for(let y=R+2;y<H-R;y+=4)for(let x=R+2;x<W-R;x+=4)if(validCuePosition(x,y)){cue().x=x;cue().y=y;return;}
+  }
+  async function chooseAIPlan(isCurrent=()=>true){
+    const targets=aiTargets();if(!targets.length)return null;
+    if(state.ballInHand)placeAICue(targets);
+    const successful=[];
+    for(const option of aiOptions(targets).slice(0,12)){
+      if(!isCurrent())return null;
+      // Sliding balls reach natural roll at 5/7 initial speed. Estimate the
+      // launch, then validate against the exact live cloth and jaw collisions.
+      const contact=Math.sqrt(2*ROLL_DECEL*(option.pd+7))/.72/(.97*option.cos);
+      const desired=Math.sqrt(contact*contact+2*ROLL_DECEL*option.cd)/.72;
+      // Ball-to-ball friction throws a cut slightly off the contact normal.
+      // Compensate in cue angle according to cut and cue distance, then test
+      // both signs rather than applying one fixed error to every shot.
+      const correction=.055*2*R/(Math.max(option.cd,4)*option.cos);
+      for(const factor of [.88,1,1.15])for(const offset of [0,-correction*.5,correction*.5,-correction,correction]){
+        const plan={...option,aim:option.aim+offset,power:powerForSpeed(desired*factor),spinY:0,type:'attack'};
+        let result=simulateAIShot(plan);
+        if(result.potted&&!result.safe){plan.spinY=-.65;result=simulateAIShot(plan);}
+        if(result.safe&&result.potted)successful.push({...plan,score:option.score+aiPositionScore(result)+plan.power*.08+(plan.spinY?2:0)});
+      }
+      // Yield between targets so the UI and input remain responsive on tablets.
+      await new Promise(resolve=>setTimeout(resolve,0));
+    }
+    successful.sort((a,b)=>a.score-b.score);
+    if(successful.length){
+      // Difficulty changes tactical choice and acceptable margin, never adds
+      // a large random aiming error after a physically validated shot.
+      const pool=successful.filter(p=>p.score<=successful[0].score+(state.aiDifficulty==='easy'?20:state.aiDifficulty==='normal'?5:0));
+      const best=pool[Math.floor(Math.random()*pool.length)];
+      best.description=`${best.target} 号 → ${POCKETS[best.pocket].name} · ${best.spinY?'低杆控白球':'控制落点'}`;
+      return best;
+    }
+    const c=cue(),defence=[];
+    for(const target of targets){
+      const direct=lineClear(c.x,c.y,target.x,target.y,[0,target.n]);
+      const routes=direct?[{x:target.x,y:target.y,bank:false}]:[
+        {x:2*R-target.x,y:target.y,bank:true},{x:2*(W-R)-target.x,y:target.y,bank:true},
+        {x:target.x,y:2*R-target.y,bank:true},{x:target.x,y:2*(H-R)-target.y,bank:true}];
+      for(const route of routes)for(const power of [28,42,58]){
+        if(!isCurrent())return null;
+        const plan={target:target.n,pocket:null,aim:Math.atan2(route.y-c.y,route.x-c.x),power,spinY:0,type:'safety'},result=simulateAIShot(plan);
+        if(result.safe)defence.push({...plan,score:power+(route.bank?20:0),description:`先碰 ${target.n} 号 · ${route.bank?'借库解球':'防守控球'}，避开被挡住的进攻线`});
+      }
+      await new Promise(resolve=>setTimeout(resolve,0));
+    }
+    defence.sort((a,b)=>a.score-b.score);
+    if(defence.length)return defence[0];
+    // A completely snookered layout may have no safe single-cushion route.
+    // Report that limitation instead of presenting a blocked shot as a pot.
+    const t=targets[0];return {target:t.n,pocket:null,aim:Math.atan2(t.y-c.y,t.x-c.x),power:42,spinY:0,type:'escape',description:`尝试解球 · 先碰 ${t.n} 号，当前没有安全进攻线`};
+  }
+  async function queueAI() {
+    if(state.opponent!=='ai'||state.turn!==1||state.phase!=='aim')return;
+    const ticket=++state.aiTicket,isCurrent=()=>ticket===state.aiTicket&&state.opponent==='ai'&&state.turn===1&&state.phase==='aim';
+    state.aiThinking=true;state.aiPlan=null;say('电脑正在判断球路…');render();
+    const plan=await chooseAIPlan(isCurrent);
+    if(!isCurrent()||!plan)return;
+    state.aiPlan=plan;say(`电脑计划：${plan.description}`);render();
+    // Show the selected ball and pocket for a full 2.5 seconds before shooting.
+    setTimeout(()=>{
+      if(!isCurrent())return;
+      state.aiThinking=false;state.ballInHand=false;state.aim=plan.aim;state.power=plan.power;
+      state.spinX=0;state.spinY=plan.spinY;moveSpinDot();syncPowerUI();updateUI();fire(true);
     },2500);
   }
   function validCuePosition(x,y) {
@@ -446,7 +556,9 @@
     const frame=ctx.createLinearGradient(0,t-58,0,b+58);frame.addColorStop(0,'#353c3c');frame.addColorStop(.15,'#1c2526');frame.addColorStop(.55,'#090f13');frame.addColorStop(.85,'#1b2426');frame.addColorStop(1,'#353d3d');
     fillRect(l-61,t-61,W*SCALE+122,H*SCALE+122,33,frame);ctx.shadowBlur=0;ctx.shadowOffsetY=0;
     ctx.strokeStyle='#6c79713d';ctx.lineWidth=2;roundedRect(l-59,t-59,W*SCALE+118,H*SCALE+118,32);ctx.stroke();
-    fillRect(l-39,t-39,W*SCALE+78,H*SCALE+78,19,'#0d1f30');
+    // Cloth continues under the open pocket approaches, including the small
+    // corner shelves exposed between the rubber and the rail cap.
+    fillRect(l-39,t-39,W*SCALE+78,H*SCALE+78,19,'#176f97');
     // Dark, flat rail caps and plain pocket wells follow the top-down reference.
     for(const y of [t-58,b+35]){
       const metal=ctx.createLinearGradient(0,y,0,y+23);metal.addColorStop(0,'#515a59');metal.addColorStop(.16,'#303839');metal.addColorStop(.7,'#171f20');metal.addColorStop(1,'#0b1213');
@@ -487,14 +599,39 @@
       ctx.beginPath();ctx.moveTo(-half-2,-7);ctx.lineTo(-half,-1);ctx.lineTo(-half+4,depth+2);
       ctx.quadraticCurveTo(-half+9,depth+14,0,depth+15);ctx.quadraticCurveTo(half-9,depth+14,half-4,depth+2);
       ctx.lineTo(half,-1);ctx.lineTo(half+2,-7);ctx.closePath();
-      const well=ctx.createLinearGradient(0,-8,0,depth+15);well.addColorStop(0,'#092739');well.addColorStop(.32,'#051824');well.addColorStop(1,'#01070b');ctx.fillStyle=well;ctx.fill();
-      ctx.strokeStyle='#263b43';ctx.lineWidth=2;ctx.stroke();
+      // The approach and straight shelf are blue cloth, continuous with the
+      // playing surface. Only the recessed drop at the back is a dark hole.
+      const well=ctx.createLinearGradient(0,-8,0,depth+15);well.addColorStop(0,'#2088b5');well.addColorStop(.5,'#187ca8');well.addColorStop(.77,'#12668f');well.addColorStop(1,'#09364e');ctx.fillStyle=well;ctx.fill();
+      // Solid, cloth-wrapped rubber cheeks blend into the rail noses. Each
+      // cheek has a rounded lip, a broad top and a shaded vertical face; it
+      // is a closed volume rather than two strokes painted onto the shelf.
       for(const s of [-1,1]){
-        ctx.beginPath();ctx.moveTo(s*(half-2),-1);ctx.lineTo(s*(half-6),depth+1);
-        ctx.strokeStyle='#06151c';ctx.lineWidth=5;ctx.stroke();
-        ctx.strokeStyle='#4f9db148';ctx.lineWidth=1.3;ctx.stroke();
+        ctx.save();ctx.scale(s,1);
+        const lip=side?0:-2,back=depth+7,outer=side?20:16;
+        ctx.beginPath();ctx.moveTo(half+5,lip);
+        ctx.bezierCurveTo(half+1,lip,half-2,lip+3,half-2,6);
+        ctx.lineTo(half-3,depth+2);ctx.quadraticCurveTo(half-3,back,half+2,back);
+        // Extend into the existing cushion, rather than ending in a detached
+        // pill. The middle-pocket lip never protrudes past the rail nose.
+        ctx.lineTo(half+outer,back);ctx.lineTo(half+outer+3,lip);ctx.closePath();
+        const rubber=ctx.createLinearGradient(0,lip,0,back);
+        rubber.addColorStop(0,'#248eb8');rubber.addColorStop(.16,'#1c82ad');
+        rubber.addColorStop(.5,'#106287');rubber.addColorStop(1,'#083950');
+        ctx.fillStyle=rubber;ctx.fill();
+        // A narrow bevel is a filled surface with a soft gradient, never an
+        // outline around the inner channel.
+        ctx.beginPath();ctx.moveTo(half+5,lip+.5);
+        ctx.bezierCurveTo(half+2,lip+1,half,lip+4,half,6);
+        ctx.lineTo(half-1,depth+1);ctx.quadraticCurveTo(half-1,depth+4,half+1,depth+5);
+        ctx.lineTo(half+3,depth+4);ctx.quadraticCurveTo(half+1,depth+2,half+1,depth);
+        ctx.lineTo(half+2,6);ctx.quadraticCurveTo(half+2,lip+4,half+8,lip+2);ctx.closePath();
+        const bevel=ctx.createLinearGradient(half-2,0,half+8,0);
+        bevel.addColorStop(0,'#7ed8ef24');bevel.addColorStop(.45,'#48b8d635');bevel.addColorStop(1,'#2698c200');
+        ctx.fillStyle=bevel;ctx.fill();
+        ctx.restore();
       }
-      ctx.beginPath();ctx.ellipse(0,depth+7,half*.78,7,0,0,Math.PI*2);ctx.fillStyle='#01070b';ctx.fill();
+      ctx.beginPath();ctx.ellipse(0,depth+7,half*.78,7,0,0,Math.PI*2);
+      const drop=ctx.createRadialGradient(0,depth+9,1,0,depth+7,half*.85);drop.addColorStop(0,'#01070b');drop.addColorStop(.72,'#020f18');drop.addColorStop(1,'#0b3a51');ctx.fillStyle=drop;ctx.fill();
       ctx.restore();
     }
     ctx.fillStyle='#a1a991';for(let x=12.5;x<=87.5;x+=12.5){if(x===50)continue;for(const y of [t-49,b+49]){ctx.beginPath();ctx.arc(l+x*SCALE,y,2,0,Math.PI*2);ctx.fill();}}
@@ -836,9 +973,10 @@
     if(state.ballInHand){const c=cue(),p=worldToScreen(c.x,c.y);ctx.strokeStyle='#fff4a3';ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.arc(p.x,p.y,24,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
     if(state.aiThinking&&state.phase==='aim'){
       ctx.save();ctx.fillStyle='rgba(5,20,30,.85)';ctx.strokeStyle='rgba(130,234,255,.62)';ctx.lineWidth=1.5;
-      ctx.beginPath();ctx.roundRect(520,337,360,116,18);ctx.fill();ctx.stroke();
-      ctx.fillStyle='#e4faff';ctx.textAlign='center';ctx.font='bold 25px sans-serif';ctx.fillText('电脑正在准备击球',700,386);
-      ctx.fillStyle='#86cbd5';ctx.font='15px sans-serif';ctx.fillText('正在选择球路 · 约 2.5 秒',700,418);ctx.restore();
+      ctx.beginPath();ctx.roundRect(460,332,480,125,18);ctx.fill();ctx.stroke();
+      ctx.fillStyle='#e4faff';ctx.textAlign='center';ctx.font='bold 24px sans-serif';ctx.fillText(state.aiPlan?`电脑 · ${state.aiPlan.type==='attack'?'选择进攻':'选择解球'}`:'电脑正在判断球路',700,373);
+      ctx.fillStyle='#a8ecff';ctx.font='17px sans-serif';ctx.fillText(state.aiPlan?.description||'检查遮挡、袋口与白球落点',700,405);
+      ctx.fillStyle='#86cbd5';ctx.font='13px sans-serif';ctx.fillText(state.aiPlan?'准备出杆 · 2.5 秒':'正在试算候选路线',700,433);ctx.restore();
     }
     if(state.phase==='gameover'){ctx.fillStyle='#06181bdc';ctx.fillRect(0,0,VIEW_W,VIEW_H);ctx.fillStyle='#f4d382';ctx.font='bold 58px sans-serif';ctx.textAlign='center';ctx.fillText(`${actor(state.winner)}获胜`,700,365);ctx.fillStyle='#d9e9df';ctx.font='22px sans-serif';ctx.fillText('点击右上角「新开一局」再来一场',700,410);}
   }
@@ -967,45 +1105,48 @@
   let last=performance.now(),acc=0,manualTime=false;
   function frame(now){const elapsed=Math.min(.05,(now-last)/1000);last=now;const active=state.phase==='moving'||state.pocketAnimations.length>0;if(!manualTime){acc+=elapsed;while(acc>=STEP){update(STEP);acc-=STEP;}}if(active||state.phase==='moving'||state.pocketAnimations.length>0)render();requestAnimationFrame(frame);}
   window.advanceTime=ms=>{manualTime=true;acc=0;const steps=Math.ceil(ms/1000/STEP);for(let i=0;i<steps;i++)update(STEP);render();};
-  window.render_game_to_text=()=>JSON.stringify({coordinates:`world inches, origin at top-left cushion nose; +x right, +y down; table 100x50; ball diameter 2.25; corner mouth ${CORNER_MOUTH}; side mouth ${SIDE_MOUTH}`,mode:state.mode,opponent:state.opponent,aiDifficulty:state.aiDifficulty,aiThinking:state.aiThinking,phase:state.phase,turn:state.turn+1,groups:state.groups,scores:state.scores,breaking:state.breaking,rackSeed:state.rackSeed,ballInHand:state.ballInHand,repositionAllowed:state.repositionAllowed,aimDegrees:+(state.aim*180/Math.PI).toFixed(2),power:state.power,spin:[+state.spinX.toFixed(2),+state.spinY.toFixed(2)],balls:state.balls.map(b=>({n:b.n,x:+b.x.toFixed(2),y:+b.y.toFixed(2),vx:+b.vx.toFixed(2),vy:+b.vy.toFixed(2),rollVx:+b.rollVx.toFixed(2),rollVy:+b.rollVy.toFixed(2),sideSpin:+b.spin.toFixed(2),roll:+b.roll.toFixed(2),pocketed:b.pocketed})),status:state.status,winner:state.winner});
+  window.render_game_to_text=()=>JSON.stringify({coordinates:`world inches, origin at top-left cushion nose; +x right, +y down; table 100x50; ball diameter 2.25; corner mouth ${CORNER_MOUTH}; side mouth ${SIDE_MOUTH}`,mode:state.mode,opponent:state.opponent,aiDifficulty:state.aiDifficulty,aiThinking:state.aiThinking,aiPlan:state.aiPlan?{target:state.aiPlan.target,pocket:state.aiPlan.pocket,type:state.aiPlan.type,power:+state.aiPlan.power.toFixed(1),description:state.aiPlan.description}:null,phase:state.phase,turn:state.turn+1,groups:state.groups,scores:state.scores,breaking:state.breaking,rackSeed:state.rackSeed,ballInHand:state.ballInHand,repositionAllowed:state.repositionAllowed,aimDegrees:+(state.aim*180/Math.PI).toFixed(2),power:state.power,spin:[+state.spinX.toFixed(2),+state.spinY.toFixed(2)],balls:state.balls.map(b=>({n:b.n,x:+b.x.toFixed(2),y:+b.y.toFixed(2),vx:+b.vx.toFixed(2),vy:+b.vy.toFixed(2),rollVx:+b.rollVx.toFixed(2),rollVy:+b.rollVy.toFixed(2),sideSpin:+b.spin.toFixed(2),roll:+b.roll.toFixed(2),pocketed:b.pocketed})),status:state.status,winner:state.winner});
   if(new URLSearchParams(location.search).has('test')){
     $('startOverlay').classList.add('hidden');$('menuOverlay').classList.remove('hidden');
-    window.__poolTest={getPocketEvents(){return {effects:state.pocketAnimations.map(a=>({n:a.visual.n,pocket:a.pocket,x:a.effectX,y:a.effectY,ballX:a.entryX,ballY:a.entryY})),shot:state.shot?.pocketed||[]};},setMovingBalls(entries){
+    window.__poolTest={async planAI(entries,mode='nine',ownGroup=null,hand=false,difficulty='hard'){
+    state.aiTicket++;state.aiThinking=false;state.aiPlan=null;state.mode=mode;state.opponent='ai';state.phase='aim';state.turn=1;state.breaking=false;state.ballInHand=hand;state.groups=[null,ownGroup];state.aiDifficulty=difficulty;state.balls=entries.map(q=>ball(q.n,q.x,q.y));state.shot=null;state.pocketAnimations=[];
+    $('menuOverlay').classList.add('hidden');const started=performance.now();const plan=await chooseAIPlan();state.aiPlan=plan;render();return {plan,options:aiOptions(aiTargets()),result:plan?simulateAIShot(plan):null,ms:performance.now()-started};
+  },fireAIPlanTest(){manualTime=true;state.ballInHand=false;state.aim=state.aiPlan.aim;state.power=state.aiPlan.power;state.spinX=0;state.spinY=state.aiPlan.spinY;fire(true);},getAIPottedTest(){return state.balls.filter(b=>b.pocketed).map(b=>({n:b.n,pocket:b.pocketCandidate}));},queueAITest(){queueAI();},getLaunchSpeed(power,breaking=false){return cueLaunchSpeed(power,breaking);},getPocketEvents(){return {effects:state.pocketAnimations.map(a=>({n:a.visual.n,pocket:a.pocket,x:a.effectX,y:a.effectY,ballX:a.entryX,ballY:a.entryY})),shot:state.shot?.pocketed||[]};},setMovingBalls(entries){
     manualTime=true;acc=0;
     state.aiTicket++;state.aiThinking=false;state.mode='nine';state.opponent='local';state.phase='moving';state.turn=0;state.breaking=false;state.ballInHand=false;state.pocketAnimations=[];state.balls=entries.map(q=>Object.assign(ball(q.n,q.x,q.y),{vx:q.vx||0,vy:q.vy||0,rollVx:q.rollVx||0,rollVy:q.rollVy||0,spin:q.spin||0,pocketCandidate:q.pocketCandidate??null}));
     state.shot={shooter:0,breaking:false,firstHit:1,pocketed:[],railAfterHit:false,breakRails:new Set(),groupAtStart:null,eightReady:false};state.stopTime=0;state.shotTime=0;$('menuOverlay').classList.add('hidden');updateUI();render();
   },setSpinAim(vertical=0,horizontal=0){
     state.pocketAnimations=[];
-    state.aiTicket++;state.mode='nine';state.opponent='local';state.phase='aim';state.turn=0;state.breaking=false;state.ballInHand=false;
+    state.aiTicket++;state.aiThinking=false;state.aiPlan=null;state.mode='nine';state.opponent='local';state.phase='aim';state.turn=0;state.breaking=false;state.ballInHand=false;
     state.balls=[ball(0,40,25),ball(1,55,25)];state.aim=0;state.power=70;state.spinY=vertical;state.spinX=horizontal;
     state.shot=null;$('menuOverlay').classList.add('hidden');syncPowerUI();moveSpinDot();updateUI();render();
   },getGuidePrediction(){return predictedGuide();
   },getDisplayGuide(){return displayGuide();
   },setGuideBalls(entries,aim=0,power=70,spinY=0,spinX=0){
     state.pocketAnimations=[];
-    state.aiTicket++;state.mode='nine';state.opponent='local';state.phase='aim';state.turn=0;state.breaking=false;state.ballInHand=false;
-    state.balls=entries.map(q=>ball(q.n,q.x,q.y));state.aim=aim;state.power=power;state.spinY=spinY;state.spinX=spinX;
+    state.aiTicket++;state.aiThinking=false;state.aiPlan=null;state.mode='nine';state.opponent='local';state.phase='aim';state.turn=0;state.breaking=false;state.ballInHand=false;
+    state.groups=[null,null];state.scores=[0,0];say('拖动瞄准，拉动右侧球杆出杆。');state.balls=entries.map(q=>ball(q.n,q.x,q.y));state.aim=aim;state.power=power;state.spinY=spinY;state.spinX=spinX;
     state.shot=null;$('menuOverlay').classList.add('hidden');syncPowerUI();moveSpinDot();updateUI();render();
   },fireTest(){fire();
   },setSpinShot(vertical=0,horizontal=0,power=70){
     manualTime=true;acc=0;
     state.pocketAnimations=[];
-    state.aiTicket++;state.mode='nine';state.opponent='local';state.phase='aim';state.turn=0;state.breaking=false;state.ballInHand=false;
+    state.aiTicket++;state.aiThinking=false;state.aiPlan=null;state.mode='nine';state.opponent='local';state.phase='aim';state.turn=0;state.breaking=false;state.ballInHand=false;
     state.balls=[ball(0,40,25),ball(1,55,25)];state.aim=0;state.power=power;state.spinY=vertical;state.spinX=horizontal;
     state.shot=null;$('menuOverlay').classList.add('hidden');syncPowerUI();moveSpinDot();updateUI();render();fire();
   },setGuideFixture(illegal=false){
     state.pocketAnimations=[];
-    state.aiTicket++;state.mode='nine';state.opponent='local';state.phase='aim';state.turn=0;state.breaking=false;state.ballInHand=false;
+    state.aiTicket++;state.aiThinking=false;state.aiPlan=null;state.mode='nine';state.opponent='local';state.phase='aim';state.turn=0;state.breaking=false;state.ballInHand=false;
     state.balls=[ball(0,25,25),ball(1,65,12),ball(illegal?2:1,50,25)];
     if(!illegal)state.balls.splice(1,1);
     state.aim=0;state.shot=null;$('menuOverlay').classList.add('hidden');updateUI();render();
   },setEightFinal(){
     state.pocketAnimations=[];
-    state.aiTicket++;state.mode='eight';state.opponent='local';state.phase='aim';state.turn=0;state.breaking=false;state.ballInHand=false;state.groups=['solid','stripe'];state.scores=[7,0];state.balls=[ball(0,50,22),ball(8,50,8)];state.aim=-Math.PI/2;state.power=56;state.shot=null;
+    state.aiTicket++;state.aiThinking=false;state.aiPlan=null;state.mode='eight';state.opponent='local';state.phase='aim';state.turn=0;state.breaking=false;state.ballInHand=false;state.groups=['solid','stripe'];state.scores=[7,0];state.balls=[ball(0,50,22),ball(8,50,8)];state.aim=-Math.PI/2;state.power=56;state.shot=null;
     state.spinX=0;state.spinY=-.85;$('player2Name').textContent='玩家 2';syncPowerUI();moveSpinDot();$('menuOverlay').classList.add('hidden');updateUI();render();
   },setNineFinal(){
     state.pocketAnimations=[];
-    state.aiTicket++;state.mode='nine';state.opponent='local';state.phase='aim';state.turn=0;state.breaking=false;state.ballInHand=false;state.groups=[null,null];state.scores=[8,0];state.balls=[ball(0,50,22),ball(9,50,8)];state.aim=-Math.PI/2;state.power=56;state.shot=null;
+    state.aiTicket++;state.aiThinking=false;state.aiPlan=null;state.mode='nine';state.opponent='local';state.phase='aim';state.turn=0;state.breaking=false;state.ballInHand=false;state.groups=[null,null];state.scores=[8,0];state.balls=[ball(0,50,22),ball(9,50,8)];state.aim=-Math.PI/2;state.power=56;state.shot=null;
     state.spinX=0;state.spinY=-.85;$('player2Name').textContent='玩家 2';syncPowerUI();moveSpinDot();$('menuOverlay').classList.add('hidden');updateUI();render();
   }};}
   const boot=$('boot'),bootStarted=performance.now(),bootDuration=window.matchMedia('(prefers-reduced-motion: reduce)').matches?100:1900;
