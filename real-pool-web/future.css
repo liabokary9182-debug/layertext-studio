@@ -72,3 +72,7 @@ body{background:radial-gradient(circle at 78% -18%,#173b5c 0%,#08172a 35%,#050a1
 .music-panel{position:absolute;z-index:80;top:64px;right:18px;width:min(350px,calc(100% - 36px));padding:14px;border:1px solid #327a98;border-radius:14px;background:#091c2bf5;box-shadow:0 16px 45px #0009;color:#d9f4ff}
 .music-panel[hidden]{display:block;visibility:hidden;pointer-events:none}.music-panel-head,.music-panel-foot{display:flex;align-items:center;justify-content:space-between;gap:12px}.music-panel-head strong{font-size:17px}.music-panel-head small{margin-left:8px;font-size:9px;letter-spacing:2px;color:#79b5ca}.music-panel button{border:1px solid #356580;background:#123247;color:#d8f6ff;border-radius:7px;padding:5px 9px;cursor:pointer}.music-panel-head button{font-size:20px;padding:0 8px}.music-panel p{font-size:11px;color:#95bdcf;line-height:1.5;min-height:17px}.music-panel iframe{display:block;border:0;border-radius:8px;background:#142c3c}.music-panel-foot{margin-top:12px;font-size:10px}.music-panel-foot a{color:#9bddea}.music-panel-foot button{font-size:10px}
 @media (orientation:portrait) and (max-width:700px){.start-card{max-height:95%;width:96%;padding:12px 22px}.start-wordmark{font-size:38px}.start-title{font-size:17px!important}.start-card .start-copy>p{font-size:8px}.start-visual{height:200px;transform:scale(.55)}.start-foot{font-size:7px}.place-cue{min-height:25px}}
+
+
+/* Visible orientation action, reachable on touch screens. */
+#fullBtn{min-height:44px;min-width:64px;color:#102127;background:#efcd79;font-weight:700}

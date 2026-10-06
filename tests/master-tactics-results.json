@@ -1,0 +1,94 @@
+[
+  {
+    "kind": "bank",
+    "plan": {
+      "target": 1,
+      "pocket": 0,
+      "type": "bank",
+      "banks": 1,
+      "rail": "右库",
+      "aim": -0.32934362985133,
+      "cd": 20.887654421965436,
+      "pd": 135.62217532683133,
+      "cos": 0.9749873287423853,
+      "score": 157.48278076854368,
+      "desiredSpeed": 104.83719455481038,
+      "power": 96,
+      "spinX": 0,
+      "spinY": -0.45,
+      "winning": false,
+      "positionCost": 19.663047261320134,
+      "tacticalVerified": true,
+      "positionPlanned": true,
+      "robustness": 1,
+      "description": "1 号 → 左上角袋 · 翻袋 · 低杆拉回",
+      "executionError": {
+        "angleDegrees": 0.01653693223593291,
+        "powerPercent": 0.08234111987985848
+      },
+      "difficulty": "hard"
+    },
+    "safe": true,
+    "potted": true,
+    "ms": 1546
+  },
+  {
+    "kind": "kick",
+    "plan": {
+      "target": 1,
+      "pocket": 1,
+      "type": "kick",
+      "banks": 1,
+      "rail": "下库",
+      "aim": 1.225919266600817,
+      "cd": 65.50703310098757,
+      "pd": 10.3,
+      "cos": 0.9125209493386115,
+      "score": 79.77297297217424,
+      "desiredSpeed": 60.956666780828094,
+      "power": 52,
+      "spinX": 0,
+      "spinY": 0,
+      "winning": false,
+      "positionCost": 22.909515255501624,
+      "tacticalVerified": true,
+      "positionPlanned": true,
+      "robustness": 1,
+      "description": "1 号 → 上中袋 · 碰库勾球 · 中杆",
+      "executionError": {
+        "angleDegrees": 0.01653693223593291,
+        "powerPercent": 0.08234111987985848
+      },
+      "difficulty": "hard"
+    },
+    "safe": true,
+    "potted": true,
+    "ms": 1272
+  },
+  {
+    "kind": "snooker",
+    "plan": {
+      "target": 1,
+      "pocket": null,
+      "aim": 3.131993342703824,
+      "power": 44,
+      "spinY": 0.55,
+      "type": "snooker",
+      "banks": 1,
+      "score": -78.31833303127169,
+      "description": "先碰 1 号 · 高杆跟进 · 左轻塞 · 藏白球做斯诺克",
+      "spinX": -0.55,
+      "snookerPlanned": true,
+      "opponentExposure": 0,
+      "snookerRobustness": 1,
+      "executionError": {
+        "angleDegrees": 0.01653693223593291,
+        "powerPercent": 0.08234111987985848
+      },
+      "difficulty": "hard"
+    },
+    "safe": true,
+    "potted": false,
+    "ms": 3070
+  }
+]

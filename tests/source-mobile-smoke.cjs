@@ -1,0 +1,24 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const site=path.resolve(__dirname,'../real-pool-web');
+let source=fs.readFileSync(path.join(site,'index.html'),'utf8');
+source=source.replace(/<script src="\.\/([^"?]+)(?:\?[^"]*)?"><\/script>/g,(_,file)=>'<script>'+fs.readFileSync(path.join(site,file),'utf8')+'</script>');
+const {window,document,elements,all}=require('./pool-dom.cjs')(source);
+(async()=>{
+ const root=elements.get('mobile-pool-preview');
+ await elements.get('landscapeBtn').click();assert(root.classList.contains('is-landscape'));
+ await elements.get('landscapeBtn').click();assert(!root.classList.contains('is-landscape'));
+ await elements.get('fullBtn').click();assert.equal(elements.get('fullscreenFeedback').hidden,false);
+ root.requestFullscreen=async()=>{document.fullscreenElement=root};
+ document.exitFullscreen=async()=>{document.fullscreenElement=null};
+ await elements.get('fullBtn').click();assert.equal(document.fullscreenElement,root);
+ await elements.get('fullBtn').click();assert.equal(document.fullscreenElement,null);
+ await elements.get('startBtn').click();assert(!elements.get('menuOverlay').classList.contains('hidden'));
+ await elements.get('versusLocal').click();
+ await all.find(e=>e.dataset.mode==='eight').click();
+ let state=JSON.parse(window.render_game_to_text());assert.equal(state.phase,'aim');assert.equal(state.power,56);assert.deepEqual(state.spin,[0,0]);assert.equal(state.balls.length,16);
+ await elements.get('musicBtn').click();assert(window.PoolAudio.musicEnabled());
+ await elements.get('musicBtn').click();assert(!window.PoolAudio.musicEnabled());
+ await elements.get('shootBtn').click();assert.equal(JSON.parse(window.render_game_to_text()).phase,'moving');
+ window.advanceTime(30000);state=JSON.parse(window.render_game_to_text());assert.equal(state.phase==='aim'||state.phase==='gameover',true);
+ console.log('PASS production HTML loads all scripts; phone orientation/fullscreen, menu, break preset, music and shot work');
+})().catch(e=>{console.error(e);process.exitCode=1;});

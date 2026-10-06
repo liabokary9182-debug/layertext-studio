@@ -1,7 +1,7 @@
 (() => {
   'use strict';
   const canvas = document.getElementById('game');
-  let ctx = canvas.getContext('2d',{alpha:false,desynchronized:true});
+  const ctx = canvas.getContext('2d',{alpha:false,desynchronized:true});
   const $ = id => document.getElementById(id);
   const VIEW_W=1400,VIEW_H=790;
   // Keep the tablet canvas above 3K wide without forcing a 7.5 MP redraw
@@ -9,11 +9,12 @@
   const PIXEL_RATIO=Math.min(2.4,Math.max(1.75,(window.devicePixelRatio||1)*1.08));
   canvas.width=Math.round(VIEW_W*PIXEL_RATIO);canvas.height=Math.round(VIEW_H*PIXEL_RATIO);
   ctx.setTransform(PIXEL_RATIO,0,0,PIXEL_RATIO,0,0);
-  const W = 100, H = 50, R = 1.125, DISPLAY_R = R;
+  const W = 100, H = 50, R = 1.125, DISPLAY_R = R * 1.035;
   // The reference is an 82 mm corner mouth. Keep the current playable opening
   // and enlarge all six mouths by the same small amount for this preview.
-  const CORNER_MOUTH = 82 * 1.05 * 1.05 * .98 * 1.02 * 1.025 * 1.02 * 1.02 * 1.02 * 1.02 / 25.4, SIDE_MOUTH = CORNER_MOUTH;
+  const CORNER_MOUTH = 82 * 1.05 * 1.05 * .98 * 1.02 * 1.025 * 1.02 * 1.02 * 1.02 / 25.4, SIDE_MOUTH = CORNER_MOUTH;
   const CUT = CORNER_MOUTH / Math.SQRT2, SIDE_L = W / 2 - SIDE_MOUTH / 2, SIDE_R = W / 2 + SIDE_MOUTH / 2;
+  const THROAT_DEPTH = 1.5, THROAT_HALF = CORNER_MOUTH/2-R*.35;
   const SCALE = 11.2, OX = 140, OY = 115;
   const STEP = 1 / 180, COLORS = ['#f7f1e5','#f5b928','#1556ae','#c91f37','#623282','#dd742a','#086e5c','#70331e','#11131a'];
   // World distances are inches.  A solid sphere has I = 2/5 mr², so cloth
@@ -24,17 +25,6 @@
     {x:0,y:0,name:'左上角袋'}, {x:50,y:0,name:'上中袋'}, {x:100,y:0,name:'右上角袋'},
     {x:0,y:50,name:'左下角袋'}, {x:50,y:50,name:'下中袋'}, {x:100,y:50,name:'右下角袋'}
   ];
-  // One geometry describes the drawn wells, rubber faces and fall region.
-  const POCKET_GEOMETRY=POCKETS.map((p,index)=>{
-    const side=p.x===W/2,nx=side?0:(p.x===0?-Math.SQRT1_2:Math.SQRT1_2),ny=side?(p.y===0?-1:1):(p.y===0?-Math.SQRT1_2:Math.SQRT1_2);
-    const tx=-ny,ty=nx,mx=side?p.x:p.x===0?CUT/2:W-CUT/2,my=side?p.y:p.y===0?CUT/2:H-CUT/2;
-    const radius=(side?SIDE_MOUTH:CORNER_MOUTH)/2,jawRadius=side?.05:.16;
-    const well=pocketVisualCenter(index),faces=[-1,1].map(sign=>({
-      ax:mx+tx*radius*sign,ay:my+ty*radius*sign,
-      bx:mx+nx*.9+tx*(radius-.18)*sign,by:my+ny*.9+ty*(radius-.18)*sign
-    }));
-    return {index,mx,my,nx,ny,tx,ty,radius,jawRadius,well,faces,fallRadius:radius-R*.55,fallFront:-R*.35};
-  });
   const state = {mode:null,opponent:'ai',aiDifficulty:'normal',aiTicket:0,aiThinking:false,phase:'menu',balls:[],pocketAnimations:[],turn:0,groups:[null,null],scores:[0,0],breaking:true,rackSeed:0,ballInHand:false,repositionAllowed:false,aim:-0.02,power:56,spinX:0,spinY:0,shot:null,stopTime:0,shotTime:0,status:'启动球场，选择对局',winner:null,drag:null};
   // Trial shots use the live collision/cloth functions, with isolated events.
   // Never play sounds, emit pocket flashes, or edit the real shot during trials.
@@ -132,17 +122,15 @@
     say(byAI&&state.aiPlan?`电脑：${state.aiPlan.description}`:`${actor(state.turn)}击球中…`);updateUI();render();
   }
   function cueLaunchSpeed(power,breaking=false,force=1){
-    // Preserve the original ordinary stroke curve. Only soften the top of
-    // the original break curve; cloth, impulses and collision order stay old.
+    // Extra acceleration is confined to the upper end of the pullback.
+    // Low-power touch shots keep their familiar response; full power is +40%.
     const boost=1+.4*(Math.max(0,(power-60)/40))**2;
-    const speed=(17+power*.78)*boost*(breaking?2.5+1.65*power/100:1);
-    return (breaking?speed/Math.pow(1+Math.pow(speed/260,4),.25):speed)*force;
+    return (17+power*.78)*boost*(breaking?2.5+1.65*power/100:1)*force;
   }
   function launchCue(c,breakForce=1){
     applyCueImpulse(c,state.power,state.aim,state.spinX,state.spinY,state.breaking,breakForce);
   }
   function applyCueImpulse(c,power,aim,spinX=0,spinY=0,breaking=false,force=1){
-    const spinScale=Math.max(1,Math.hypot(spinX,spinY));spinX/=spinScale;spinY/=spinScale;
     const speed=cueLaunchSpeed(power,breaking,force),shotAngle=aim-spinX*.018;
     const spinGain=1+.55*(power/100)**2;
     c.vx=Math.cos(shotAngle)*speed;c.vy=Math.sin(shotAngle)*speed;
@@ -150,16 +138,11 @@
     c.rollVy=Math.sin(shotAngle)*speed*spinY*1.05*spinGain;
     c.spin=spinX*speed*.42*spinGain;c.english=Math.abs(spinX)>.03;c.rollHeading=shotAngle;
   }
-  function pocketVisualCenter(index){
-    const p=POCKETS[index];
-    if(p.x===W/2)return {x:p.x,y:p.y+(p.y===0?-.55:.55)};
-    return {x:p.x===0?CUT/2-.25:W-CUT/2+.25,y:p.y===0?CUT/2-.25:H-CUT/2+.25};
-  }
   function markPocket(b,index) {
     if(b.pocketed)return;
     if(!physicsContext&&state.phase==='moving'&&state.balls.includes(b)){
       const impact=Math.hypot(b.vx,b.vy);
-      const pocket=pocketVisualCenter(index);
+      const pocket=POCKETS[index];
       state.pocketAnimations.push({visual:{...b,q:[...b.q]},entryX:b.x,entryY:b.y,effectX:pocket.x,effectY:pocket.y,pocket:index,age:0,impact});
       window.PoolAudio?.play('pocket',impact);
     }
@@ -168,22 +151,27 @@
     if(events)events.pocketed.push({n:b.n,pocket:index});
   }
   function pocketCheck(b) {
-    b.pocketCandidate=null;
-    for(const p of POCKET_GEOMETRY){
-      const depth=(b.x-p.mx)*p.nx+(b.y-p.my)*p.ny;
-      const distance2=(b.x-p.well.x)**2+(b.y-p.well.y)**2;
-      if(distance2<p.radius*p.radius)b.pocketCandidate=p.index;
-      // Once the centre passes the shelf edge and most of the footprint is
-      // unsupported inside the visible well, gravity takes over. No minimum
-      // speed and no invisible extra throat travel or attraction force.
-      if(depth>=p.fallFront&&distance2<=p.fallRadius*p.fallRadius){
-        b.pocketCandidate=p.index;return markPocket(b,p.index);
+    // A ball falls only after travelling through the straight inner channel.
+    let candidate=null,bestDepth=0;
+    for(const [index,x,y] of [[0,b.x,b.y],[2,W-b.x,b.y],[3,b.x,H-b.y],[5,W-b.x,H-b.y]]){
+      const depth=(CUT-x-y)/Math.SQRT2,lateral=(x-y)/Math.SQRT2;
+      if(depth>0&&Math.abs(lateral)<THROAT_HALF+R*.2){
+        if(depth>bestDepth){candidate=index;bestDepth=depth;}
+        if(depth>THROAT_DEPTH){b.pocketCandidate=index;return markPocket(b,index);}
       }
     }
+    if(Math.abs(b.x-W/2)<THROAT_HALF+R*.2){
+      if(b.y<0){candidate=1;if(b.y<-THROAT_DEPTH){b.pocketCandidate=1;return markPocket(b,1);}}
+      if(b.y>H){candidate=4;if(b.y>H+THROAT_DEPTH){b.pocketCandidate=4;return markPocket(b,4);}}
+    }
+    b.pocketCandidate=candidate;
     if(b.x < -6 || b.x > W+6 || b.y < -6 || b.y > H+6){
+      // An escape outside a real throat is a collision-recovery case, never
+      // evidence of a pocket. The old nearest-pocket fallback mislabeled it.
       const escapedX=b.x<-6||b.x>W+6,escapedY=b.y<-6||b.y>H+6;
       b.x=clamp(b.x,R,W-R);b.y=clamp(b.y,R,H-R);
-      if(escapedX)b.vx*=-.45;if(escapedY)b.vy*=-.45;
+      if(escapedX)b.vx*=-.45;
+      if(escapedY)b.vy*=-.45;
       b.rollVx=b.vx;b.rollVy=b.vy;b.pocketCandidate=null;
     }
   }
@@ -199,11 +187,10 @@
       let tangentAfter=tangentBefore*(jaw?.94:.985);
       let spinAfter=spinBefore;
       if(sideEnglish){
-        // Solid-sphere rim inertia gives a 3.5 effective tangential mass.
-        // Coulomb-limited impulse trades side-spin for tangential travel. Running
+        // Cushion friction trades side-spin for tangential travel. Running
         // English can increase translational speed, but never total energy.
         const slip=tangentBefore-spinBefore;
-        const impulse=clamp(-slip/3.5,-(1+restitution)*approach*.14,(1+restitution)*approach*.14);
+        const impulse=clamp(-slip*.19,-(1+restitution)*approach*.14,(1+restitution)*approach*.14);
         tangentAfter+=impulse;
         spinAfter-=2.5*impulse;
       }
@@ -220,24 +207,38 @@
       if(!physicsContext&&state.phase==='moving')window.PoolAudio?.play('rail',approach);
       b.hitRail=true;
       const events=physicsContext||state.shot;
-      if(events){
-        if(events.firstHit!==null)events.railAfterHit=true;if(b.n!==0)events.breakRails.add(b.n);
-        (events.cushionHits??=[]).push({n:b.n,jaw,beforeFirstHit:events.firstHit===null,nx,ny,x:b.x,y:b.y});
-      }
+      if(events){if(events.firstHit!==null)events.railAfterHit=true;if(b.n!==0)events.breakRails.add(b.n);}
     }
   }
-  function collidePocketFace(b,face,rubberRadius){
-    const dx=face.bx-face.ax,dy=face.by-face.ay,length2=dx*dx+dy*dy;
-    const t=clamp(((b.x-face.ax)*dx+(b.y-face.ay)*dy)/length2,0,1);
-    const x=face.ax+t*dx,y=face.ay+t*dy,bx=b.x-x,by=b.y-y,distance=Math.hypot(bx,by),limit=R+rubberRadius;
-    if(distance>=limit)return;
-    const nx=distance>1e-8?bx/distance:-dy/Math.sqrt(length2),ny=distance>1e-8?by/distance:dx/Math.sqrt(length2);
-    b.x=x+nx*limit;b.y=y+ny*limit;railHit(b,nx,ny,true);
+  function collideJaw(b,x,y,side=false) {
+    const dx=b.x-x,dy=b.y-y,dist=Math.hypot(dx,dy),min=R+(side?.05:.16);
+    if(dist>=min)return;
+    const nx=dist>1e-6?dx/dist:1,ny=dist>1e-6?dy/dist:0;
+    b.x=x+nx*min;b.y=y+ny*min;railHit(b,nx,ny,true);
   }
-  function pocketFaces(b){
-    for(const p of POCKET_GEOMETRY){
-      if(Math.hypot(b.x-p.mx,b.y-p.my)>p.radius+R+1.1)continue;
-      for(const face of p.faces)collidePocketFace(b,face,p.jawRadius);
+  function throatWalls(b){
+    // The pocket channel has two short, straight rubber-lined walls. Its
+    // lateral coordinate is identical to the rendered throat below.
+    for(const [cx,cy,index] of [[0,0,0],[W,0,2],[0,H,3],[W,H,5]]){
+      const sx=cx===0?1:-1,sy=cy===0?1:-1;
+      const ix=sx*(b.x-cx),iy=sy*(b.y-cy);
+      const depth=(CUT-ix-iy)/Math.SQRT2;
+      if(depth<=0||depth>=THROAT_DEPTH)continue;
+      const lateral=(ix-iy)/Math.SQRT2;
+      if(Math.abs(lateral)<=THROAT_HALF)continue;
+      const sign=Math.sign(lateral),offset=Math.abs(lateral)-THROAT_HALF;
+      b.x-=sx*sign*offset/Math.SQRT2;
+      b.y+=sy*sign*offset/Math.SQRT2;
+      railHit(b,-sx*sign/Math.SQRT2,sy*sign/Math.SQRT2,true);
+    }
+    for(const [cy,sign] of [[0,-1],[H,1]]){
+      const depth=sign*(b.y-cy);
+      if(depth<=0||depth>=THROAT_DEPTH)continue;
+      const lateral=b.x-W/2;
+      if(Math.abs(lateral)<=THROAT_HALF)continue;
+      const wall=Math.sign(lateral);
+      b.x=W/2+wall*THROAT_HALF;
+      railHit(b,-wall,0,true);
     }
   }
   function rails(b) {
@@ -246,7 +247,9 @@
     if(b.y>H-R&&horiz(b.x)){b.y=H-R;railHit(b,0,-1);}
     if(b.x<R&&b.y>=CUT&&b.y<=H-CUT){b.x=R;railHit(b,1,0);}
     if(b.x>W-R&&b.y>=CUT&&b.y<=H-CUT){b.x=W-R;railHit(b,-1,0);}
-    pocketFaces(b);
+    const jaws=[[CUT,0],[SIDE_L,0],[SIDE_R,0],[W-CUT,0],[0,CUT],[W,CUT],[0,H-CUT],[W,H-CUT],[CUT,H],[SIDE_L,H],[SIDE_R,H],[W-CUT,H]];
+    for(const [x,y] of jaws)collideJaw(b,x,y,x===SIDE_L||x===SIDE_R);
+    throatWalls(b);
   }
   function ballsCollide(a,b) {
     const dx=b.x-a.x,dy=b.y-a.y,d2=dx*dx+dy*dy,limit=2*R;
@@ -389,29 +392,13 @@
   function lineClear(x1,y1,x2,y2,ignored) {
     return lineClearIn(live(),x1,y1,x2,y2,ignored);
   }
-  function lineClearIn(balls,x1,y1,x2,y2,ignored,margin=.25) {
+  function lineClearIn(balls,x1,y1,x2,y2,ignored) {
     const dx=x2-x1,dy=y2-y1,len2=dx*dx+dy*dy;
     return balls.every(b=>{
       if(ignored.includes(b.n))return true;
       const t=clamp(((b.x-x1)*dx+(b.y-y1)*dy)/Math.max(len2,.01),0,1);
-      return Math.hypot(b.x-x1-t*dx,b.y-y1-t*dy)>2*R+margin;
+      return Math.hypot(b.x-x1-t*dx,b.y-y1-t*dy)>2*R+.25;
     });
-  }
-  const AI_LEVELS={
-    easy:{options:4,angleError:2.6,powerError:.14,escapeAngles:24,maxBanks:1},
-    normal:{options:7,angleError:.55,powerError:.065,escapeAngles:48,maxBanks:2},
-    hard:{options:10,angleError:.12,powerError:.015,escapeAngles:72,maxBanks:3}
-  };
-  function aiLevel(){return AI_LEVELS[state.aiDifficulty]||AI_LEVELS.normal;}
-  function executeAIPlan(plan){
-    if(!plan)return null;
-    const level=aiLevel(),sign=Math.random()<.5?-1:1;
-    // Human-like execution uncertainty is visible in the actual shot inputs.
-    // It never changes ball mass, cushion response or pocket acceptance.
-    const precision=state.aiDifficulty==='hard'&&(plan.type==='bank'||plan.type==='kick'||plan.type==='snooker')?.25:1;
-    const aimError=sign*(.55+Math.random()*.45)*level.angleError*precision*Math.PI/180;
-    const powerFactor=1+(Math.random()*2-1)*level.powerError;
-    return {...plan,aim:Math.round((plan.aim+aimError)*180/Math.PI*100)/100*Math.PI/180,power:Math.round(clamp(plan.power*powerFactor,5,100)),executionError:{angleDegrees:aimError*180/Math.PI,powerPercent:(powerFactor-1)*100},difficulty:state.aiDifficulty};
   }
   function aiTargets(){
     return state.mode==='nine'?activeBalls().filter(b=>b.n===lowestNine()):activeBalls().filter(b=>currentGroup()?(allGroupGone(currentGroup())?b.n===8:group(b.n)===currentGroup()):b.n!==8);
@@ -441,14 +428,22 @@
     let stopTime=0,settled=false,closestApproach=Infinity;
     const previous=physicsContext;physicsContext=events;
     try{
-      applyCueImpulse(c,plan.power,plan.aim,plan.spinX||0,plan.spinY||0,state.breaking);
+      applyCueImpulse(c,plan.power,plan.aim,plan.spinX||0,plan.spinY||0,false);
       // Use the same 30 s limit and 0.3 s settling interval as a live shot.
       for(let frame=0;frame<5401;frame++){
-        physicsStep(balls,STEP);
-        if(plan.trackApproach&&events.firstHit===null&&!c.pocketed){
-          for(const target of approachTargets)closestApproach=Math.min(closestApproach,(c.x-target.x)**2+(c.y-target.y)**2);
+        const remaining=balls.filter(b=>!b.pocketed);
+        const speed=Math.max(0,...remaining.map(b=>Math.hypot(b.vx,b.vy))),subdivisions=clamp(Math.ceil(speed*STEP/(R*.45)),1,8),dt=STEP/subdivisions;
+        for(let sub=0;sub<subdivisions;sub++){
+          for(const b of remaining){if(b.pocketed)continue;clothStep(b,dt);b.x+=b.vx*dt;b.y+=b.vy*dt;rails(b);pocketCheck(b);}
+          if(plan.trackApproach&&events.firstHit===null&&!c.pocketed){
+            for(const target of approachTargets)closestApproach=Math.min(closestApproach,(c.x-target.x)**2+(c.y-target.y)**2);
+          }
+          for(let i=0;i<remaining.length;i++)for(let j=i+1;j<remaining.length;j++){
+            const a=remaining[i],b=remaining[j];
+            if(!a.pocketed&&!b.pocketed&&(a.vx||a.vy||b.vx||b.vy))ballsCollide(a,b);
+          }
         }
-        if(ballsSettled(balls))stopTime+=STEP;else stopTime=0;
+        if(remaining.every(b=>b.pocketed||Math.hypot(b.vx,b.vy)<.12&&Math.hypot(b.rollVx,b.rollVy)<.12&&Math.abs(b.spin)<.12))stopTime+=STEP;else stopTime=0;
         if(stopTime>.3||(frame+1)*STEP>30){settled=true;break;}
       }
     }finally{physicsContext=previous;}
@@ -461,7 +456,7 @@
   function powerForSpeed(speed){
     let low=0,high=100;
     for(let i=0;i<14;i++){const mid=(low+high)/2;if(cueLaunchSpeed(mid)<speed)low=mid;else high=mid;}
-    return Math.round(clamp((low+high)/2,8,100));
+    return clamp((low+high)/2,8,100);
   }
   function targetsInLayout(balls,side,assignedGroup=state.groups[side]){
     const objects=balls.filter(b=>!b.pocketed&&b.n!==0);
@@ -493,145 +488,13 @@
     // A nearby but hidden next ball is worse than a clear continuation.
     return (Number.isFinite(best)?best:40+distance*.12)+(railDistance<3?8:0);
   }
-  function masterPositionScore(result){
-    if(result.winning)return -1000;
-    const c=result.balls.find(b=>b.n===0&&!b.pocketed);
-    if(!c)return 1000;
-    const pocketDistance=Math.min(...POCKETS.map(p=>Math.hypot(c.x-p.x,c.y-p.y)));
-    const railDistance=Math.min(c.x,W-c.x,c.y,H-c.y);
-    return aiPositionScore(result)*1.6+Math.max(0,6-pocketDistance)*5+Math.max(0,4-railDistance)*2;
-  }
-  const MASTER_SPINS=[
-    [0,0],[0,.45],[0,.85],[0,-.45],[0,-.85],
-    [-.3,0],[.3,0],[-.65,0],[.65,0],[-.9,0],[.9,0],
-    [-.55,.55],[.55,.55],[-.55,-.55],[.55,-.55],[-.75,.3],[.75,.3],[-.75,-.3],[.75,-.3]
-  ];
-  function spinVariant(base,spinX,spinY,factor=1){
-    return {...base,aim:base.aim+(spinX-(base.spinX||0))*.018,spinX,spinY,power:clamp(Math.round(base.power*factor),8,100)};
-  }
-  function strokeName(plan){
-    return `${plan.spinY<-.1?'低杆拉回':plan.spinY>.1?'高杆跟进':'中杆'}${Math.abs(plan.spinX||0)>.1?` · ${plan.spinX<0?'左':'右'}${Math.abs(plan.spinX)>.6?'强':'轻'}塞`:''}`;
-  }
-  async function refineMasterPosition(plans,isCurrent){
-    const candidates=plans.slice(0,4),refined=[];let count=0;
-    for(const base of candidates)for(const [spinX,spinY] of MASTER_SPINS){
-      if(!isCurrent())return null;
-      const plan=spinVariant(base,spinX,spinY,spinY<-.7?1.06:spinY>.7?.94:1);
-      const result=simulateAIShot(plan);
-      if(result.safe&&(result.potted||result.winning)&&validTacticalRoute(plan,result))refined.push({...plan,score:base.score-(base.positionCost||0)+masterPositionScore(result),positionCost:masterPositionScore(result),positionPlanned:true});
-      if(++count%4===0)await new Promise(resolve=>setTimeout(resolve,0));
-    }
-    return refined.sort((a,b)=>a.score-b.score);
-  }
-  const AI_WALLS=[{axis:'x',value:R,id:'左库'},{axis:'x',value:W-R,id:'右库'},{axis:'y',value:R,id:'上库'},{axis:'y',value:H-R,id:'下库'}];
-  function reflectedLeg(from,to,wall){
-    const mirror={...to,[wall.axis]:wall.value+(wall.value-to[wall.axis])*(.985/.79)},dx=mirror.x-from.x,dy=mirror.y-from.y;
-    const component=wall.axis==='x'?dx:dy;if(Math.abs(component)<1e-7)return null;
-    const fraction=(wall.value-from[wall.axis])/component;
-    if(fraction<=.01||fraction>=.99)return null;
-    const bounce={x:from.x+dx*fraction,y:from.y+dy*fraction};
-    const solid=wall.axis==='x'?bounce.y>CUT+.3&&bounce.y<H-CUT-.3:
-      bounce.x>CUT+.3&&bounce.x<SIDE_L-.3||bounce.x>SIDE_R+.3&&bounce.x<W-CUT-.3;
-    if(!solid)return null;
-    return {bounce,distance:Math.hypot(bounce.x-from.x,bounce.y-from.y)+Math.hypot(to.x-bounce.x,to.y-bounce.y)};
-  }
-  function masterAttackOptions(targets,kind=null){
-    const c=cue(),options=[];
-    for(const target of targets)for(let pocket=0;pocket<6;pocket++){
-      const p=pocketAim(pocket),direct=Math.hypot(p.x-target.x,p.y-target.y);
-      for(const wall of AI_WALLS){
-        if(kind!=='kick'){
-          const route=reflectedLeg(target,p,wall);
-          if(route&&lineClear(target.x,target.y,route.bounce.x,route.bounce.y,[0,target.n])&&lineClear(route.bounce.x,route.bounce.y,p.x,p.y,[0,target.n])){
-            const length=Math.hypot(route.bounce.x-target.x,route.bounce.y-target.y),nx=(route.bounce.x-target.x)/length,ny=(route.bounce.y-target.y)/length;
-            const gx=target.x-2*R*nx,gy=target.y-2*R*ny,cd=Math.hypot(gx-c.x,gy-c.y),cos=((gx-c.x)*nx+(gy-c.y)*ny)/cd;
-            if(gx>R&&gx<W-R&&gy>R&&gy<H-R&&cos>.3&&lineClear(c.x,c.y,gx,gy,[0,target.n]))options.push({target:target.n,pocket,type:'bank',banks:1,rail:wall.id,aim:Math.atan2(gy-c.y,gx-c.x),cd,pd:route.distance,cos,score:route.distance*.8+cd*.3+(1-cos)*55+14});
-          }
-        }
-        if(kind!=='bank'&&direct>.1&&lineClear(target.x,target.y,p.x,p.y,[0,target.n])){
-          const nx=(p.x-target.x)/direct,ny=(p.y-target.y)/direct,ghost={x:target.x-2*R*nx,y:target.y-2*R*ny};
-          const route=reflectedLeg(c,ghost,wall);
-          if(!route||!lineClear(c.x,c.y,route.bounce.x,route.bounce.y,[0,target.n])||!lineClear(route.bounce.x,route.bounce.y,ghost.x,ghost.y,[0,target.n]))continue;
-          const length=Math.hypot(ghost.x-route.bounce.x,ghost.y-route.bounce.y),cos=((ghost.x-route.bounce.x)*nx+(ghost.y-route.bounce.y)*ny)/length;
-          if(cos>.3)options.push({target:target.n,pocket,type:'kick',banks:1,rail:wall.id,aim:Math.atan2(route.bounce.y-c.y,route.bounce.x-c.x),cd:route.distance,pd:direct,cos,score:direct*.8+route.distance*.3+(1-cos)*55+20});
-        }
-      }
-    }
-    return options.sort((a,b)=>a.score-b.score);
-  }
-  function validTacticalRoute(plan,result){
-    const hits=result.cushionHits||[];
-    if((plan.type==='bank'||plan.type==='kick')&&!result.potted)return false;
-    return plan.type==='bank'?hits.some(h=>h.n===plan.target&&!h.jaw):plan.type==='kick'?hits.some(h=>h.n===0&&h.beforeFirstHit&&!h.jaw):true;
-  }
-  async function searchMasterAttacks(targets,isCurrent,kind=null){
-    const options=masterAttackOptions(targets,kind),success=[];let trials=0;
-    const selected=diverseAIOptions(options,kind?12:10);
-    for(const option of selected){
-      const contact=Math.sqrt(2*ROLL_DECEL*(option.pd+9))/.72/(.97*option.cos)*(option.type==='bank'?1.38:1.1);
-      const desired=Math.sqrt(contact*contact+2*ROLL_DECEL*option.cd)/.72*(option.type==='kick'?1.3:1);option.desiredSpeed=desired;
-      // Geometry only proposes a route: search rail loss/throw/English corrections.
-      for(const factor of [.95,1.15,1.4])for(const offset of [-.03,-.015,-.005,0,.005,.015,.03]){
-        if(!isCurrent())return null;
-        const plan={...option,aim:option.aim+offset,power:powerForSpeed(desired*factor),spinX:0,spinY:0};
-        const result=simulateAIShot(plan);
-        if(result.safe&&(result.potted||result.winning)&&validTacticalRoute(plan,result))success.push({...plan,winning:result.winning,positionCost:aiPositionScore(result),score:option.score+aiPositionScore(result)+plan.power*.08,tacticalVerified:true});
-        if(++trials%4===0)await new Promise(resolve=>setTimeout(resolve,0));
-      }
-      if(success.length>=8)break;
-    }
-    if(success.length<3)for(const option of selected.slice(0,4))for(const spinX of [-.65,.65])for(const offset of [-.1,-.05,0,.05,.1]){
-      if(!isCurrent())return null;
-      const plan={...option,aim:option.aim+offset+spinX*.018,power:powerForSpeed((option.desiredSpeed||90)*1.1),spinX,spinY:0},result=simulateAIShot(plan);
-      if(result.safe&&result.potted&&validTacticalRoute(plan,result))success.push({...plan,score:option.score+aiPositionScore(result)+plan.power*.08,positionCost:aiPositionScore(result),tacticalVerified:true});
-      if(++trials%4===0)await new Promise(resolve=>setTimeout(resolve,0));
-    }
-    // Refine promising routes with genuine side English, rather than a cue-only boost.
-    for(const base of success.slice().sort((a,b)=>a.score-b.score).slice(0,3))for(const spinX of [-.65,-.3,.3,.65]){
-      if(!isCurrent())return null;
-      const plan=spinVariant(base,spinX,0),result=simulateAIShot(plan);
-      if(result.safe&&(result.potted||result.winning)&&validTacticalRoute(plan,result))success.push({...plan,score:base.score-(base.positionCost||0)+masterPositionScore(result),positionCost:masterPositionScore(result),positionPlanned:true});
-      await new Promise(resolve=>setTimeout(resolve,0));
-    }
-    return success.sort((a,b)=>a.score-b.score);
-  }
-  async function rankTacticalShots(plans,isCurrent){
-    const tested=[];
-    for(const base of plans.slice(0,12)){
-      if(!isCurrent())return null;
-      let robust=0;
-      for(const sign of [-1,1])for(const powerSign of [-1,1]){
-        const plan={...base,aim:Math.round((base.aim+sign*.00052)*180/Math.PI*100)/100*Math.PI/180,power:clamp(Math.round(base.power*(1+powerSign*.015)),8,100)};
-        const result=simulateAIShot(plan);
-        if(result.safe&&result.potted&&validTacticalRoute(plan,result))robust++;
-      }
-      tested.push({...base,score:base.score+(4-robust)*25,robustness:robust/4});
-      await new Promise(resolve=>setTimeout(resolve,0));
-    }
-    return tested.sort((a,b)=>b.robustness-a.robustness||a.score-b.score);
-  }
-  function exposedContactFraction(balls,c,target){
-    const distance=Math.hypot(target.x-c.x,target.y-c.y);
-    if(distance<=2*R+.01)return 1;
-    const angle=Math.atan2(target.y-c.y,target.x-c.x),half=Math.asin(Math.min(1,2*R/distance));
-    let exposed=0;
-    for(const fraction of [-.98,-.75,-.5,-.25,0,.25,.5,.75,.98]){
-      const direction=angle+half*fraction,dx=Math.cos(direction),dy=Math.sin(direction);
-      const along=(target.x-c.x)*dx+(target.y-c.y)*dy;
-      const lateral2=distance*distance-along*along;
-      const entry=along-Math.sqrt(Math.max(0,4*R*R-lateral2));
-      if(lineClearIn(balls,c.x,c.y,c.x+dx*entry,c.y+dy*entry,[0,target.n],0))exposed++;
-    }
-    return exposed/9;
-  }
   function safetyPosition(result){
     const balls=result.balls.filter(b=>!b.pocketed),c=balls.find(b=>b.n===0),objects=balls.filter(b=>b.n!==0);
     const opponentGroup=state.groups[1-state.turn];
     const targets=targetsInLayout(balls,1-state.turn,opponentGroup);
-    if(!targets.length)return {score:0,blocked:false,threat:0,exposure:0,visible:0};
-    let threat=0,visible=0,exposure=0;
+    let threat=0,visible=0;
     for(const target of targets){
-      const fraction=exposedContactFraction(balls,c,target);exposure+=fraction;if(fraction>0)visible++;
+      if(lineClearIn(balls,c.x,c.y,target.x,target.y,[0,target.n]))visible++;
       for(let pocket=0;pocket<6;pocket++){
         const p=pocketAim(pocket),pd=Math.hypot(p.x-target.x,p.y-target.y);
         if(pd<.1||!lineClearIn(balls,target.x,target.y,p.x,p.y,[0,target.n]))continue;
@@ -642,29 +505,7 @@
       }
     }
     const distance=targets.length?Math.min(...targets.map(b=>Math.hypot(c.x-b.x,c.y-b.y))):W;
-    return {score:threat*180+exposure/Math.max(1,targets.length)*80-distance*.35-(visible===0?55:0),blocked:visible===0,threat,exposure,visible};
-  }
-  async function refineMasterDefence(plans,isCurrent){
-    const candidates=plans.slice(0,6),refined=[];let count=0;
-    defenceRefinement:for(const base of candidates)for(const [spinX,spinY] of MASTER_SPINS.slice(0,15))for(const factor of [.72,1,1.2]){
-      if(!isCurrent())return null;
-      const plan=spinVariant(base,spinX,spinY,factor),result=simulateAIShot(plan);
-      if(result.safe){const position=safetyPosition(result);refined.push({...plan,type:position.blocked?'snooker':'safety',score:position.score+plan.power*.025,snookerPlanned:position.blocked,opponentExposure:position.exposure,description:`先碰 ${plan.target} 号 · ${strokeName(plan)} · ${position.blocked?'藏白球做斯诺克':position.threat<.15?'拉开球距限制进攻':'控制对手进攻角度'}`});}
-      if(++count%4===0)await new Promise(resolve=>setTimeout(resolve,0));
-      if(count>=216)break defenceRefinement;
-    }
-    const ranked=refined.sort((a,b)=>a.score-b.score).slice(0,12);
-    for(const plan of ranked){
-      let stable=0;
-      for(const sign of [-1,1])for(const factor of [.985,1.015]){
-        if(!isCurrent())return null;
-        const result=simulateAIShot({...plan,aim:Math.round((plan.aim+sign*.00052)*180/Math.PI*100)/100*Math.PI/180,power:clamp(Math.round(plan.power*factor),8,100)});
-        if(result.safe&&safetyPosition(result).blocked)stable++;
-      }
-      plan.snookerRobustness=stable/4;
-      await new Promise(resolve=>setTimeout(resolve,0));
-    }
-    return ranked.sort((a,b)=>b.snookerRobustness-a.snookerRobustness||a.score-b.score);
+    return {score:threat*180+visible/Math.max(1,targets.length)*35-distance*.35,blocked:visible===0,threat};
   }
   function escapeRoutes(c,target){
     const walls=[{axis:'x',value:R},{axis:'x',value:W-R},{axis:'y',value:R},{axis:'y',value:H-R}];
@@ -717,30 +558,23 @@
     // A bounded all-angle search catches routes missed by mirrored targets,
     // including three-cushion escapes and changes caused by cushion loss.
     const base=Math.atan2(targets[0].y-c.y,targets[0].x-c.x);
-    for(let i=0;i<aiLevel().escapeAngles;i++)for(const power of [38,64,94]){
+    for(let i=0;i<72;i++)for(const power of [38,64,94]){
       if(!isCurrent())return null;
-      test({target:targets[0].n,pocket:null,aim:base+i*2*Math.PI/aiLevel().escapeAngles,power,spinY:0,type:'escape'});
+      test({target:targets[0].n,pocket:null,aim:base+i*Math.PI/36,power,spinY:0,type:'escape'});
       if(++count%6===0)await new Promise(resolve=>setTimeout(resolve,0));
     }
     if(!safe.length){
-      const seeds=tested.sort((a,b)=>a.score-b.score).slice(0,state.aiDifficulty==='easy'?1:4);
+      const seeds=tested.sort((a,b)=>a.score-b.score).slice(0,4);
       for(const seed of seeds)for(const offset of [-2,-1,-.5,.5,1,2])for(const factor of [.8,1,1.15]){
         if(!isCurrent())return null;
         test({target:seed.target,pocket:null,aim:seed.aim+offset*Math.PI/180,power:clamp(seed.power*factor,8,100),spinY:0,type:'escape'});
         if(++count%6===0)await new Promise(resolve=>setTimeout(resolve,0));
       }
     }
-    if(state.aiDifficulty==='hard'&&!safe.length){
-      for(const seed of tested.sort((a,b)=>a.score-b.score).slice(0,4))for(const spinX of [-.65,.65])for(const offset of [-.03,0,.03])for(const factor of [.85,1.15]){
-        if(!isCurrent())return null;
-        test({...seed,aim:seed.aim+offset+spinX*.018,power:clamp(seed.power*factor,8,100),spinX,spinY:0,type:'escape'});
-        if(++count%4===0)await new Promise(resolve=>setTimeout(resolve,0));
-      }
-    }
     const best=(safe.length?safe:tested).sort((a,b)=>a.score-b.score)[0];
     if(!best)return null;
     const {result,...plan}=best;
-    plan.description=result.safe?`先碰 ${plan.target} 号 · 碰库勾球解围 · ${strokeName(plan)} · 控制落点`:
+    plan.description=result.safe?`先碰 ${plan.target} 号 · 扩展碰库解球 · 控制白球落点`:
       result.legal&&!result.scratch?`尝试解球 · 先碰 ${plan.target} 号，仍有无碰库犯规风险`:
       '解球困难 · 已比较碰库线路，当前仍有犯规风险';
     return plan;
@@ -749,7 +583,7 @@
     const targets=aiTargets();if(!targets.length||!isCurrent())return null;
     if(state.ballInHand)placeAICue(targets);
     const successful=[];let attackTrials=0;
-    for(const option of diverseAIOptions(aiOptions(targets),aiLevel().options)){
+    for(const option of diverseAIOptions(aiOptions(targets))){
       if(!isCurrent())return null;
       const contact=Math.sqrt(2*ROLL_DECEL*(option.pd+7))/.72/(.97*option.cos);
       const desired=Math.sqrt(contact*contact+2*ROLL_DECEL*option.cd)/.72;
@@ -759,27 +593,22 @@
         const plan={...option,aim:option.aim+offset,power:powerForSpeed(desired*factor),spinY:0,type:'attack'};
         let result=simulateAIShot(plan);
         if((result.potted||result.winning)&&!result.safe){plan.spinY=-.65;result=simulateAIShot(plan);}
-        if(result.safe&&(result.potted||result.winning))successful.push({...plan,winning:result.winning,score:option.score+aiPositionScore(result)+plan.power*.08,positionCost:aiPositionScore(result)});
+        if(result.safe&&(result.potted||result.winning))successful.push({...plan,winning:result.winning,score:option.score+aiPositionScore(result)+plan.power*.08});
         if(++attackTrials%4===0)await new Promise(resolve=>setTimeout(resolve,0));
       }
       await new Promise(resolve=>setTimeout(resolve,0));
-    }
-    if(state.aiDifficulty==='hard'&&(!successful.length||Math.min(...successful.map(p=>p.score))>60)){
-      const tactical=await searchMasterAttacks(targets,isCurrent);if(!isCurrent())return null;successful.push(...tactical);
     }
     successful.sort((a,b)=>a.score-b.score);
     if(successful.length){
       // Test small input variations before ranking finalists. Difficulty
       // changes choice among validated shots, never the launch physics.
-      let finalists=successful.slice(0,state.aiDifficulty==='easy'?3:6);
-      if(state.aiDifficulty==='hard'){const refined=await refineMasterPosition(finalists,isCurrent);if(!refined)return null;if(refined.length)finalists=refined.slice(0,6);}
+      const finalists=successful.slice(0,8);
       for(const plan of finalists){
         let robust=0;
         for(const sign of [-1,1]){
           if(!isCurrent())return null;
-          const perturbation=plan.type==='bank'||plan.type==='kick'?.00052:.0015;
-          const result=simulateAIShot({...plan,aim:plan.aim+sign*perturbation,power:clamp(Math.round(plan.power*(1+sign*.015)),8,100)});
-          if(result.safe&&(result.potted||result.winning)&&validTacticalRoute(plan,result))robust++;
+          const result=simulateAIShot({...plan,aim:plan.aim+sign*.0015,power:clamp(plan.power*(1+sign*.025),8,100)});
+          if(result.safe&&(result.potted||result.winning))robust++;
         }
         plan.score+=(2-robust)*12;plan.robustness=robust/2;
         await new Promise(resolve=>setTimeout(resolve,0));
@@ -788,23 +617,15 @@
       const margin=state.aiDifficulty==='easy'?20:state.aiDifficulty==='normal'?5:0;
       const pool=finalists.filter(p=>p.score<=finalists[0].score+margin);
       const best=pool[Math.floor(Math.random()*pool.length)];
-      if(state.aiDifficulty==='hard'&&best.robustness<.5&&!best.winning){
-        const defence=await chooseAIDefence(targets,isCurrent);if(!isCurrent())return null;
-        if(defence?.snookerPlanned)return executeAIPlan(defence);
-      }
-      best.description=best.winning?'决胜出杆 · 尝试打进决胜球':`${best.target} 号 → ${POCKETS[best.pocket].name} · ${best.type==='bank'?'翻袋 · ':best.type==='kick'?'碰库勾球 · ':''}${strokeName(best)}${best.positionPlanned?' · 留下一杆角度':''}`;
-      return executeAIPlan(best);
+      best.description=best.winning?'决胜出杆 · 合法打进决胜球':`${best.target} 号 → ${POCKETS[best.pocket].name} · ${best.spinY?'低杆控白球':'为下一杆留出球路'}`;
+      return best;
     }
-    return executeAIPlan(await chooseAIDefence(targets,isCurrent));
-  }
-  async function chooseAIDefence(targets,isCurrent){
     const c=cue(),defence=[];
     let trials=0;
     // Keep the mirrored search bounded; reserve a separate budget for the
     // broad escape search instead of falling back to a blocked straight aim.
     defenceSearch:for(const target of targets){
       for(const route of escapeRoutes(c,target)){
-        if(route.banks>aiLevel().maxBanks)continue;
         const baseAim=Math.atan2(route.y-c.y,route.x-c.x);
         const contactPower=powerForSpeed(Math.sqrt(2*ROLL_DECEL*(route.distance+9))/.72*(1+route.banks*.2));
         for(const offset of [0,-1.35*R,1.35*R])for(const factor of [.9,1.2,1.5]){
@@ -822,25 +643,8 @@
       if(defence.length>=24)break;
     }
     defence.sort((a,b)=>a.score-b.score);
-    if(defence.length){
-      if(state.aiDifficulty==='hard'){const refined=await refineMasterDefence(defence,isCurrent);if(!refined)return null;if(refined.length)return refined[0];}
-      return defence[0];
-    }
-    return await searchEscape(targets,isCurrent);
-  }
-  async function chooseAITechnique(kind,isCurrent=()=>true){
-    const targets=aiTargets();if(!targets.length)return null;
-    if(kind==='snooker')return executeAIPlan(await chooseAIDefence(targets,isCurrent));
-    const plans=await searchMasterAttacks(targets,isCurrent,kind);if(!plans?.length||!isCurrent())return null;
-    const refined=await refineMasterPosition(plans,isCurrent);if(!refined||!isCurrent())return null;
-    const ranked=await rankTacticalShots(refined.length?refined:plans,isCurrent);if(!ranked||!isCurrent())return null;
-    const best=ranked[0];
-    best.description=`${best.target} 号 → ${POCKETS[best.pocket].name} · ${kind==='bank'?'翻袋':'碰库勾球'} · ${strokeName(best)}`;
-    return executeAIPlan(best);
-  }
-  function showAIStroke(plan){
-    if(!plan)return;state.aim=plan.aim;state.power=plan.power;state.spinX=plan.spinX||0;state.spinY=plan.spinY||0;
-    syncPowerUI();moveSpinDot();updateUI();
+    if(defence.length)return defence[0];
+    return searchEscape(targets,isCurrent);
   }
   async function queueAI() {
     if(state.opponent!=='ai'||state.turn!==1||state.phase!=='aim')return;
@@ -848,12 +652,12 @@
     state.aiThinking=true;state.aiPlan=null;say('电脑正在判断球路…');render();
     const plan=await chooseAIPlan(isCurrent);
     if(!isCurrent()||!plan)return;
-    state.aiPlan=plan;showAIStroke(plan);say(`电脑计划：${plan.description}`);render();
+    state.aiPlan=plan;say(`电脑计划：${plan.description}`);render();
     // Show the selected ball and pocket for a full 2.5 seconds before shooting.
     setTimeout(()=>{
       if(!isCurrent())return;
       state.aiThinking=false;state.ballInHand=false;state.aim=plan.aim;state.power=plan.power;
-      state.spinX=plan.spinX||0;state.spinY=plan.spinY||0;moveSpinDot();syncPowerUI();updateUI();fire(true);
+      state.spinX=0;state.spinY=plan.spinY;moveSpinDot();syncPowerUI();updateUI();fire(true);
     },2500);
   }
   function validCuePosition(x,y) {
@@ -866,168 +670,97 @@
     if(commit){state.ballInHand=false;say(`白球已摆放。${actor(state.turn)}请瞄准击球。`);updateUI();}
     render();return true;
   }
-  function physicsStep(balls,dt){
-    const topSpeed=Math.max(0,...balls.filter(b=>!b.pocketed).map(b=>Math.hypot(b.vx,b.vy)));
-    const subdivisions=clamp(Math.ceil(topSpeed*dt/(R*.45)),1,8),subdt=dt/subdivisions;
-    for(let sub=0;sub<subdivisions;sub++){
-      const moving=balls.filter(b=>!b.pocketed);
-      for(const b of moving){clothStep(b,subdt);b.x+=b.vx*subdt;b.y+=b.vy*subdt;rails(b);pocketCheck(b);}
-      for(let i=0;i<moving.length;i++)for(let j=i+1;j<moving.length;j++)if(!moving[i].pocketed&&!moving[j].pocketed)ballsCollide(moving[i],moving[j]);
-    }
-  }
-  function ballsSettled(balls){return balls.every(b=>b.pocketed||Math.hypot(b.vx,b.vy)<.12&&Math.hypot(b.rollVx,b.rollVy)<.12&&Math.abs(b.spin)<.12);}
-  let displayGuideKey='',displayGuideCache=null;
-  function firstBallOnRay(x,y,dx,dy,excluded){
-    let hit=null,distance=Infinity;
-    for(const b of state.balls){
-      if(b.pocketed||excluded.includes(b.n))continue;
-      const along=(b.x-x)*dx+(b.y-y)*dy;
-      if(along<=0)continue;
-      const side2=(b.x-x)**2+(b.y-y)**2-along*along;
-      if(side2>(2*R)**2)continue;
-      const t=Math.max(0,along-Math.sqrt(Math.max(0,(2*R)**2-side2)));
-      if(t<distance){hit=b;distance=t;}
-    }
-    return {ball:hit,distance};
-  }
-  function firstBoundaryOnRay(x,y,dx,dy){
-    let distance=Infinity;
-    for(const [component,edge,direction,outward] of [[x,R,dx,-1],[x,W-R,dx,1],[y,R,dy,-1],[y,H-R,dy,1]]){
-      if(Math.abs(direction)<1e-8)continue;
-      const t=(edge-component)/direction;
-      if((t>1e-6||Math.abs(t)<=1e-6&&direction*outward>0)&&t<distance)distance=Math.max(0,t);
-    }
-    return Number.isFinite(distance)?distance:0;
-  }
-  function displayGuide(){
-    const key=[state.aim,state.spinX,state.spinY,...state.balls.flatMap(b=>[b.n,b.x,b.y,b.pocketed?1:0])].join(',');
-    if(key===displayGuideKey)return displayGuideCache;
-    displayGuideKey=key;
-    const a=cue();if(!a)return displayGuideCache=null;
-    const angle=state.aim-state.spinX*.018,dx=Math.cos(angle),dy=Math.sin(angle);
-    const boundary=firstBoundaryOnRay(a.x,a.y,dx,dy);
-    const first=firstBallOnRay(a.x,a.y,dx,dy,[0]);
-    const target=first.distance<boundary?first.ball:null;
-    const distance=target?first.distance:boundary;
-    const impact={x:a.x+dx*distance,y:a.y+dy*distance};
-    const shotPath=[{x:a.x,y:a.y},impact],cuePath=[],targetPath=[];
-    if(target){
-      const nx=(target.x-impact.x)/(2*R),ny=(target.y-impact.y)/(2*R);
-      const normalLength=Math.hypot(nx,ny)||1,unitX=nx/normalLength,unitY=ny/normalLength;
-      const transfer=.97*Math.max(0,dx*unitX+dy*unitY);
-      const tangentX=-unitY,tangentY=unitX;
-      let cueVx=dx-transfer*unitX,cueVy=dy-transfer*unitY;
-      let objectVx=transfer*unitX,objectVy=transfer*unitY;
-      const normalizedSpin=state.spinX*.42*1.4;
-      const tangentSlip=(objectVx-cueVx)*tangentX+(objectVy-cueVy)*tangentY-normalizedSpin;
-      const tangentImpulse=clamp(-tangentSlip/7,-transfer*.055,transfer*.055);
-      cueVx-=tangentImpulse*tangentX;cueVy-=tangentImpulse*tangentY;
-      objectVx+=tangentImpulse*tangentX;objectVy+=tangentImpulse*tangentY;
-      const objectSpeed=Math.hypot(objectVx,objectVy)||1;
-      const objectDirX=objectVx/objectSpeed,objectDirY=objectVy/objectSpeed;
-      const targetLimit=Math.min(11,firstBoundaryOnRay(target.x,target.y,objectDirX,objectDirY));
-      const obstacle=firstBallOnRay(target.x,target.y,objectDirX,objectDirY,[0,target.n]);
-      const objectLength=Math.max(0,Math.min(targetLimit,obstacle.distance));
-      targetPath.push({x:target.x,y:target.y},{x:target.x+objectDirX*objectLength,y:target.y+objectDirY*objectLength});
-      let outX=cueVx+state.spinY*.42*unitX,outY=cueVy+state.spinY*.42*unitY;
-      const outSpeed=Math.hypot(outX,outY);
-      if(outSpeed>.001){
-        outX/=outSpeed;outY/=outSpeed;
-        const cueLimit=firstBoundaryOnRay(impact.x,impact.y,outX,outY);
-        const length=Math.max(0,Math.min(8,Math.max(2,outSpeed*10),cueLimit));
-        cuePath.push(impact,{x:impact.x+outX*length,y:impact.y+outY*length});
-      }
-    }
-    return displayGuideCache={shotPath,cuePath,targetPath,targetNumber:target?.n??null,shotBlocked:!target};
-  }
   function roundedRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
   function fillRect(x,y,w,h,r,color){ctx.fillStyle=color;roundedRect(x,y,w,h,r);ctx.fill();}
-  let tableBackdrop=null;
-  function drawTable(){
-    if(!tableBackdrop){
-      const layer=document.createElement('canvas');layer.width=canvas.width;layer.height=canvas.height;
-      const screenContext=ctx;ctx=layer.getContext('2d');ctx.setTransform(PIXEL_RATIO,0,0,PIXEL_RATIO,0,0);
-      try{paintTable();tableBackdrop=layer;}finally{ctx=screenContext;}
-    }
-    ctx.drawImage(tableBackdrop,0,0,VIEW_W,VIEW_H);
-  }
-  function paintTable(){
+  function drawTable() {
     const l=OX,t=OY,r=OX+W*SCALE,b=OY+H*SCALE;
-    ctx.fillStyle='#090e17';ctx.fillRect(0,0,VIEW_W,VIEW_H);
-    ctx.shadowColor='#000b';ctx.shadowBlur=30;ctx.shadowOffsetY=12;
-    const frame=ctx.createLinearGradient(0,t-48,0,b+48);
-    frame.addColorStop(0,'#5a646a');frame.addColorStop(.08,'#20262c');frame.addColorStop(.48,'#0c1016');frame.addColorStop(.94,'#20262c');frame.addColorStop(1,'#56616a');
-    fillRect(l-50,t-50,W*SCALE+100,H*SCALE+100,30,frame);
-    ctx.shadowBlur=0;ctx.shadowOffsetY=0;
-    ctx.strokeStyle='#a6b2b879';ctx.lineWidth=2;roundedRect(l-48,t-48,W*SCALE+96,H*SCALE+96,29);ctx.stroke();
-    fillRect(l-37,t-37,W*SCALE+74,H*SCALE+74,22,'#092c3b');
-    const felt=ctx.createRadialGradient(l+W*SCALE*.45,t+H*SCALE*.35,10,l+W*SCALE*.5,t+H*SCALE*.5,690);
-    felt.addColorStop(0,'#239bbe');felt.addColorStop(.65,'#157e9e');felt.addColorStop(1,'#09617f');
-    ctx.fillStyle=felt;ctx.fillRect(l-5,t-5,W*SCALE+10,H*SCALE+10);
-    // Sparse fibres are cached, rather than repainting 56,000 per frame.
-    let seed=19327;
-    for(let i=0;i<9500;i++){
-      seed=(seed*1664525+1013904223)>>>0;const x=l+(seed>>>8)%(r-l);
-      seed=(seed*1664525+1013904223)>>>0;const y=t+(seed>>>8)%(b-t);
-      ctx.fillStyle=i%4?'#d4f5ff09':'#032d480c';ctx.fillRect(x,y,1.1,.45);
+    ctx.fillStyle='#090b0e';ctx.fillRect(0,0,VIEW_W,VIEW_H);
+    const floor=ctx.createRadialGradient(700,365,90,700,365,800);floor.addColorStop(0,'#243035');floor.addColorStop(1,'#070d16');ctx.fillStyle=floor;ctx.fillRect(0,0,VIEW_W,VIEW_H);
+    let seed=73451;for(let i=0;i<19000;i++){seed=(seed*1664525+1013904223)>>>0;const x=seed%VIEW_W;seed=(seed*1664525+1013904223)>>>0;const y=seed%VIEW_H;ctx.fillStyle=i%3?'#a4aaa50c':'#00000018';ctx.fillRect(x,y,2,2);}
+    ctx.shadowColor='#000d';ctx.shadowBlur=38;ctx.shadowOffsetY=17;
+    const frame=ctx.createLinearGradient(0,t-58,0,b+58);frame.addColorStop(0,'#353c3c');frame.addColorStop(.15,'#1c2526');frame.addColorStop(.55,'#090f13');frame.addColorStop(.85,'#1b2426');frame.addColorStop(1,'#353d3d');
+    fillRect(l-61,t-61,W*SCALE+122,H*SCALE+122,33,frame);ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+    ctx.strokeStyle='#6c79713d';ctx.lineWidth=2;roundedRect(l-59,t-59,W*SCALE+118,H*SCALE+118,32);ctx.stroke();
+    // Cloth continues under the open pocket approaches, including the small
+    // corner shelves exposed between the rubber and the rail cap.
+    fillRect(l-39,t-39,W*SCALE+78,H*SCALE+78,19,'#10628e');
+    // Dark, flat rail caps and plain pocket wells follow the top-down reference.
+    for(const y of [t-58,b+35]){
+      const metal=ctx.createLinearGradient(0,y,0,y+23);metal.addColorStop(0,'#515a59');metal.addColorStop(.16,'#303839');metal.addColorStop(.7,'#171f20');metal.addColorStop(1,'#0b1213');
+      for(const [a,z] of [[0,SIDE_L],[SIDE_R,W]]){ctx.fillStyle=metal;ctx.fillRect(l+a*SCALE,y,(z-a)*SCALE,23);ctx.strokeStyle='#9baa9b3c';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(l+a*SCALE+7,y+2);ctx.lineTo(l+z*SCALE-7,y+2);ctx.stroke();}
+      for(let k=4;k<23;k+=3){ctx.strokeStyle=k%2?'#d2e7e90a':'#00000024';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(l+31,y+k);ctx.lineTo(r-31,y+k);ctx.stroke();}
     }
-    const railWidth=27;
-    function horizontal(a,z,y,sign){
-      const x1=l+a*SCALE,x2=l+z*SCALE,outer=y-sign*railWidth;
-      const rubber=ctx.createLinearGradient(0,outer,0,y);
-      rubber.addColorStop(0,'#10516c');rubber.addColorStop(.30,'#1e8da9');rubber.addColorStop(.76,'#14718c');rubber.addColorStop(1,'#084456');
-      ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);ctx.lineTo(x2+17,outer);ctx.lineTo(x1-17,outer);ctx.closePath();ctx.fillStyle=rubber;ctx.fill();
-      ctx.beginPath();ctx.moveTo(x1,y-sign);ctx.lineTo(x2,y-sign);ctx.strokeStyle='#58bcd055';ctx.lineWidth=2;ctx.stroke();
+    for(const [x,label] of [[l-59,'S686 台呢 · 精密球台'],[r+34,'八球 / 九球 · S686']]){
+      const metal=ctx.createLinearGradient(x,0,x+25,0);metal.addColorStop(0,'#202a2a');metal.addColorStop(.54,'#364141');metal.addColorStop(1,'#172020');ctx.fillStyle=metal;ctx.fillRect(x,t,25,H*SCALE);
+      ctx.save();ctx.translate(x+12,t+H*SCALE*.5);ctx.rotate(-Math.PI/2);ctx.fillStyle='#b8a065';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='600 10px sans-serif';ctx.fillText(label,0,0);ctx.restore();
     }
-    for(const [a,z] of [[CUT,SIDE_L],[SIDE_R,W-CUT]]){
-      horizontal(a,z,t,1);horizontal(a,z,b,-1);
-    }
-    for(const x of [l,r]){
-      const sign=x===l?-1:1,upper=t+CUT*SCALE,lower=b-CUT*SCALE;
-      const rubber=ctx.createLinearGradient(x,0,x+sign*railWidth,0);
-      rubber.addColorStop(0,'#084456');rubber.addColorStop(.24,'#14718c');rubber.addColorStop(.72,'#1e8da9');rubber.addColorStop(1,'#10516c');
-      ctx.beginPath();ctx.moveTo(x,upper);ctx.lineTo(x,lower);ctx.lineTo(x+sign*railWidth,lower+17);ctx.lineTo(x+sign*railWidth,upper-17);ctx.closePath();ctx.fillStyle=rubber;ctx.fill();
-      ctx.beginPath();ctx.moveTo(x+sign,upper);ctx.lineTo(x+sign,lower);ctx.strokeStyle='#58bcd055';ctx.lineWidth=2;ctx.stroke();
-    }
-    // Silver corner caps and middle-pocket brackets match the reference.
-    for(const [x,y] of [[l,t],[r,t],[l,b],[r,b]]){
-      const sx=x===l?1:-1,sy=y===t?1:-1;
-      ctx.save();ctx.translate(x,y);ctx.scale(sx,sy);
-      const metal=ctx.createLinearGradient(-33,-33,36,36);
-      metal.addColorStop(0,'#edf0ed');metal.addColorStop(.2,'#747e83');metal.addColorStop(.5,'#d0d9dc');metal.addColorStop(.78,'#525e63');metal.addColorStop(1,'#bdc8ca');
-      ctx.fillStyle=metal;ctx.beginPath();ctx.moveTo(-34,39);ctx.lineTo(-34,-13);ctx.quadraticCurveTo(-34,-34,-13,-34);ctx.lineTo(39,-34);ctx.lineTo(39,-27);ctx.lineTo(10,-27);ctx.quadraticCurveTo(-27,-27,-27,10);ctx.lineTo(-27,39);ctx.closePath();ctx.fill();ctx.restore();
-    }
-    for(const y of [t,b]){
-      const sy=y===t?-1:1;
-      const metal=ctx.createLinearGradient(0,y+sy*28,0,y+sy*46);
-      metal.addColorStop(0,'#e4e9e9');metal.addColorStop(.5,'#6d797e');metal.addColorStop(1,'#c3ced0');
-      ctx.fillStyle=metal;ctx.fillRect(l+SIDE_L*SCALE-6,Math.min(y+sy*28,y+sy*46),SIDE_MOUTH*SCALE+12,18);
-    }
-    for(let index=0;index<6;index++){
-      const geometry=POCKET_GEOMETRY[index],center=geometry.well,q=worldToScreen(center.x,center.y),radius=geometry.radius*SCALE;
-      ctx.beginPath();ctx.arc(q.x,q.y,radius+3.5,0,Math.PI*2);ctx.fillStyle='#091118';ctx.fill();
-      ctx.strokeStyle='#b9c7cc';ctx.lineWidth=1.8;ctx.stroke();
-      const well=ctx.createRadialGradient(q.x-4,q.y-5,2,q.x,q.y,radius);
-      well.addColorStop(0,'#010307');well.addColorStop(.77,'#010408');well.addColorStop(.96,'#0e1920');well.addColorStop(1,'#26373f');
-      ctx.beginPath();ctx.arc(q.x,q.y,radius,0,Math.PI*2);ctx.fillStyle=well;ctx.fill();
-      // Recessed liner, inner rubber lip and a dim rear-wall reflection.
-      // These marks stay within the existing mouth; collision size is unchanged.
-      ctx.save();ctx.beginPath();ctx.arc(q.x,q.y,radius,0,Math.PI*2);ctx.clip();
-      ctx.strokeStyle='#17232c';ctx.lineWidth=3.2;ctx.beginPath();ctx.arc(q.x,q.y+2,radius-2,0,Math.PI*2);ctx.stroke();
-      ctx.strokeStyle='#4b5960';ctx.lineWidth=.8;ctx.beginPath();ctx.ellipse(q.x,q.y+4,radius-4,radius-6,.0,.15,Math.PI-.15);ctx.stroke();
-      ctx.strokeStyle='#81909655';ctx.lineWidth=.7;ctx.beginPath();ctx.arc(q.x-1,q.y-1,radius-1,Math.PI*1.12,Math.PI*1.67);ctx.stroke();
+    const felt=ctx.createRadialGradient(l+W*SCALE*.45,t+H*SCALE*.34,16,l+W*SCALE*.5,t+H*SCALE*.5,710);
+    felt.addColorStop(0,'#288fc2');felt.addColorStop(.42,'#197cac');felt.addColorStop(.82,'#10628e');felt.addColorStop(1,'#0b4669');ctx.fillStyle=felt;ctx.fillRect(l,t,W*SCALE,H*SCALE);
+    // Directional, translucent fibres read as woven cloth at high pixel density.
+    let clothSeed=19327;for(let i=0;i<56000;i++){clothSeed=(clothSeed*1664525+1013904223)>>>0;const x=l+(clothSeed>>>8)%(r-l);clothSeed=(clothSeed*1664525+1013904223)>>>0;const y=t+(clothSeed>>>8)%(b-t);ctx.fillStyle=i%4?'#d4f5ff08':'#032d480c';ctx.fillRect(x,y,1.15,.42);}
+    const clothLight=ctx.createLinearGradient(0,t,0,b);clothLight.addColorStop(0,'#d8f6ff10');clothLight.addColorStop(.48,'#ffffff00');clothLight.addColorStop(1,'#001b371f');ctx.fillStyle=clothLight;ctx.fillRect(l,t,W*SCALE,H*SCALE);
+    ctx.save();ctx.translate(l+W*SCALE*.51,t+H*SCALE*.51);ctx.rotate(-.035);
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#c8f4ff22';ctx.font='italic 800 72px Arial, sans-serif';ctx.fillText('S686',0,0);
+    ctx.fillStyle='#dcf8ff28';ctx.font='600 12px Arial, sans-serif';ctx.fillText('PRECISION CLOTH',0,36);ctx.restore();
+    ctx.strokeStyle='#d7f1ff1b';ctx.lineWidth=1.1;ctx.setLineDash([4,12]);ctx.beginPath();ctx.moveTo(l+25*SCALE,t);ctx.lineTo(l+25*SCALE,b);ctx.stroke();ctx.setLineDash([]);
+    const horizontal=(x1,x2,y,sign)=>{
+      const outer=y-sign*29;
+      ctx.beginPath();ctx.moveTo(x1+7,y);ctx.quadraticCurveTo(x1-4,y,x1-5,y-sign*8);
+      ctx.lineTo(x1-11,outer);ctx.lineTo(x2+11,outer);ctx.lineTo(x2+5,y-sign*8);
+      ctx.quadraticCurveTo(x2+4,y,x2-7,y);ctx.closePath();
+      const g=ctx.createLinearGradient(0,outer,0,y);g.addColorStop(0,'#082943');g.addColorStop(.42,'#0c4d75');g.addColorStop(.82,'#10577e');g.addColorStop(1,'#12628b');ctx.fillStyle=g;ctx.fill();
+      ctx.strokeStyle='#b5ebff12';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x1+8,y-1);ctx.lineTo(x2-8,y-1);ctx.stroke();
+    };
+    for(const [a,z] of [[CUT,SIDE_L],[SIDE_R,W-CUT]]){horizontal(l+a*SCALE,l+z*SCALE,t,1);horizontal(l+a*SCALE,l+z*SCALE,b,-1);}
+    // Side rails use the same tapered rubber nose as the long rails.
+    for(const x of [l,r]){const sign=x===l?-1:1,upper=t+CUT*SCALE,lower=b-CUT*SCALE;ctx.beginPath();ctx.moveTo(x,upper+7);ctx.quadraticCurveTo(x,upper-4,x+sign*8,upper-5);ctx.lineTo(x+sign*29,upper-11);ctx.lineTo(x+sign*29,lower+11);ctx.lineTo(x+sign*8,lower+5);ctx.quadraticCurveTo(x,lower+4,x,lower-7);ctx.closePath();const g=ctx.createLinearGradient(x,0,x+sign*29,0);g.addColorStop(0,'#12628b');g.addColorStop(.25,'#10577e');g.addColorStop(.6,'#0c4d75');g.addColorStop(1,'#082943');ctx.fillStyle=g;ctx.fill();ctx.strokeStyle='#b5ebff12';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x+sign,upper+8);ctx.lineTo(x+sign,lower-8);ctx.stroke();}
+    // The visible mouth opens into a straight channel with rubber on both
+    // sides. The same mouth width and depth control the physical colliders.
+    for(const p of POCKETS){
+      const side=p.x===W/2,mx=side?p.x:(p.x===0?CUT/2:W-CUT/2),my=side?p.y:(p.y===0?CUT/2:H-CUT/2);
+      const q=worldToScreen(mx,my),dx=side?0:(p.x===0?-Math.SQRT1_2:Math.SQRT1_2),dy=side?(p.y===0?-1:1):(p.y===0?-Math.SQRT1_2:Math.SQRT1_2);
+      const tx=-dy,ty=dx,half=(side?SIDE_MOUTH:CORNER_MOUTH)*SCALE/2,depth=THROAT_DEPTH*SCALE;
+      ctx.save();ctx.transform(tx,ty,dx,dy,q.x,q.y);
+      ctx.beginPath();ctx.moveTo(-half-2,-7);ctx.lineTo(-half,-1);ctx.lineTo(-half+4,depth+2);
+      ctx.quadraticCurveTo(-half+9,depth+14,0,depth+15);ctx.quadraticCurveTo(half-9,depth+14,half-4,depth+2);
+      ctx.lineTo(half,-1);ctx.lineTo(half+2,-7);ctx.closePath();
+      // The approach and straight shelf are blue cloth, continuous with the
+      // playing surface. Only the recessed drop at the back is a dark hole.
+      ctx.fillStyle='#10628e';ctx.fill();
+      // Solid, cloth-wrapped rubber cheeks blend into the rail noses. Each
+      // cheek has a rounded lip, a broad top and a shaded vertical face; it
+      // is a closed volume rather than two strokes painted onto the shelf.
+      for(const s of [-1,1]){
+        ctx.save();ctx.scale(s,1);
+        const lip=side?0:-2,back=depth+7,outer=side?20:16;
+        ctx.beginPath();ctx.moveTo(half+5,lip);
+        ctx.bezierCurveTo(half+1,lip,half-2,lip+3,half-2,6);
+        ctx.lineTo(half-3,depth+2);ctx.quadraticCurveTo(half-3,back,half+2,back);
+        // Extend into the existing cushion, rather than ending in a detached
+        // pill. The middle-pocket lip never protrudes past the rail nose.
+        ctx.lineTo(half+outer,back);ctx.lineTo(half+outer+3,lip);ctx.closePath();
+        const rubber=ctx.createLinearGradient(0,lip,0,back);
+        rubber.addColorStop(0,'#12628b');rubber.addColorStop(.16,'#10577e');
+        rubber.addColorStop(.5,'#0c4d75');rubber.addColorStop(1,'#082943');
+        ctx.fillStyle=rubber;ctx.fill();
+        // A narrow bevel is a filled surface with a soft gradient, never an
+        // outline around the inner channel.
+        ctx.beginPath();ctx.moveTo(half+5,lip+.5);
+        ctx.bezierCurveTo(half+2,lip+1,half,lip+4,half,6);
+        ctx.lineTo(half-1,depth+1);ctx.quadraticCurveTo(half-1,depth+4,half+1,depth+5);
+        ctx.lineTo(half+3,depth+4);ctx.quadraticCurveTo(half+1,depth+2,half+1,depth);
+        ctx.lineTo(half+2,6);ctx.quadraticCurveTo(half+2,lip+4,half+8,lip+2);ctx.closePath();
+        const bevel=ctx.createLinearGradient(half-2,0,half+8,0);
+        bevel.addColorStop(0,'#08294310');bevel.addColorStop(.45,'#08294324');bevel.addColorStop(1,'#08294300');
+        ctx.fillStyle=bevel;ctx.fill();
+        ctx.restore();
+      }
+      ctx.beginPath();ctx.ellipse(0,depth+7,half*.78,7,0,0,Math.PI*2);
+      const drop=ctx.createRadialGradient(0,depth+9,1,0,depth+7,half*.85);drop.addColorStop(0,'#01070b');drop.addColorStop(.72,'#020f18');drop.addColorStop(1,'#0b3a51');ctx.fillStyle=drop;ctx.fill();
       ctx.restore();
     }
-    for(const p of POCKET_GEOMETRY)for(const face of p.faces){
-      const a=worldToScreen(face.ax,face.ay),b=worldToScreen(face.bx,face.by);
-      ctx.strokeStyle='#124d62';ctx.lineWidth=p.jawRadius*2*SCALE;ctx.lineCap='round';
-      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-      ctx.strokeStyle='#58bcd077';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-    }
-    ctx.lineCap='butt';
-    ctx.fillStyle='#c8d2d2';
-    for(let x=12.5;x<=87.5;x+=12.5){if(x===50)continue;for(const y of [t-40,b+40]){ctx.beginPath();ctx.arc(l+x*SCALE,y,1.9,0,Math.PI*2);ctx.fill();}}
-    for(let y=12.5;y<=37.5;y+=12.5)for(const x of [l-40,r+40]){ctx.beginPath();ctx.arc(x,t+y*SCALE,1.9,0,Math.PI*2);ctx.fill();}
+    ctx.fillStyle='#a1a991';for(let x=12.5;x<=87.5;x+=12.5){if(x===50)continue;for(const y of [t-49,b+49]){ctx.beginPath();ctx.arc(l+x*SCALE,y,2,0,Math.PI*2);ctx.fill();}}
+    for(let y=12.5;y<=37.5;y+=12.5)for(const x of [l-49,r+49]){ctx.beginPath();ctx.arc(x,t+y*SCALE,2,0,Math.PI*2);ctx.fill();}
   }
   function rotated(q,x,y,z){
     const tx=2*(q[1]*z-q[2]*y),ty=2*(q[2]*x-q[0]*z),tz=2*(q[0]*y-q[1]*x);
@@ -1150,6 +883,127 @@
     ctx.strokeStyle=color;ctx.shadowColor=color;ctx.shadowBlur=9;ctx.lineWidth=2.4;ctx.setLineDash(dashed?[8,7]:[]);
     ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();ctx.setLineDash([]);ctx.shadowBlur=0;
   }
+  let guideCacheKey='',guideCache=null;
+  let displayGuideKey='',displayGuideCache=null;
+  function firstBallOnRay(x,y,dx,dy,excluded){
+    let hit=null,distance=Infinity;
+    for(const b of state.balls){
+      if(b.pocketed||excluded.includes(b.n))continue;
+      const along=(b.x-x)*dx+(b.y-y)*dy;
+      if(along<=0)continue;
+      const side2=(b.x-x)**2+(b.y-y)**2-along*along;
+      if(side2>(2*R)**2)continue;
+      const t=Math.max(0,along-Math.sqrt(Math.max(0,(2*R)**2-side2)));
+      if(t<distance){hit=b;distance=t;}
+    }
+    return {ball:hit,distance};
+  }
+  function firstBoundaryOnRay(x,y,dx,dy){
+    let distance=Infinity;
+    for(const [component,edge,direction,outward] of [[x,R,dx,-1],[x,W-R,dx,1],[y,R,dy,-1],[y,H-R,dy,1]]){
+      if(Math.abs(direction)<1e-8)continue;
+      const t=(edge-component)/direction;
+      if((t>1e-6||Math.abs(t)<=1e-6&&direction*outward>0)&&t<distance)distance=Math.max(0,t);
+    }
+    return Number.isFinite(distance)?distance:0;
+  }
+  function displayGuide(){
+    const key=[state.aim,state.spinX,state.spinY,...state.balls.flatMap(b=>[b.n,b.x,b.y,b.pocketed?1:0])].join(',');
+    if(key===displayGuideKey)return displayGuideCache;
+    displayGuideKey=key;
+    const a=cue();if(!a)return displayGuideCache=null;
+    const angle=state.aim-state.spinX*.018,dx=Math.cos(angle),dy=Math.sin(angle);
+    const boundary=firstBoundaryOnRay(a.x,a.y,dx,dy);
+    const first=firstBallOnRay(a.x,a.y,dx,dy,[0]);
+    const target=first.distance<boundary?first.ball:null;
+    const distance=target?first.distance:boundary;
+    const impact={x:a.x+dx*distance,y:a.y+dy*distance};
+    const shotPath=[{x:a.x,y:a.y},impact],cuePath=[],targetPath=[];
+    if(target){
+      const nx=(target.x-impact.x)/(2*R),ny=(target.y-impact.y)/(2*R);
+      const normalLength=Math.hypot(nx,ny)||1,unitX=nx/normalLength,unitY=ny/normalLength;
+      const transfer=.97*Math.max(0,dx*unitX+dy*unitY);
+      const tangentX=-unitY,tangentY=unitX;
+      let cueVx=dx-transfer*unitX,cueVy=dy-transfer*unitY;
+      let objectVx=transfer*unitX,objectVy=transfer*unitY;
+      const normalizedSpin=state.spinX*.42*1.4;
+      const tangentSlip=(objectVx-cueVx)*tangentX+(objectVy-cueVy)*tangentY-normalizedSpin;
+      const tangentImpulse=clamp(-tangentSlip/7,-transfer*.055,transfer*.055);
+      cueVx-=tangentImpulse*tangentX;cueVy-=tangentImpulse*tangentY;
+      objectVx+=tangentImpulse*tangentX;objectVy+=tangentImpulse*tangentY;
+      const objectSpeed=Math.hypot(objectVx,objectVy)||1;
+      const objectDirX=objectVx/objectSpeed,objectDirY=objectVy/objectSpeed;
+      const targetLimit=Math.min(11,firstBoundaryOnRay(target.x,target.y,objectDirX,objectDirY));
+      const obstacle=firstBallOnRay(target.x,target.y,objectDirX,objectDirY,[0,target.n]);
+      const objectLength=Math.max(0,Math.min(targetLimit,obstacle.distance));
+      targetPath.push({x:target.x,y:target.y},{x:target.x+objectDirX*objectLength,y:target.y+objectDirY*objectLength});
+      let outX=cueVx+state.spinY*.42*unitX,outY=cueVy+state.spinY*.42*unitY;
+      const outSpeed=Math.hypot(outX,outY);
+      if(outSpeed>.001){
+        outX/=outSpeed;outY/=outSpeed;
+        const cueLimit=firstBoundaryOnRay(impact.x,impact.y,outX,outY);
+        const length=Math.max(0,Math.min(8,Math.max(2,outSpeed*10),cueLimit));
+        cuePath.push(impact,{x:impact.x+outX*length,y:impact.y+outY*length});
+      }
+    }
+    return displayGuideCache={shotPath,cuePath,targetPath,targetNumber:target?.n??null,shotBlocked:!target};
+  }
+  const guideStill=b=>Math.abs(b.vx)+Math.abs(b.vy)+Math.abs(b.rollVx)+Math.abs(b.rollVy)+Math.abs(b.spin)<.001;
+  function predictedGuide(){
+    const key=[state.aim,state.power,state.spinX,state.spinY,...state.balls.flatMap(b=>[b.n,b.x,b.y,b.pocketed?1:0])].join(',');
+    if(key===guideCacheKey)return guideCache;
+    guideCacheKey=key;
+    const balls=state.balls.filter(b=>!b.pocketed).map(b=>({...b})),a=balls.find(b=>b.n===0);
+    if(!a)return guideCache=null;
+    launchCue(a);
+    const shotPath=[{x:a.x,y:a.y}],cuePath=[],targetPath=[];
+    let target=null,impactSteps=0,sample20=null,objectLength=0,cueLength=0,cueBlocked=false,objectBlocked=false,shotBlocked=false,targetPocket=null;
+    let lastA=null,lastB=null;
+    for(let step=1;step<=720;step++){
+      const moving=balls.filter(b=>!b.pocketed);
+      for(const b of moving){
+        b.hitRail=false;
+        if(guideStill(b))continue;
+        clothStep(b,STEP);b.x+=b.vx*STEP;b.y+=b.vy*STEP;rails(b);pocketCheck(b);
+      }
+      for(let i=0;i<moving.length;i++)for(let j=i+1;j<moving.length;j++){
+        const b=moving[i],c=moving[j];if(b.pocketed||c.pocketed)continue;
+        if(guideStill(b)&&guideStill(c))continue;
+        if(!ballsCollide(b,c))continue;
+        if(!target&&(b===a||c===a)){
+          target=b===a?c:b;impactSteps=step;
+          shotPath.push({x:a.x,y:a.y});cuePath.push({x:a.x,y:a.y});targetPath.push({x:target.x,y:target.y});
+          lastA={x:a.x,y:a.y};lastB={x:target.x,y:target.y};
+        }else if(target){
+          if((b===target||c===target)&&!objectBlocked){objectBlocked=true;targetPath.push({x:target.x,y:target.y});}
+          if((b===a||c===a)&&!cueBlocked){cueBlocked=true;cuePath.push({x:a.x,y:a.y});}
+        }
+      }
+      if(!target){
+        if(a.hitRail){shotPath.push({x:a.x,y:a.y});shotBlocked=true;break;}
+        if(step%3===0)shotPath.push({x:a.x,y:a.y});
+        if(a.pocketed||Math.hypot(a.vx,a.vy)<.4||step===720)break;
+        continue;
+      }
+      const elapsed=step-impactSteps;
+      if(elapsed===36)sample20={x:target.x,y:target.y};
+      if(elapsed>0){
+        if(!cueBlocked&&!a.pocketed&&cueLength<9){cueLength+=Math.hypot(a.x-lastA.x,a.y-lastA.y);if(elapsed%3===0||a.hitRail)cuePath.push({x:a.x,y:a.y});lastA={x:a.x,y:a.y};if(a.hitRail)cueBlocked=true;}
+        if(!objectBlocked&&target.pocketed&&!target.hitRail){
+          let best=0,d=Infinity;POCKETS.forEach((p,i)=>{const distance=Math.hypot(target.x-p.x,target.y-p.y);if(distance<d){d=distance;best=i;}});
+          targetPocket=best;targetPath.push({x:POCKETS[best].x,y:POCKETS[best].y});objectBlocked=true;
+        }else if(!objectBlocked&&target.pocketed){targetPath.push({x:target.x,y:target.y});objectBlocked=true;
+        }else if(!objectBlocked&&objectLength<90){
+          objectLength+=Math.hypot(target.x-lastB.x,target.y-lastB.y);
+          if(elapsed%3===0||target.hitRail)targetPath.push({x:target.x,y:target.y});
+          lastB={x:target.x,y:target.y};if(target.hitRail)objectBlocked=true;
+        }
+      }
+      if(elapsed>=36&&(cueBlocked||cueLength>=9||a.pocketed||Math.hypot(a.vx,a.vy)<.3)&&(objectBlocked||objectLength>=90||target.pocketed||Math.hypot(target.vx,target.vy)<.3))break;
+      if(elapsed>=720)break;
+    }
+    return guideCache={shotPath,cuePath,targetPath,targetPocket,targetNumber:shotBlocked?null:target?.n??null,impactSteps,sample20,shotBlocked};
+  }
   function guidePath(points,color,maxLength=Infinity,dashed=false){
     if(points.length<2)return;
     ctx.strokeStyle=color;ctx.shadowColor=color;ctx.shadowBlur=2;ctx.lineWidth=1.8;ctx.lineCap='round';
@@ -1160,10 +1014,9 @@
       if(segment<1e-6)continue;
       const fraction=Math.min(1,(maxLength-length)/segment);
       end={x:a.x+(b.x-a.x)*fraction,y:a.y+(b.y-a.y)*fraction};
-      const next=worldToScreen(end.x,end.y);ctx.lineTo(next.x,next.y);
       length+=segment*fraction;if(length>=maxLength)break;
     }
-
+    const finish=worldToScreen(end.x,end.y);ctx.lineTo(finish.x,finish.y);
     ctx.stroke();ctx.setLineDash([]);ctx.shadowBlur=0;
   }
   function pathLength(points){let length=0;for(let i=1;i<points.length;i++)length+=Math.hypot(points[i].x-points[i-1].x,points[i].y-points[i-1].y);return length;}
@@ -1239,17 +1092,14 @@
         // Keep the sinking ball and its flash at the *same* pocket. Using its
         // last simulation position can visually pair a corner pot with an
         // unrelated middle-pocket flash during a fast, crowded shot.
-        const mouth=worldToScreen(a.effectX,a.effectY),radius=POCKET_GEOMETRY[a.pocket].radius*SCALE;
-        ctx.save();ctx.beginPath();ctx.arc(mouth.x,mouth.y,radius-2,0,Math.PI*2);ctx.clip();
-        const sinkX=a.entryX+(a.effectX+dx*.65-a.entryX)*ease,sinkY=a.entryY+(a.effectY+dy*.65-a.entryY)*ease;
-        drawBall(a.visual,1-.78*ease,sinkX,sinkY,1-t);ctx.restore();
+        drawBall(a.visual,1-.78*ease,a.effectX+dx*.65*ease,a.effectY+dy*.65*ease,1-t);
       }
     }
     if(state.ballInHand){const c=cue(),p=worldToScreen(c.x,c.y);ctx.strokeStyle='#fff4a3';ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.arc(p.x,p.y,24,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);}
     if(state.aiThinking&&state.phase==='aim'){
       ctx.save();ctx.fillStyle='rgba(5,20,30,.85)';ctx.strokeStyle='rgba(130,234,255,.62)';ctx.lineWidth=1.5;
       ctx.beginPath();ctx.roundRect(460,332,480,125,18);ctx.fill();ctx.stroke();
-      ctx.fillStyle='#e4faff';ctx.textAlign='center';ctx.font='bold 24px sans-serif';ctx.fillText(state.aiPlan?`电脑 · ${state.aiPlan.type==='bank'?'翻袋进攻':state.aiPlan.type==='kick'?'勾球进攻':state.aiPlan.type==='snooker'?'斯诺克防守':state.aiPlan.type==='attack'?'选择进攻':'选择解球'}`:'电脑正在判断球路',700,373);
+      ctx.fillStyle='#e4faff';ctx.textAlign='center';ctx.font='bold 24px sans-serif';ctx.fillText(state.aiPlan?`电脑 · ${state.aiPlan.type==='attack'?'选择进攻':'选择解球'}`:'电脑正在判断球路',700,373);
       ctx.fillStyle='#a8ecff';ctx.font='17px sans-serif';ctx.fillText(state.aiPlan?.description||'检查遮挡、袋口与白球落点',700,405);
       ctx.fillStyle='#86cbd5';ctx.font='13px sans-serif';ctx.fillText(state.aiPlan?'准备出杆 · 2.5 秒':'正在试算候选路线',700,433);ctx.restore();
     }
@@ -1261,7 +1111,7 @@
     aimFramePending=true;
     requestAnimationFrame(()=>{aimFramePending=false;if(state.phase==='aim'){updateUI();render();}});
   }
-  const sideways=()=>document.getElementById('mobile-pool-preview')?.classList.contains('is-landscape')||false;
+  const sideways=()=>window.matchMedia('(orientation: portrait) and (max-width: 700px)').matches;
   function pointerWorld(e){
     const rect=canvas.getBoundingClientRect();
     return sideways()
@@ -1361,11 +1211,13 @@
   }));
   document.querySelectorAll('[data-mode]').forEach(btn=>btn.addEventListener('click',()=>init(btn.dataset.mode)));
   $('startBtn').addEventListener('click',()=>{$('startOverlay').classList.add('hidden');$('menuOverlay').classList.remove('hidden');});
-  $('newBtn').addEventListener('click',()=>{state.aiTicket++;state.aiThinking=false;state.aiPlan=null;$('menuOverlay').classList.remove('hidden');state.phase='menu';updateUI();});
+  $('newBtn').addEventListener('click',()=>{state.aiTicket++;$('menuOverlay').classList.remove('hidden');state.phase='menu';updateUI();});
   $('rulesBtn').addEventListener('click',()=>$('rulesOverlay').classList.remove('hidden'));
   $('closeRules').addEventListener('click',()=>$('rulesOverlay').classList.add('hidden'));
   $('rulesOverlay').addEventListener('click',e=>{if(e.target.id==='rulesOverlay')$('rulesOverlay').classList.add('hidden');});
-  async function fullscreen(){await window.PoolPreviewFullscreen?.toggle();
+  async function fullscreen(){
+    if(document.fullscreenElement){await document.exitFullscreen();return;}
+    try{await document.documentElement.requestFullscreen?.();await screen.orientation?.lock?.('landscape');}catch{ /* 浏览器不支持锁定时仍保留横向页面 */ }
   }
   $('fullBtn').addEventListener('click',fullscreen);
   document.addEventListener('keydown',e=>{
@@ -1378,19 +1230,13 @@
   let last=performance.now(),acc=0,manualTime=false;
   function frame(now){const elapsed=Math.min(.05,(now-last)/1000);last=now;const active=state.phase==='moving'||state.pocketAnimations.length>0;if(!manualTime){acc+=elapsed;while(acc>=STEP){update(STEP);acc-=STEP;}}if(active||state.phase==='moving'||state.pocketAnimations.length>0)render();requestAnimationFrame(frame);}
   window.advanceTime=ms=>{manualTime=true;acc=0;const steps=Math.ceil(ms/1000/STEP);for(let i=0;i<steps;i++)update(STEP);render();};
-  window.render_game_to_text=()=>JSON.stringify({coordinates:`world inches, origin at top-left cushion nose; +x right, +y down; table 100x50; ball diameter 2.25; corner mouth ${CORNER_MOUTH}; side mouth ${SIDE_MOUTH}`,mode:state.mode,opponent:state.opponent,aiDifficulty:state.aiDifficulty,aiThinking:state.aiThinking,aiPlan:state.aiPlan?{target:state.aiPlan.target,pocket:state.aiPlan.pocket,type:state.aiPlan.type,spinX:state.aiPlan.spinX||0,spinY:state.aiPlan.spinY||0,snookerPlanned:!!state.aiPlan.snookerPlanned,power:+state.aiPlan.power.toFixed(1),description:state.aiPlan.description}:null,phase:state.phase,turn:state.turn+1,groups:state.groups,scores:state.scores,breaking:state.breaking,rackSeed:state.rackSeed,ballInHand:state.ballInHand,repositionAllowed:state.repositionAllowed,aimDegrees:+(state.aim*180/Math.PI).toFixed(2),power:state.power,spin:[+state.spinX.toFixed(2),+state.spinY.toFixed(2)],balls:state.balls.map(b=>({n:b.n,x:+b.x.toFixed(2),y:+b.y.toFixed(2),vx:+b.vx.toFixed(2),vy:+b.vy.toFixed(2),rollVx:+b.rollVx.toFixed(2),rollVy:+b.rollVy.toFixed(2),sideSpin:+b.spin.toFixed(2),roll:+b.roll.toFixed(2),pocketed:b.pocketed})),status:state.status,winner:state.winner});
+  window.render_game_to_text=()=>JSON.stringify({coordinates:`world inches, origin at top-left cushion nose; +x right, +y down; table 100x50; ball diameter 2.25; corner mouth ${CORNER_MOUTH}; side mouth ${SIDE_MOUTH}`,mode:state.mode,opponent:state.opponent,aiDifficulty:state.aiDifficulty,aiThinking:state.aiThinking,aiPlan:state.aiPlan?{target:state.aiPlan.target,pocket:state.aiPlan.pocket,type:state.aiPlan.type,power:+state.aiPlan.power.toFixed(1),description:state.aiPlan.description}:null,phase:state.phase,turn:state.turn+1,groups:state.groups,scores:state.scores,breaking:state.breaking,rackSeed:state.rackSeed,ballInHand:state.ballInHand,repositionAllowed:state.repositionAllowed,aimDegrees:+(state.aim*180/Math.PI).toFixed(2),power:state.power,spin:[+state.spinX.toFixed(2),+state.spinY.toFixed(2)],balls:state.balls.map(b=>({n:b.n,x:+b.x.toFixed(2),y:+b.y.toFixed(2),vx:+b.vx.toFixed(2),vy:+b.vy.toFixed(2),rollVx:+b.rollVx.toFixed(2),rollVy:+b.rollVy.toFixed(2),sideSpin:+b.spin.toFixed(2),roll:+b.roll.toFixed(2),pocketed:b.pocketed})),status:state.status,winner:state.winner});
   if(new URLSearchParams(location.search).has('test')){
     $('startOverlay').classList.add('hidden');$('menuOverlay').classList.remove('hidden');
-    window.__poolTest={pocketRollingTest(index=1,angleDegrees=0,speed=6,offMouth=false){
-      const p=POCKET_GEOMETRY[index],angle=angleDegrees*Math.PI/180;
-      const dx=p.nx*Math.cos(angle)+p.tx*Math.sin(angle),dy=p.ny*Math.cos(angle)+p.ty*Math.sin(angle);
-      const distance=Math.min(8,speed*speed/(2*ROLL_DECEL)*.7),offset=offMouth?p.radius+1.4:0;
-      window.__poolTest.setMovingBalls([{n:0,x:50,y:25},{n:9,x:80,y:35},{n:1,x:p.well.x-dx*distance+p.tx*offset,y:p.well.y-dy*distance+p.ty*offset,vx:dx*speed,vy:dy*speed,rollVx:dx*speed,rollVy:dy*speed}]);
-      manualTime=false;acc=0;state.shotTime=0;say(`袋口试球：${POCKETS[index].name} · ${offMouth?'撞袋角外侧':'慢球入袋'}`);render();
-    },openTestMatch(mode='eight'){init(mode);},async planAI(entries,mode='nine',ownGroup=null,hand=false,difficulty='hard',technique=null){
+    window.__poolTest={async planAI(entries,mode='nine',ownGroup=null,hand=false,difficulty='hard'){
     const ticket=++state.aiTicket;state.aiThinking=true;state.aiPlan=null;state.mode=mode;state.opponent='ai';state.phase='aim';state.turn=1;state.breaking=false;state.ballInHand=hand;state.groups=[ownGroup==='solid'?'stripe':ownGroup==='stripe'?'solid':null,ownGroup];state.aiDifficulty=difficulty;state.balls=entries.map(q=>ball(q.n,q.x,q.y));state.shot=null;state.pocketAnimations=[];state.winner=null;state.scores=[0,0];
-    $('menuOverlay').classList.add('hidden');$('player2Name').textContent='电脑';say('电脑正在判断球路…');updateUI();render();const started=performance.now();const plan=technique?await chooseAITechnique(technique,()=>ticket===state.aiTicket):await chooseAIPlan(()=>ticket===state.aiTicket);if(ticket!==state.aiTicket)return {plan:null,result:null,ms:performance.now()-started};state.aiPlan=plan;state.aiThinking=false;showAIStroke(plan);say(plan?`电脑计划：${plan.description}`:'没有可击打的目标');render();return {plan,options:aiOptions(aiTargets()),result:plan?simulateAIShot(plan):null,ms:performance.now()-started};
-  },fireAIPlanTest(){if(!state.aiPlan||state.phase!=='aim')return false;manualTime=false;state.ballInHand=false;state.aim=state.aiPlan.aim;state.power=state.aiPlan.power;state.spinX=state.aiPlan.spinX||0;state.spinY=state.aiPlan.spinY||0;fire(true);},getAIPottedTest(){return state.balls.filter(b=>b.pocketed).map(b=>({n:b.n,pocket:b.pocketCandidate}));},queueAITest(){queueAI();},getLaunchSpeed(power,breaking=false){return cueLaunchSpeed(power,breaking);},getPocketEvents(){return {effects:state.pocketAnimations.map(a=>({n:a.visual.n,pocket:a.pocket,x:a.effectX,y:a.effectY,ballX:a.entryX,ballY:a.entryY})),shot:state.shot?.pocketed||[]};},setMovingBalls(entries){
+    $('menuOverlay').classList.add('hidden');$('player2Name').textContent='电脑';say('电脑正在判断球路…');updateUI();render();const started=performance.now();const plan=await chooseAIPlan(()=>ticket===state.aiTicket);if(ticket!==state.aiTicket)return {plan:null,result:null,ms:performance.now()-started};state.aiPlan=plan;state.aiThinking=false;say(plan?`电脑计划：${plan.description}`:'没有可击打的目标');render();return {plan,options:aiOptions(aiTargets()),result:plan?simulateAIShot(plan):null,ms:performance.now()-started};
+  },fireAIPlanTest(){if(!state.aiPlan||state.phase!=='aim')return false;manualTime=true;state.ballInHand=false;state.aim=state.aiPlan.aim;state.power=state.aiPlan.power;state.spinX=0;state.spinY=state.aiPlan.spinY;fire(true);},getAIPottedTest(){return state.balls.filter(b=>b.pocketed).map(b=>({n:b.n,pocket:b.pocketCandidate}));},queueAITest(){queueAI();},getLaunchSpeed(power,breaking=false){return cueLaunchSpeed(power,breaking);},getPocketEvents(){return {effects:state.pocketAnimations.map(a=>({n:a.visual.n,pocket:a.pocket,x:a.effectX,y:a.effectY,ballX:a.entryX,ballY:a.entryY})),shot:state.shot?.pocketed||[]};},setMovingBalls(entries){
     manualTime=true;acc=0;
     state.aiTicket++;state.aiThinking=false;state.mode='nine';state.opponent='local';state.phase='moving';state.turn=0;state.breaking=false;state.ballInHand=false;state.pocketAnimations=[];state.balls=entries.map(q=>Object.assign(ball(q.n,q.x,q.y),{vx:q.vx||0,vy:q.vy||0,rollVx:q.rollVx||0,rollVy:q.rollVy||0,spin:q.spin||0,pocketCandidate:q.pocketCandidate??null}));
     state.shot={shooter:0,breaking:false,firstHit:1,pocketed:[],railAfterHit:false,breakRails:new Set(),groupAtStart:null,eightReady:false};state.stopTime=0;state.shotTime=0;$('menuOverlay').classList.add('hidden');updateUI();render();
@@ -1399,7 +1245,7 @@
     state.aiTicket++;state.aiThinking=false;state.aiPlan=null;state.mode='nine';state.opponent='local';state.phase='aim';state.turn=0;state.breaking=false;state.ballInHand=false;
     state.balls=[ball(0,40,25),ball(1,55,25)];state.aim=0;state.power=70;state.spinY=vertical;state.spinX=horizontal;
     state.shot=null;$('menuOverlay').classList.add('hidden');syncPowerUI();moveSpinDot();updateUI();render();
-  },getGuidePrediction(){return displayGuide();
+  },getGuidePrediction(){return predictedGuide();
   },getDisplayGuide(){return displayGuide();
   },setGuideBalls(entries,aim=0,power=70,spinY=0,spinX=0){
     state.pocketAnimations=[];

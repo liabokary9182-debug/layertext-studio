@@ -1,0 +1,82 @@
+{
+  "fixtures": [
+    {
+      "name": "straight-nine",
+      "safe": true,
+      "firstHit": 1,
+      "type": "attack",
+      "potted": true,
+      "ms": 324,
+      "liveStatus": "合法进球！玩家 2继续。"
+    },
+    {
+      "name": "eight-final",
+      "safe": true,
+      "firstHit": 8,
+      "type": "attack",
+      "potted": true,
+      "ms": 252,
+      "liveStatus": "玩家 2获胜 · 合法打进 8 号球。点击“新开一局”继续。"
+    },
+    {
+      "name": "blocked-middle",
+      "safe": true,
+      "firstHit": 1,
+      "type": "snooker",
+      "potted": false,
+      "ms": 3151,
+      "liveStatus": "未进球，轮到玩家 1。"
+    },
+    {
+      "name": "narrow-escape",
+      "safe": true,
+      "firstHit": 1,
+      "type": "escape",
+      "potted": false,
+      "ms": 4066,
+      "liveStatus": "未进球，轮到玩家 1。"
+    },
+    {
+      "name": "rail-target",
+      "safe": true,
+      "firstHit": 1,
+      "type": "kick",
+      "potted": true,
+      "ms": 1740,
+      "liveStatus": "合法进球！玩家 2继续。"
+    },
+    {
+      "name": "ball-in-hand",
+      "safe": true,
+      "firstHit": 1,
+      "type": "attack",
+      "potted": true,
+      "ms": 734,
+      "liveStatus": "合法进球！玩家 2继续。"
+    },
+    {
+      "name": "eight-defence",
+      "safe": true,
+      "firstHit": 1,
+      "type": "kick",
+      "potted": true,
+      "ms": 750,
+      "liveStatus": "合法进球！玩家 2继续。"
+    }
+  ],
+  "expandedEscape": {
+    "safe": true,
+    "firstHit": 1,
+    "plan": {
+      "target": 1,
+      "pocket": null,
+      "aim": 2.705260340591211,
+      "power": 94,
+      "spinY": 0,
+      "type": "escape",
+      "score": 112.12349559195772,
+      "description": "先碰 1 号 · 碰库勾球解围 · 中杆 · 控制落点"
+    }
+  },
+  "checks": "all passed"
+}

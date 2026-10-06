@@ -3,11 +3,10 @@
   const startButton=document.getElementById('startBtn');
   const musicButton=document.getElementById('musicBtn');
   const musicFile=document.getElementById('musicFile');
-  const musicPanel=document.getElementById('musicPanel'),musicFrame=document.getElementById('musicFrame'),musicStatus=document.getElementById('musicStatus');
+  const musicPanel=document.getElementById('musicPanel'),musicStatus=document.getElementById('musicStatus');
   const AudioEngine=window.AudioContext||window.webkitAudioContext;
   let context=null,effects=null,limiter=null,meter=null,recordings=[],loading=null;
   let music=null,musicUrl=null,enabled=false,lastBall=0;
-  let widget=null,widgetLoading=null,wanted=false,onlineReady=false,musicPosition=0,musicState='idle';
   const effectStats={cue:0,ball:0,rail:0,pocket:0},lastEffect={cue:-1,ball:-1,rail:-1,pocket:-1};
 
   function ensureContext(){
@@ -72,71 +71,48 @@
     }
   }
   function updateMusicButton(){
-    musicButton.textContent=enabled?'♫ Lullaby 开':musicState==='loading'?'♫ 音乐加载中':'♫ Lullaby 关';
+    musicButton.textContent=enabled?'♫ 音乐开':'♫ 音乐关';
     musicButton.setAttribute('aria-pressed',String(enabled));
-    musicButton.title=music?'开关本机导入的音频':'Enzalla · Lullaby，点击开关背景音乐';
+    musicButton.setAttribute('aria-label',enabled?'关闭背景音乐':'播放背景音乐');
   }
-  function musicMessage(state,text){musicState=state;musicStatus.textContent=text;updateMusicButton();}
-  function loadOnlineMusic(){
-    if(onlineReady&&widget)return Promise.resolve(widget);
-    if(widgetLoading)return widgetLoading;
-    musicMessage('loading','正在连接 Enzalla 的官方播放器…');
-    widgetLoading=new Promise((resolve,reject)=>{
-      const api=document.createElement('script');api.src='https://w.soundcloud.com/player/api.js?v=1';api.async=true;
-      let timeout=setTimeout(()=>reject(Error('播放器连接超时')),30000);
-      api.onerror=()=>{clearTimeout(timeout);reject(Error('播放器暂时无法连接'));};
-      api.onload=()=>{
-        clearTimeout(timeout);timeout=setTimeout(()=>reject(Error('播放器连接超时')),30000);
-        musicFrame.src='https://w.soundcloud.com/player/?url=https%3A%2F%2Fsoundcloud.com%2Fenzalla%2Flullaby&auto_play=false&color=%2310628e&show_artwork=false&show_comments=false&show_playcount=false&sharing=false';
-        widget=window.SC.Widget(musicFrame);const events=window.SC.Widget.Events;
-        widget.bind(events.READY,()=>{
-          clearTimeout(timeout);onlineReady=true;widget.setVolume(35);
-          widget.getCurrentSound(sound=>{musicFrame.title=`${sound.user.username} · ${sound.title}`;});
-          if(!music)musicMessage('ready','Enzalla · Lullaby · 官方在线播放');resolve(widget);
-        });
-        widget.bind(events.PLAY,()=>{if(music){widget.pause();return;}enabled=true;wanted=true;musicMessage('playing','正在播放 Enzalla · Lullaby');});
-        widget.bind(events.PAUSE,()=>{if(music)return;enabled=false;musicMessage('paused','Enzalla · Lullaby · 已暂停');});
-        widget.bind(events.PLAY_PROGRESS,event=>{musicPosition=event.currentPosition;});
-        widget.bind(events.FINISH,()=>{if(wanted&&!music){widget.seekTo(0);widget.play();}});
-        widget.bind(events.ERROR,()=>{if(music)return;enabled=false;wanted=false;musicPanel.hidden=false;musicMessage('error','官方播放器暂不可用，可稍后重试或导入本机音频。');});
-      };
-      document.head.appendChild(api);
-    }).catch(error=>{widgetLoading=null;if(!music){enabled=false;wanted=false;musicPanel.hidden=false;musicMessage('error',`${error.message}，可使用下方播放键或本机音频。`);}return null;});
-    return widgetLoading;
-  }
+  let musicTicket=0,wanted=false,musicState='idle';
+  let musicTitle='Gymnopedie No. 1',musicArtist='Kevin MacLeod';
+  music=new Audio('./sounds/table-piano.mp3');music.loop=true;music.volume=.24;music.preload='auto';
+  function message(text){if(musicStatus)musicStatus.textContent=text;updateMusicButton();}
   async function setMusic(on){
-    wanted=on;
-    if(!music){
-      if(!on){widget?.pause();enabled=false;updateMusicButton();return;}
-      const player=await loadOnlineMusic();if(!player||!wanted||music)return;
-      player.play();
-      setTimeout(()=>{if(wanted&&!enabled&&!music){musicPanel.hidden=false;musicMessage('ready','点播放器的播放键即可开启音乐。');}},2500);
-      return;
+    const ticket=++musicTicket;wanted=on;
+    if(!on){music.pause();enabled=false;musicState='paused';message('背景音乐已暂停');return;}
+    try{
+      musicState='loading';
+      await music.play();
+      if(ticket!==musicTicket){if(!wanted)music.pause();return;}
+      enabled=true;musicState='playing';message(`${musicArtist} · ${musicTitle} · 本地循环播放`);
+    }catch{
+      if(ticket!==musicTicket)return;
+      enabled=false;musicState='blocked';message('点击顶部音乐键开始播放');
     }
-    if(on){try{await music.play();enabled=true;}catch{enabled=false;}}
-    else{music.pause();enabled=false;}
-    updateMusicButton();
   }
-  musicFile.addEventListener('change',async()=>{
+  musicFile?.addEventListener('change',async()=>{
     const file=musicFile.files?.[0];if(!file)return;
-    wanted=false;widget?.pause();
-    if(music){music.pause();music.src='';}
+    musicTicket++;music.pause();music.src='';
     if(musicUrl)URL.revokeObjectURL(musicUrl);
-    musicUrl=URL.createObjectURL(file);music=new Audio(musicUrl);music.loop=true;music.volume=.45;
+    musicUrl=URL.createObjectURL(file);music.src=musicUrl;musicTitle=file.name;musicArtist='本机音频';
     await setMusic(true);
   });
-  musicButton.addEventListener('click',()=>{const on=musicState==='loading'?!wanted:!enabled;if(on)musicPanel.hidden=false;setMusic(on);});
-  document.getElementById('closeMusic').addEventListener('click',()=>{musicPanel.hidden=true;});
-  document.getElementById('localMusicBtn').addEventListener('click',()=>musicFile.click());
-  startButton.addEventListener('click',()=>{ensureContext();setMusic(true);});
-  document.addEventListener('pointerdown',ensureContext,{once:true});
+  musicButton.addEventListener('click',()=>{ensureContext();return setMusic(!wanted);});
+  document.getElementById('closeMusic')?.addEventListener('click',()=>{musicPanel.hidden=true;});
+  document.getElementById('localMusicBtn')?.addEventListener('click',()=>musicFile?.click());
+  document.addEventListener('pointerdown',e=>{
+    ensureContext();
+    if(e.target?.id!=='musicBtn')setMusic(true);
+  },{once:true});
   document.addEventListener('visibilitychange',()=>{
-    if(!context)return;
-    if(document.hidden)context.suspend();else context.resume().catch(()=>{});
+    if(document.hidden){context?.suspend();music.pause();}
+    else{context?.resume().catch(()=>{});if(wanted)setMusic(true);}
   });
   window.PoolAudio={play,unlock:ensureContext,stats:effectStats,contextState:()=>context?.state||'unavailable',
     samplesReady:()=>recordings.length===3,waitForSamples:()=>loading||Promise.resolve(),
     outputLevel:()=>{if(!meter)return 0;const samples=new Float32Array(meter.fftSize);meter.getFloatTimeDomainData(samples);return Math.sqrt(samples.reduce((sum,v)=>sum+v*v,0)/samples.length);},
-    musicEnabled:()=>enabled,musicInfo:()=>({source:music?'local':'SoundCloud',state:musicState,ready:onlineReady,position:musicPosition,title:'Lullaby',artist:'Enzalla'})};
-  updateMusicButton();
+    setMusic,musicEnabled:()=>enabled,musicInfo:()=>({source:musicUrl?'local-import':'bundled-local',state:musicState,title:musicTitle,artist:musicArtist})};
+  message('Gymnopedie No. 1 · Kevin MacLeod · CC BY 4.0 · 本地音频');
 })();

@@ -1,0 +1,132 @@
+/* Phone controls shared with the reviewed mobile preview. */
+#landscapeBtn{display:none}
+@media(max-width:700px){
+html{overflow:auto!important;height:auto!important}
+#landscapeBtn{display:inline-flex}
+#mobile-pool-preview{position:relative!important;inset:auto!important;transform:none!important;transform-origin:initial!important;width:100%!important;min-height:0!important;overflow:visible!important;background:#050a18;color:#e2f0fb;font-family:system-ui,sans-serif}
+#mobile-pool-preview .app{width:100%;height:auto;min-height:640px;max-width:none;overflow:visible;padding:0}
+#mobile-pool-preview .topbar{position:relative;inset:auto;height:auto;min-height:54px;padding:10px;display:flex;flex-wrap:wrap;gap:10px}
+#mobile-pool-preview .brand strong{font-size:16px}
+#mobile-pool-preview .brand small{font-size:12px}
+#mobile-pool-preview .top-actions{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+#mobile-pool-preview .top-actions button{min-height:44px;font-size:14px;padding:8px 10px}
+#mobile-pool-preview #musicBtn,#mobile-pool-preview #fullBtn,#mobile-pool-preview .boot,#mobile-pool-preview footer,#mobile-pool-preview .angle-foot,#mobile-pool-preview .cue-bottom{display:none!important}
+#mobile-pool-preview .layout{display:flex;flex-direction:column;height:auto;padding:0;gap:0}
+#mobile-pool-preview .arena{display:block;position:relative;min-height:0;padding:0}
+#mobile-pool-preview .scorebar{position:relative;inset:auto;width:100%;height:52px;padding:0 10px;grid-template-columns:1fr 74px 1fr;border-radius:0}
+#mobile-pool-preview .player{gap:6px}
+#mobile-pool-preview .player b{font-size:14px}
+#mobile-pool-preview .player small{font-size:12px}
+#mobile-pool-preview .player-number{display:none}
+#mobile-pool-preview .score{font-size:20px;min-width:20px}
+#mobile-pool-preview .game-label span{font-size:14px}
+#mobile-pool-preview .game-label small{font-size:12px}
+#mobile-pool-preview .table-wrap{position:relative;display:block;padding:0;width:100%;border:0}
+#mobile-pool-preview .table-wrap canvas{width:100%;height:auto!important;aspect-ratio:1400/790;max-width:none;display:block;touch-action:none}
+#mobile-pool-preview .status{position:relative;inset:auto;height:auto;min-height:48px;width:100%;max-width:none;font-size:14px;line-height:1.5;padding:8px 12px;white-space:normal;overflow-wrap:anywhere;border-radius:0}
+#mobile-pool-preview .controls{height:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;padding:12px;align-items:start;border-radius:0}
+#mobile-pool-preview .control-head,#mobile-pool-preview .angle-panel,#mobile-pool-preview .shoot,#mobile-pool-preview .place-cue,#mobile-pool-preview .tip,#mobile-pool-preview .spec{grid-column:1/-1;width:100%;margin:0}
+#mobile-pool-preview .control-head{padding:0;gap:4px}
+#mobile-pool-preview .control-head span,#mobile-pool-preview .angle-head,#mobile-pool-preview .spin-group>div:first-child span,#mobile-pool-preview .power-group .control-line span{font-size:14px}
+#mobile-pool-preview .control-head small,#mobile-pool-preview .spin-group>div:first-child small{font-size:12px}
+#mobile-pool-preview .angle-head b,#mobile-pool-preview .power-group .control-line b{font-size:16px}
+#mobile-pool-preview .angle-ruler{height:44px}
+#mobile-pool-preview .spin-group{grid-column:1;grid-row:3/5;display:flex;align-items:center;padding:0;margin:0;border:0}
+#mobile-pool-preview .spin-pad{width:88px;height:88px}
+#mobile-pool-preview .spin-dot{width:18px;height:18px}
+#mobile-pool-preview .small-button{font-size:14px;min-height:44px;min-width:72px}
+#mobile-pool-preview .power-group{grid-column:2;grid-row:3;margin:0;padding:0;border:0}
+#mobile-pool-preview #power{min-height:44px;margin:8px 0 0}
+#mobile-pool-preview .power-ends{font-size:12px}
+#mobile-pool-preview .cue-meter{grid-column:2;grid-row:4;height:116px;min-height:116px;margin:0;display:block}
+#mobile-pool-preview .cue-track{height:110px;width:60px;margin:0 auto}
+#mobile-pool-preview .cue-stick-vertical{width:16px}
+#mobile-pool-preview .shoot,#mobile-pool-preview .place-cue{font-size:16px;min-height:48px;margin:0}
+#mobile-pool-preview .tip{font-size:14px;line-height:1.5;padding:0}
+#mobile-pool-preview .spec{font-size:12px;padding:0}
+#mobile-pool-preview .spec small{font-size:12px}
+#mobile-pool-preview .overlay{position:absolute;inset:0;padding:76px 10px 10px;align-items:flex-start;min-height:0;background:#030b17eb}
+#mobile-pool-preview .overlay.hidden{display:none}
+#mobile-pool-preview .menu-card{position:relative;width:100%;max-width:520px;max-height:none;overflow:visible;margin:0;padding:22px 18px}
+#mobile-pool-preview .menu-card h1{font-size:28px;line-height:1.2}
+#mobile-pool-preview .menu-card h2{font-size:24px}
+#mobile-pool-preview .menu-card p{font-size:14px;line-height:1.5}
+#mobile-pool-preview .menu-card button{min-height:44px;font-size:14px}
+#mobile-pool-preview .menu-card .close{width:44px;height:44px;font-size:24px}
+#mobile-pool-preview .menu-foot{font-size:12px}
+#mobile-pool-preview .difficulty-select{flex-wrap:wrap}
+#mobile-pool-preview .difficulty-select span{font-size:14px}
+#mobile-pool-preview .mode-card small{font-size:12px}
+#mobile-pool-preview .ai-test-card label,#mobile-pool-preview .ai-test-card select{font-size:16px}
+#mobile-pool-preview .start-btn{font-size:16px;min-height:48px}
+#mobile-pool-preview .eyebrow{font-size:12px}
+#mobile-pool-preview .menu-card button,#mobile-pool-preview .controls button,#mobile-pool-preview .topbar button,#mobile-pool-preview select{cursor:inherit}
+#mobile-pool-preview [hidden]{display:none!important}
+@media(min-width:620px){#mobile-pool-preview .controls{grid-template-columns:1fr 1fr}#mobile-pool-preview .app{min-height:800px}}
+#mobile-pool-preview .mobile-game-surface{position:relative;width:100%}
+#mobile-pool-preview .topbar{z-index:100}
+#mobile-pool-preview #landscapeBtn{min-height:44px;min-width:64px;background:#efcd79;color:#102127;border:1px solid #ffe3a2;font-weight:700}
+#mobile-pool-preview.is-landscape{height:var(--landscape-width);overflow:hidden!important}
+#mobile-pool-preview.is-landscape .mobile-game-surface{width:var(--landscape-width);height:var(--landscape-height);transform-origin:top left;transform:translateX(var(--landscape-height)) rotate(90deg)}
+#mobile-pool-preview.is-landscape .app{height:100%;min-height:0;overflow:hidden}
+#mobile-pool-preview.is-landscape .topbar{height:54px;min-height:54px;flex-wrap:nowrap;padding:5px 10px;gap:8px;background:#071222}
+#mobile-pool-preview.is-landscape .brand small{display:none}
+#mobile-pool-preview.is-landscape .top-actions{flex-wrap:nowrap}
+#mobile-pool-preview.is-landscape .layout{height:calc(100% - 54px);display:grid;grid-template-columns:minmax(0,1fr) 184px;gap:0}
+#mobile-pool-preview.is-landscape .arena{height:100%;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+#mobile-pool-preview.is-landscape .scorebar{height:40px;flex:0 0 40px}
+#mobile-pool-preview.is-landscape .player{gap:5px}
+#mobile-pool-preview.is-landscape .player small,#mobile-pool-preview.is-landscape .game-label small{font-size:11px}
+#mobile-pool-preview.is-landscape .table-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+#mobile-pool-preview.is-landscape .table-wrap canvas{width:min(100%,var(--landscape-table-width));height:auto!important;flex:none}
+#mobile-pool-preview.is-landscape .status{min-height:44px;height:44px;flex:0 0 44px;font-size:12px;line-height:1.35;padding:4px 8px;overflow:auto}
+#mobile-pool-preview.is-landscape .controls{height:100%;min-height:0;overflow:auto;align-content:start;grid-template-columns:1fr 1fr;gap:6px;padding:8px}
+#mobile-pool-preview.is-landscape .control-head,#mobile-pool-preview.is-landscape .tip,#mobile-pool-preview.is-landscape .spec,#mobile-pool-preview.is-landscape .cue-meter,#mobile-pool-preview.is-landscape .spin-group small,#mobile-pool-preview.is-landscape .power-ends{display:none}
+#mobile-pool-preview.is-landscape .angle-panel{grid-column:1/-1;grid-row:1}
+#mobile-pool-preview.is-landscape .angle-head{margin:0;font-size:12px}
+#mobile-pool-preview.is-landscape .angle-head b{font-size:13px}
+#mobile-pool-preview.is-landscape .angle-ruler{height:44px;margin:4px 0 0}
+#mobile-pool-preview.is-landscape .power-group{grid-column:1/-1;grid-row:2}
+#mobile-pool-preview.is-landscape #power{margin:0;min-height:44px}
+#mobile-pool-preview.is-landscape .spin-group{grid-column:1;grid-row:3;gap:4px}
+#mobile-pool-preview.is-landscape .spin-pad{width:60px;height:60px}
+#mobile-pool-preview.is-landscape .spin-group>div:first-child span{font-size:12px}
+#mobile-pool-preview.is-landscape .small-button{min-width:60px;padding:4px}
+#mobile-pool-preview.is-landscape .shoot{grid-column:2;grid-row:3;align-self:end;min-height:48px;padding:8px;font-size:16px}
+#mobile-pool-preview.is-landscape .place-cue{grid-column:1/-1;grid-row:4;font-size:14px}
+#mobile-pool-preview.is-landscape .overlay{height:100%;padding:60px 12px 8px;overflow:auto}
+#mobile-pool-preview.is-landscape .menu-card{padding:12px 16px;max-width:520px}
+#mobile-pool-preview.is-landscape .menu-card h1{font-size:24px;margin:8px 0}
+#mobile-pool-preview.is-landscape .menu-card h2{font-size:20px;margin:4px 0 8px}
+#mobile-pool-preview.is-landscape .menu-card p{font-size:13px;margin:6px 0;line-height:1.4}
+#mobile-pool-preview.is-landscape .ai-test-card{display:grid;grid-template-columns:1fr 1fr;column-gap:12px;row-gap:4px}
+#mobile-pool-preview.is-landscape .ai-test-card .eyebrow,#mobile-pool-preview.is-landscape .ai-test-card h2,#mobile-pool-preview.is-landscape #aiTestExpectation,#mobile-pool-preview.is-landscape #runAITest{grid-column:1/-1}
+#mobile-pool-preview.is-landscape .ai-test-card label{font-size:13px;margin:0}
+#mobile-pool-preview.is-landscape .ai-test-card label[for="aiTestScene"]{grid-column:1;grid-row:3}
+#mobile-pool-preview.is-landscape #aiTestScene{grid-column:1;grid-row:4}
+#mobile-pool-preview.is-landscape .ai-test-card label[for="aiTestDifficulty"]{grid-column:2;grid-row:3}
+#mobile-pool-preview.is-landscape #aiTestDifficulty{grid-column:2;grid-row:4}
+#mobile-pool-preview.is-landscape .ai-test-card select{margin:0;min-height:44px;font-size:14px}
+
+#mobile-pool-preview #fullBtn{display:inline-flex!important;align-items:center;justify-content:center;min-width:68px;min-height:44px;color:#eef4fc;background:#193348;border:1px solid #7bc7db}
+#mobile-pool-preview #fullBtn[aria-pressed="true"]{color:#102127;background:#efcd79}
+#mobile-pool-preview .overlay{padding-top:calc(var(--preview-header-height,124px) + 8px)}
+#mobile-pool-preview:fullscreen{width:100vw!important;height:100vh!important;height:100dvh!important;max-width:none!important;overflow:auto!important;background:#050a18}
+#mobile-pool-preview:-webkit-full-screen{width:100vw!important;height:100vh!important;max-width:none!important;overflow:auto!important;background:#050a18}
+#mobile-pool-preview.is-fullscreen .topbar{position:sticky;top:0}
+#mobile-pool-preview.is-fullscreen.is-landscape{overflow:hidden!important}
+#mobile-pool-preview #fullscreenFeedback{position:absolute;z-index:200;top:100%;left:8px;right:8px;padding:10px 12px;color:#eef4fc;background:#193348;border-radius:8px;line-height:1.5;font-size:14px}
+#mobile-pool-preview.is-landscape .topbar{gap:6px}
+#mobile-pool-preview.is-landscape .top-actions{gap:5px}
+#mobile-pool-preview.is-landscape .top-actions button{padding:8px}
+
+#mobile-pool-preview #musicBtn{display:inline-flex!important;min-height:44px;align-items:center;justify-content:center}
+
+#mobile-pool-preview .start-card{display:block;width:100%;height:auto;padding:24px;max-height:none;overflow:visible}
+#mobile-pool-preview .start-visual{display:none}
+#mobile-pool-preview .start-copy{width:100%}
+#mobile-pool-preview .start-copy>p{font-size:14px}
+#mobile-pool-preview .start-wordmark{font-size:32px}
+#mobile-pool-preview .start-title{font-size:24px!important}
+#mobile-pool-preview .start-foot{font-size:12px}
+}

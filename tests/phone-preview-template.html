@@ -1,0 +1,488 @@
+<div id="mobile-pool-preview" aria-label="光域台球手机测试版">
+<style>
+
+#mobile-pool-preview{color-scheme:dark;--bg:#07191b;--panel:#102527;--line:#315054;--text:#ecf5ee;--muted:#94aaa8;--gold:#efcd79;--green:#2cb98e}
+.opponent-select{display:flex;gap:8px;margin-top:22px}.opponent-select button{flex:1;border:1px solid #66867a;border-radius:9px;background:#ffffff0b;color:#cfdfd5;padding:10px}.opponent-select button.selected{color:#142825;border-color:#e6c67d;background:#e8c879;font-weight:800}.menu-card .mode-grid{margin-top:16px}
+*{box-sizing:border-box}#mobile-pool-preview{margin:0;min-height:100%;font-family:Inter,"Microsoft YaHei",system-ui,sans-serif;background:var(--bg);color:var(--text)}#mobile-pool-preview{background:radial-gradient(circle at 47% -20%,#1a4c46 0,#0b2527 45%,#061719 95%)}button,input{font:inherit}button{cursor:pointer}button:disabled{opacity:.42;cursor:not-allowed}.app{max-width:1660px;margin:0 auto;padding:0 28px}.topbar{height:86px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #36545866}.brand{display:flex;align-items:center;gap:14px}.brand-mark{width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 32% 26%,#fff,#e3ebdb 13%,#06161d 15%,#0e1823 65%,#000);color:transparent;box-shadow:0 2px 14px #0008,0 0 0 2px #a3b7ac55}.brand strong{display:block;font-size:18px;letter-spacing:2px}.brand small{display:block;color:var(--gold);font-size:10px;letter-spacing:3px;margin-top:3px}.top-actions{display:flex;gap:12px}.quiet{border:1px solid #52706d6d;border-radius:10px;color:#d9e7de;background:#ffffff0a;padding:10px 15px}.quiet:hover,.small-button:hover,.aim-controls button:hover{background:#ffffff1d}.layout{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:24px;padding-top:28px}.arena{min-width:0}.scorebar{height:76px;display:grid;grid-template-columns:1fr 132px 1fr;align-items:center;background:#102a2b;border:1px solid #365858;border-radius:18px 18px 0 0;padding:0 18px}.player{display:flex;align-items:center;gap:12px;opacity:.56}.player:last-child{justify-content:flex-end}.player.active{opacity:1}.player-number{display:grid;place-items:center;width:35px;height:35px;border-radius:8px;border:1px solid #597571;color:var(--gold);font-size:13px}.player b,.player small{display:block}.player b{font-size:14px}.player small{font-size:11px;color:#a9bfba;margin-top:3px}.score{font-size:28px;font-weight:700;color:var(--gold);min-width:35px;text-align:center}.game-label{text-align:center}.game-label span{display:block;color:var(--gold);font-size:14px;font-weight:800;letter-spacing:3px}.game-label small{display:block;font-size:11px;color:#b6c8c4;margin-top:5px}.table-wrap{background:#12292a;border-left:1px solid #365858;border-right:1px solid #365858;padding:10px;box-shadow:0 24px 50px #0005}.table-wrap canvas{display:block;width:100%;height:auto;touch-action:none;border-radius:10px}.status{height:48px;display:flex;align-items:center;gap:10px;background:#102a2b;border:1px solid #365858;border-radius:0 0 15px 15px;color:#d5e3de;padding:0 19px;font-size:13px}.status-dot{width:8px;height:8px;border-radius:50%;background:#e1c270;box-shadow:0 0 12px #e1c270}.controls{background:linear-gradient(150deg,#173438,#102528);border:1px solid #3c5a58;border-radius:18px;padding:20px;align-self:start;box-shadow:0 24px 50px #0003}.control-head{display:flex;flex-direction:column;gap:5px;border-bottom:1px solid #ffffff18;padding-bottom:17px}.control-head span,.control-line span,.spin-group>div:first-child span{font-size:15px;font-weight:700}.control-head small,.spin-group>div:first-child small{color:var(--muted);font-size:11px}.aim-controls{display:flex;align-items:center;gap:9px;margin:18px 0 27px}.aim-controls button{height:38px;width:40px;background:#2b4746;border:1px solid #5f7771;border-radius:9px;color:#fff;font-size:20px}.aim-controls span{flex:1;text-align:center;color:#b7c8c3;font-size:12px}.aim-controls b{display:block;color:var(--gold);font-size:13px;margin-top:4px}.spin-group{display:flex;flex-direction:column;align-items:center;gap:10px;border-top:1px solid #ffffff18;padding-top:22px}.spin-group>div:first-child{text-align:center;display:flex;flex-direction:column;gap:3px}.spin-pad{position:relative;width:114px;height:114px;border-radius:50%;background:radial-gradient(circle at 35% 28%,#fff,#d9e4dc 72%,#93a49c 100%);border:5px solid #3f665f;box-shadow:0 9px 20px #0005;touch-action:none;cursor:crosshair}.spin-cross{position:absolute;inset:0;border-radius:50%;background:linear-gradient(transparent calc(50% - .5px),#607d7844 50%,transparent calc(50% + .5px)),linear-gradient(90deg,transparent calc(50% - .5px),#607d7844 50%,transparent calc(50% + .5px))}.spin-dot{position:absolute;left:50%;top:50%;width:18px;height:18px;transform:translate(-50%,-50%);border-radius:50%;background:#c88c42;border:3px solid #fff;box-shadow:0 2px 7px #0007}.small-button{background:transparent;border:1px solid #68817a;border-radius:6px;color:#cbded3;padding:4px 10px;font-size:11px}.power-group{border-top:1px solid #ffffff18;margin-top:20px;padding-top:22px}.control-line{display:flex;justify-content:space-between;align-items:center}.control-line b{color:var(--gold);font-size:17px}input[type=range]{width:100%;margin:23px 0 8px;accent-color:#e9c16e;cursor:pointer}.power-ends{display:flex;justify-content:space-between;color:#88a09b;font-size:11px}.shoot{width:100%;height:62px;margin-top:28px;color:#142825;border:0;border-radius:11px;background:linear-gradient(135deg,#f6d582,#d99e53);font-size:20px;font-weight:850;letter-spacing:5px;box-shadow:0 9px 25px #bd8f4444}.shoot:hover{filter:brightness(1.08)}.shoot span{float:right;margin-right:18px;font-size:22px;letter-spacing:0}.tip{color:#9ab3ac;font-size:11px;line-height:1.6;margin-top:15px;min-height:38px}.call-pocket{background:#1c3b38;border:1px solid #d4b77677;border-radius:9px;padding:12px;margin-top:12px;font-size:12px}.call-pocket strong,.call-pocket span,.call-pocket b{display:block;margin:3px 0}.call-pocket b{color:var(--gold)}.spec{margin-top:23px;padding-top:16px;border-top:1px solid #ffffff18;display:flex;flex-direction:column;gap:4px}.spec span{color:#d9eadf;font-size:12px}.spec small{color:#90aaa0;font-size:11px}footer{text-align:center;color:#7c9a93;font-size:11px;padding:23px 0 30px}.overlay{position:fixed;inset:0;z-index:10;display:grid;place-items:center;background:#051719db;backdrop-filter:blur(6px);padding:20px}.overlay.hidden{display:none}.menu-card{width:min(100%,540px);padding:36px;border-radius:23px;border:1px solid #73948380;background:linear-gradient(145deg,#234540,#0a2629 72%);box-shadow:0 35px 90px #000b;position:relative}.eyebrow{font-size:11px;letter-spacing:5px;font-weight:800;color:var(--gold)}h1{font-size:clamp(38px,7vw,62px);line-height:1.12;margin:20px 0 18px;letter-spacing:2px}h1 em{font-style:normal;color:var(--gold)}.menu-card p{color:#c5d7d0;line-height:1.8;font-size:14px}.mode-grid{display:grid;gap:12px;margin:27px 0 22px}.mode-card{display:flex;align-items:center;gap:16px;text-align:left;padding:17px 18px;border-radius:14px;border:1px solid #7491837f;background:#ffffff0b;color:#f0f5ec}.mode-card:hover{background:#ffffff22;border-color:#f5d68a}.mode-card b,.mode-card small{display:block}.mode-card b{font-size:18px;margin-bottom:5px}.mode-card small{color:#acc3b7;font-size:12px}.mode-ball{width:42px;height:42px;flex:none;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:19px;color:#fff;box-shadow:inset -8px -8px 11px #0007,0 3px 7px #0007}.mode-ball.black{background:radial-gradient(circle at 33% 25%,#3c4550,#080d15 65%)}.mode-ball.yellow{background:radial-gradient(circle at 33% 25%,#ffe475,#d99700 72%);color:#16302e}.arrow{margin-left:auto;color:var(--gold);font-size:22px}.menu-foot{display:block;color:#819e96;font-size:10px}.rules-card h2{font-size:29px}.rules-card p{font-size:13px}.close{position:absolute;right:24px;top:18px;border:0;background:transparent;color:#fff;font-size:29px}@media(max-width:1050px){.layout{grid-template-columns:1fr}.controls{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:center}.control-head{grid-column:1/-1}.aim-controls{margin:0}.spin-group{border:0;padding:0}.power-group{border:0;margin:0;padding:0}.shoot{margin:0}.tip,.call-pocket,.spec{grid-column:1/-1;margin-top:0}.spin-pad{width:90px;height:90px}}@media(max-width:650px){.app{padding:0 9px}.topbar{height:64px}.brand strong{font-size:15px}.brand small{font-size:8px}.brand-mark{width:33px;height:33px}.top-actions{gap:4px}.quiet{padding:8px;font-size:11px}.layout{padding-top:10px;gap:10px}.scorebar{height:59px;padding:0 8px;grid-template-columns:1fr 70px 1fr}.player{gap:5px}.player-number{display:none}.player b{font-size:11px}.player small{font-size:9px}.score{font-size:19px;min-width:20px}.game-label span{font-size:11px;letter-spacing:1px}.game-label small{font-size:9px}.table-wrap{padding:3px}.status{height:auto;min-height:39px;font-size:11px}.controls{padding:13px;grid-template-columns:1fr 1fr;gap:14px}.aim-controls{grid-column:1/-1}.spin-group{grid-column:1;grid-row:3}.power-group{grid-column:2;grid-row:3}.shoot{grid-column:1/-1;height:50px}.spin-pad{width:72px;height:72px}.control-head{padding:0 0 9px}.tip{min-height:0}.spec{display:none}footer{font-size:9px;line-height:1.7;padding:13px}.menu-card{padding:26px}.menu-card p{font-size:12px}}
+
+
+
+
+#mobile-pool-preview{--felt:#48b625;--gold:#f3d384;--ink:#071215}
+#mobile-pool-preview{min-height:100%;overflow:hidden}
+#mobile-pool-preview{background:#0b1114}
+.app{width:100vw;max-width:none;height:100svh;padding:0;overflow:hidden;background:radial-gradient(circle at 45% 50%,#282b2c,#0b1114 70%)}
+.topbar{height:57px;position:absolute;z-index:5;inset:0 0 auto 0;padding:0 18px;border:0;background:linear-gradient(180deg,#0d1c1fef,#0d1c1f92);backdrop-filter:blur(15px)}
+.brand{gap:10px}.brand-mark{width:32px;height:32px}.brand strong{font-size:15px;letter-spacing:1px}.brand small{font-size:8px;letter-spacing:2px}
+.top-actions{gap:7px}.quiet{padding:8px 10px;border:1px solid #9ba7a94a;background:#122629aa;font-size:11px}.quiet:hover{border-color:#f3d384}
+.layout{height:100svh;grid-template-columns:minmax(0,1fr) 136px;gap:0;padding:57px 0 0}
+.arena{position:relative;min-height:0;overflow:hidden;background:radial-gradient(circle at center,#323637,#151c20 65%,#0c1115);border-right:1px solid #cfbd9066}
+.arena::before{content:"";position:absolute;inset:0;opacity:.22;pointer-events:none;background:repeating-linear-gradient(35deg,transparent 0 7px,#ffffff09 8px 9px,transparent 11px 17px)}
+.table-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:20px 5px 0;background:transparent;border:0;box-shadow:none}
+.table-wrap canvas{display:block;width:auto;height:min(calc(100svh - 78px),calc((100vw - 146px)*.5642857));max-width:100%;max-height:100%;border-radius:0;touch-action:none;filter:drop-shadow(0 25px 38px #000b)}
+.scorebar{position:absolute;z-index:2;left:14px;right:14px;top:8px;width:auto;height:49px;grid-template-columns:1fr 110px 1fr;padding:0 12px;border-radius:13px;border:1px solid #d3e6c53b;background:linear-gradient(90deg,#142625df,#173634c9,#142625df);backdrop-filter:blur(10px);box-shadow:0 8px 25px #0006}
+.player{gap:8px}.player-number{width:28px;height:28px;font-size:10px;border-color:#e9d59073}.player b{font-size:11px}.player small{font-size:9px}.score{font-size:19px}.game-label span{font-size:12px}.game-label small{font-size:9px;margin-top:2px}
+.status{position:absolute;z-index:2;left:15px;right:auto;bottom:10px;max-width:calc(100% - 30px);height:auto;min-height:33px;padding:7px 12px;border:1px solid #d4e5cf44;border-radius:9px;background:#0c2327dd;backdrop-filter:blur(8px);box-shadow:0 8px 20px #0008;font-size:11px}
+.status-dot{width:7px;height:7px;flex:none}
+.controls{height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;gap:0;padding:12px 9px 9px;border:0;border-radius:0;background:linear-gradient(90deg,#111c1e,#1b2e30 56%,#101b1d);box-shadow:-6px 0 26px #0008}
+.control-head{width:100%;padding:3px 0 10px;border-bottom:1px solid #d8e5d92f;text-align:center}.control-head span{font-size:12px}.control-head small{display:none}
+.aim-controls{width:100%;margin:10px 0 12px;gap:2px}.aim-controls button{width:25px;height:27px;padding:0;border-radius:7px;font-size:16px}.aim-controls span{font-size:9px}.aim-controls b{font-size:10px;margin-top:2px}
+.spin-group{width:100%;gap:4px;padding:9px 0 8px;border-top:1px solid #d8e5d92f}.spin-group>div:first-child span{font-size:10px}.spin-group>div:first-child small{display:none}.spin-pad{width:55px;height:55px;border-width:3px;margin:2px auto 0}.spin-dot{width:11px;height:11px;border-width:2px}.small-button{padding:2px 6px;font-size:9px}
+.power-group{width:100%;margin:1px 0 0;padding:8px 0;border-top:1px solid #d8e5d92f}.power-group .control-line{justify-content:center;gap:4px;flex-direction:column}.power-group .control-line span{font-size:10px}.power-group .control-line b{font-size:18px}.power-group input,.power-ends{display:none}
+.cue-meter{width:100%;min-height:160px;flex:1;display:flex;justify-content:center;touch-action:none;cursor:ns-resize;outline:none;padding:4px 0 0}
+.cue-meter:focus-visible .cue-track{outline:2px solid var(--gold)}
+.cue-track{position:relative;width:53px;height:100%;min-height:150px;border-radius:26px;border:1px solid #e8d5a774;background:linear-gradient(90deg,#091316,#223332 50%,#071114);box-shadow:inset 0 0 12px #000,0 0 0 4px #ffffff09;overflow:hidden}
+.cue-track::before{content:"";position:absolute;top:12px;bottom:24px;left:50%;width:2px;transform:translateX(-50%);background:repeating-linear-gradient(to bottom,#f5e3b09c 0 2px,transparent 2px 24px)}
+.cue-power{position:absolute;bottom:25px;left:5px;right:5px;height:var(--power-height,56%);border-radius:12px;background:linear-gradient(0deg,#af4a22b5,#e7ab4da6,#efce76);filter:blur(7px);opacity:.68;transition:height .1s}
+.cue-stick-vertical{position:absolute;left:50%;top:9%;width:15px;height:67%;transform:translateX(-50%) translateY(var(--cue-pull,0px));border-radius:5px 5px 9px 9px;clip-path:polygon(33% 0,67% 0,82% 58%,100% 100%,0 100%,18% 58%);background:linear-gradient(90deg,#654325 0%,#d5b382 17%,#fff1c3 39%,#c69559 62%,#7a482a 84%,#39221c 100%);box-shadow:2px 2px 6px #000a;pointer-events:none;transition:transform .08s}
+.cue-meter.dragging .cue-stick-vertical,.cue-meter.dragging .cue-power{transition:none}
+.cue-stick-vertical::after{content:"";position:absolute;bottom:0;left:0;right:0;height:35%;border-radius:3px 3px 8px 8px;background:linear-gradient(90deg,#221916,#834e30 27%,#bc8551 49%,#663920 70%,#161619),repeating-linear-gradient(to bottom,transparent 0 11px,#e0be79 11px 13px,transparent 13px 29px);background-blend-mode:normal;border-top:3px double #e0c279;border-bottom:5px solid #1f2428}
+.cue-tip{position:absolute;top:0;left:5px;width:5px;height:11px;border-radius:4px 4px 2px 2px;background:#69abb4;border-top:3px solid #e2eeea}.cue-inlay{position:absolute;top:64%;left:1px;width:13px;height:4px;background:linear-gradient(#f9dfa0,#83512c);border-top:1px solid #fff2bb}
+.cue-bottom{position:absolute;bottom:5px;left:1px;right:1px;text-align:center;color:#e8d4aa;font-size:8px;line-height:1.1;writing-mode:vertical-rl;transform:rotate(180deg);height:76px;width:10px}
+.shoot{width:100%;height:41px;flex:none;margin:8px 0 0;padding:0 5px;border-radius:7px;font-size:12px;letter-spacing:1px;box-shadow:0 3px 15px #c8a36155}.shoot span{margin:0;font-size:14px;float:none}
+.tip{display:none}.spec{display:none}.call-pocket{width:100%;margin:5px 0;padding:7px;font-size:9px}.call-pocket span{display:none}
+footer{display:none}
+.overlay{background:#06120fe8;backdrop-filter:blur(11px)}
+.menu-card{width:min(92vw,520px);padding:30px 33px 26px;border-radius:20px;border:1px solid #e8d08a82;background:radial-gradient(circle at 90% 0%,#31584b,#112c2d 60%,#0c1f22);box-shadow:0 30px 90px #000d,0 0 65px #60cf7960}
+.menu-card::before{content:"";position:absolute;top:-1px;left:32px;right:32px;height:2px;background:linear-gradient(90deg,transparent,#f4d27b,transparent)}
+.menu-card .eyebrow{font-size:10px;letter-spacing:4px}.menu-card h1{font-size:clamp(34px,5vw,53px);margin:12px 0;line-height:1.17}.menu-card p{font-size:12px;margin:10px 0;line-height:1.7}.opponent-select{margin-top:15px}.opponent-select button{font-size:12px;padding:9px}.difficulty-select{display:flex;align-items:center;gap:5px;margin:12px 0 0}.difficulty-select span{font-size:10px;color:#c4d6cd;margin-right:auto}.difficulty-select button{font-size:10px;border:1px solid #71867b;border-radius:6px;background:#132c2c;color:#d4e2d7;padding:5px 8px}.difficulty-select button.selected{color:#142825;background:#f0cf7e;border-color:#f0cf7e;font-weight:800}.difficulty-select[hidden]{display:none}.menu-card .mode-grid{margin-top:15px;gap:9px}.mode-card{padding:12px 13px}.menu-foot{font-size:9px}
+.boot{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at center,#155539,#091e1d 52%,#050e13);transition:opacity .55s,visibility .55s}.boot.done{opacity:0;visibility:hidden;pointer-events:none}
+.boot-scene{position:relative;width:240px;height:210px;perspective:700px;filter:drop-shadow(0 17px 18px #0008)}.boot-orbit{position:absolute;inset:18px;border:1px solid #b7dbb860;border-radius:50%;transform:rotateX(61deg)}.orbit-two{inset:40px;border-color:#ecdb9c84;transform:rotateX(61deg) rotateZ(32deg)}
+.boot-ball{position:absolute;display:grid;place-items:center;width:64px;height:64px;border-radius:50%;font-size:30px;font-weight:900;color:white;box-shadow:inset -13px -14px 18px #0009,0 14px 18px #0007;animation:bootFloat 1.2s ease-in-out infinite alternate}.boot-eight{left:48px;top:50px;background:radial-gradient(circle at 30% 23%,#6a747b,#111a20 59%)}.boot-nine{right:35px;top:85px;background:radial-gradient(circle at 30% 23%,#fff4bb,#e3b62b 57%);animation-delay:.35s}.boot-cue{position:absolute;left:15px;right:45px;top:154px;height:9px;border-radius:7px;background:linear-gradient(90deg,#4c291e,#b07945,#ffe5ab,#78cbd0);transform:rotate(-24deg);animation:bootStrike 1.2s ease-in-out infinite alternate}.boot-title{font-size:clamp(38px,6vw,63px);font-weight:950;letter-spacing:8px;color:#f4f6ec}.boot-title em{font-style:normal;color:#efd27d}.boot-sub{margin-top:6px;color:#a9c6b8;font-size:12px;letter-spacing:3px}.boot-track{width:min(60vw,250px);height:5px;border-radius:10px;background:#38504a;margin-top:29px;overflow:hidden}.boot-track span{display:block;width:0;height:100%;background:linear-gradient(90deg,#8bdd78,#efd27d);box-shadow:0 0 15px #d4f083}.boot-percent{font-size:12px;color:#e8d79a;margin-top:8px}.boot button{background:transparent;border:0;color:#a5c7ad;font-size:11px;margin-top:26px;letter-spacing:1px}
+@keyframes bootFloat{from{transform:translateY(-8px) rotate(-13deg)}to{transform:translateY(8px) rotate(17deg)}}@keyframes bootStrike{from{transform:translate(-10px,8px) rotate(-24deg)}to{transform:translate(10px,-6px) rotate(-24deg)}}
+@media(max-width:700px){.layout{grid-template-columns:minmax(0,1fr) 76px}.table-wrap canvas{height:min(calc(100svh - 76px),calc((100vw - 82px)*.5642857))}.topbar{padding:0 8px}.top-actions .quiet{font-size:9px;padding:6px}.controls{padding:9px 4px}.scorebar{left:5px;right:5px;top:5px;height:42px;grid-template-columns:1fr 65px 1fr}.player b{font-size:9px}.player small{font-size:8px}.score{font-size:15px}.game-label span{font-size:10px}.game-label small{font-size:8px}.status{left:5px;bottom:5px;max-width:calc(100% - 10px);font-size:9px}.control-head span{font-size:9px}.aim-controls{gap:0}.aim-controls button{width:18px;height:22px;font-size:12px}.aim-controls span{font-size:7px}.aim-controls b{font-size:8px}.spin-pad{width:42px;height:42px}.cue-track{width:39px}.cue-stick-vertical{width:11px}.cue-tip{width:9px;left:1px}.power-group .control-line span{font-size:8px}.power-group .control-line b{font-size:14px}.shoot{font-size:9px}.menu-card{max-height:94svh;overflow:auto;padding:22px}.boot-scene{transform:scale(.76)}}
+@media (orientation:portrait) and (max-width:700px){
+  html{width:100vw;height:100svh;overflow:hidden}
+  #mobile-pool-preview{position:fixed;top:0;left:100vw;width:100svh;height:100vw;min-height:0;overflow:hidden;transform:rotate(90deg);transform-origin:top left}
+  .app{width:100%;height:100%;padding:0}
+  .topbar{height:37px;padding:0 12px}
+  .brand-mark{width:25px;height:25px}.brand strong{font-size:12px}.brand small{font-size:7px}
+  .layout{height:100%;padding-top:37px;grid-template-columns:minmax(0,1fr) 67px}
+  .table-wrap canvas{height:min(calc(100vw - 40px),calc((100svh - 74px)*.5642857))}
+  .scorebar{height:29px;top:3px}.status{min-height:23px;padding:3px 7px;font-size:8px}
+  .controls{padding:4px}.control-head{padding:0 0 3px}.aim-controls{margin:2px 0 3px}
+  .spin-group{padding:3px 0}.spin-pad{width:30px;height:30px}.small-button{display:none}
+  .power-group{padding:3px 0}.power-group .control-line b{font-size:11px}
+  .cue-meter{min-height:70px}.cue-track{min-height:70px;width:34px}.cue-stick-vertical{height:60%}
+  .shoot{height:29px;margin-top:3px}
+  .overlay,.boot{position:absolute;inset:0;width:100%;height:100%}
+  .menu-card{max-height:95%;padding:10px 16px}.menu-card h1{font-size:20px;margin:4px 0;line-height:1}.menu-card h1 br{display:none}.menu-card p{font-size:8px;margin:3px 0}.opponent-select{margin-top:4px}.opponent-select button{padding:5px}.difficulty-select{margin:4px 0 0}.menu-card .mode-grid{grid-template-columns:1fr 1fr;margin-top:5px;gap:5px}.mode-card{padding:5px 7px}.mode-ball{width:27px;height:27px;font-size:13px}.mode-card b{font-size:11px;margin:0}.mode-card small{font-size:7px}.menu-foot{font-size:7px}
+  .boot-scene{height:105px;transform:scale(.45);margin:-35px 0}.boot-title{font-size:30px}.boot-sub{font-size:8px}.boot-track{margin-top:10px}
+}
+@media (orientation:landscape) and (max-height:500px){
+  .topbar{height:37px;padding:0 9px}.brand-mark{width:25px;height:25px}.brand strong{font-size:12px}.brand small{font-size:7px}
+  .layout{padding-top:37px;grid-template-columns:minmax(0,1fr) 67px}
+  .table-wrap canvas{height:min(calc(100svh - 40px),calc((100vw - 74px)*.5642857))}
+  .scorebar{height:29px;top:3px}.status{min-height:23px;padding:3px 7px;font-size:8px}
+  .controls{padding:4px}.control-head{padding:0 0 3px}.aim-controls{margin:2px 0 3px;gap:0}.aim-controls button{width:19px;height:20px;font-size:11px}.aim-controls span{font-size:7px}
+  .spin-group{padding:3px 0}.spin-pad{width:30px;height:30px}.small-button{display:none}
+  .power-group{padding:3px 0}.power-group .control-line b{font-size:11px}
+  .cue-meter{min-height:70px}.cue-track{min-height:70px;width:34px}.cue-stick-vertical{height:60%}
+  .shoot{height:29px;margin-top:3px;font-size:9px}
+  .menu-card{max-height:95svh;overflow:auto;padding:10px 16px}.menu-card h1{font-size:20px;margin:4px 0;line-height:1}.menu-card h1 br{display:none}.menu-card p{font-size:8px;margin:3px 0}.opponent-select{margin-top:4px}.opponent-select button{padding:5px}.difficulty-select{margin:4px 0 0}.menu-card .mode-grid{grid-template-columns:1fr 1fr;margin-top:5px;gap:5px}.mode-card{padding:5px 7px}.mode-ball{width:27px;height:27px;font-size:13px}.mode-card b{font-size:11px;margin:0}.mode-card small{font-size:7px}.menu-foot{font-size:7px}
+}
+
+
+
+
+#mobile-pool-preview{--bg:#050a18;--panel:#0a1624;--line:#28536a;--text:#edf8ff;--muted:#8eabbc;--gold:#70e7f2;--green:#43d4d7}
+#mobile-pool-preview{background:#050a18;color:var(--text);font-family:"Segoe UI","Microsoft YaHei",system-ui,sans-serif}
+#mobile-pool-preview{background:radial-gradient(circle at 78% -18%,#173b5c 0%,#08172a 35%,#050a18 76%)}
+.app{background:linear-gradient(180deg,#07111ccc 0%,#050b18 100%)}
+.topbar{border-bottom:1px solid #4ad8ee26;background:linear-gradient(90deg,#08111e,#0c1b2c 58%,#08111e)}
+.brand-mark{background:radial-gradient(circle at 31% 25%,#fff 0 7%,#b9f6ff 8% 12%,#143b52 14% 22%,#081425 24% 70%,#02060b 100%);box-shadow:0 0 0 1px #6ce8f37c,0 0 18px #2fcde745}
+.brand strong{font-size:14px;font-weight:850;letter-spacing:2px}.brand small{color:#7eddeb;letter-spacing:2.5px}
+.quiet{border:1px solid #5fcce54a;background:#112538a8;color:#dbf5fb;box-shadow:inset 0 1px #b2f7ff16}
+.quiet:hover,.aim-controls button:hover,.small-button:hover{border-color:#78edfa;background:#16435b}
+.scorebar{border:1px solid #58d5e64f;background:linear-gradient(90deg,#0a1a29eb,#10283beb,#0a1a29eb);box-shadow:0 8px 24px #020711b5,inset 0 1px #b5f6ff1e}
+.scorebar::before{content:"";position:absolute;left:30%;right:30%;top:-1px;height:1px;background:linear-gradient(90deg,transparent,#78e8f2,transparent)}
+.player-number{border-color:#6ad4e285;color:#98eff2;background:#103347}.player.active b{color:#f5fbff}.score,.game-label span{color:#8ceafa}.player small,.game-label small{color:#99b8c5}
+.status{border:1px solid #4cd3e45c;background:#081c2ddb;color:#e8f6fb;box-shadow:0 9px 24px #02060ea6}.status-dot{background:#73eaf3;box-shadow:0 0 13px #56dff3}
+.controls{border-left:1px solid #4fc2df58;background:linear-gradient(90deg,#071320,#0c2132 60%,#071320);box-shadow:-9px 0 32px #0009,inset 1px 0 #a8f2ff17}
+.control-head{border-color:#73def136}.control-head span{color:#e9faff;letter-spacing:1px}
+.aim-controls button{border:1px solid #57bcd37c;background:#12364b;color:#d7fbff}.aim-controls b,.power-group .control-line b{color:#81e8f3}
+.spin-group,.power-group{border-color:#73def130}.spin-pad{border-color:#4d97a9;box-shadow:0 0 0 3px #68ddf221,0 0 22px #3acde41c,inset -9px -9px 15px #08293635}
+.spin-dot{background:#71e0ed;box-shadow:0 0 10px #49d4e8}
+.small-button{border-color:#4c9cb0;color:#c9e8ef}.cue-track{border-color:#62b1c4aa;background:linear-gradient(90deg,#07111c,#133043 50%,#07111c);box-shadow:inset 0 0 15px #000,0 0 0 4px #3cd2e413}
+.cue-track::before{background:repeating-linear-gradient(to bottom,#9de4ee7a 0 2px,transparent 2px 24px)}
+.cue-power{background:linear-gradient(0deg,#3873d47c,#49c6df9c,#a2f4ff);opacity:.58}
+.cue-bottom{color:#8ed8e6}.place-cue{width:100%;min-height:34px;flex:none;margin:4px 0 0;padding:5px 4px;border:1px solid #67e1f4;border-radius:7px;background:linear-gradient(120deg,#144c64,#0b324b);box-shadow:inset 0 1px #dbffff4d,0 0 18px #55def932;color:#e6fdff;font-size:11px;font-weight:750;letter-spacing:.4px}
+.place-cue[hidden]{display:none!important}.place-cue:hover{filter:brightness(1.2)}
+.shoot{color:#031b27;background:linear-gradient(120deg,#a9f5ff,#62d6ed 55%,#39abc9);box-shadow:0 5px 20px #45d6ee50,inset 0 1px #fff8}
+.call-pocket{background:#102e43;border-color:#60e2ed88}.call-pocket b{color:#93f0f7}
+.overlay{background:radial-gradient(circle at 65% 15%,#15364bc2,#050b18ef 59%,#030813f2);backdrop-filter:blur(12px)}
+.menu-card{border:1px solid #6ad9e68c;border-radius:21px;background:radial-gradient(circle at 90% 10%,#173e55,#0b2132 46%,#081420 100%);box-shadow:0 27px 100px #000d,0 0 54px #2bd2eb28,inset 0 1px #cefbff25}
+.menu-card::before{background:linear-gradient(90deg,transparent,#80f0f4,transparent)}
+.eyebrow{color:#8fe9f1}.menu-card h1 em,.start-card h1 em{color:#9af1f7;text-shadow:0 0 28px #36d7ef58}.menu-card p{color:#b8d1db}
+.opponent-select button{border-color:#5ba2b274;background:#112b3d;color:#cce7ef}.opponent-select button.selected,.difficulty-select button.selected{border-color:#7ff3f5;background:linear-gradient(110deg,#9ef5f9,#62d6e8);color:#062534;font-weight:800;box-shadow:0 0 17px #3bccdf36}
+.difficulty-select span{color:#a4c7d3}.difficulty-select button{border-color:#4c8193;background:#0d2838;color:#bfdfe8}
+.mode-card{border:1px solid #5facbe78;background:linear-gradient(100deg,#112b3ca8,#0a1d2b88)}.mode-card:hover{border-color:#82eef6;background:#19465a;box-shadow:0 0 22px #45d3e344}.mode-card small{color:#a7cbd4}.arrow{color:#91edf3}.menu-foot{color:#80acb9}
+.boot{background:radial-gradient(circle at 50% 45%,#173b5e 0,#09182c 38%,#030815 76%);overflow:hidden}
+.boot::before,.start-overlay::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(#53ddeb0b 1px,transparent 1px),linear-gradient(90deg,#53ddeb0b 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(transparent,#000 38%,#000 78%,transparent)}
+.boot::after{content:"";position:absolute;left:-20%;right:-20%;top:0;height:2px;background:linear-gradient(90deg,transparent,#94f7ff,transparent);box-shadow:0 0 22px #67e5f2;animation:scan 1.9s linear infinite;opacity:.7}
+.boot-system{position:absolute;top:6%;left:6%;right:6%;display:flex;justify-content:space-between;color:#79d9eb;font-size:10px;letter-spacing:2px}.boot-system span{color:#81f0dc}
+.boot-scene{width:230px;height:180px;filter:drop-shadow(0 0 30px #38d4ed4d)}
+.boot-orbit{border:1px solid #71e4f2a8;transform:rotateX(62deg);box-shadow:0 0 14px #32dbef6b}.orbit-two{border-color:#967bf799;transform:rotateX(62deg) rotateZ(42deg)}
+.boot-ball{width:60px;height:60px;box-shadow:inset -12px -14px 15px #000c,0 0 18px #5fdef667;border:1px solid #d6fbff85}.boot-eight{left:52px;top:45px;background:radial-gradient(circle at 30% 23%,#667683,#121926 56%)}.boot-nine{right:28px;top:77px;background:radial-gradient(circle at 28% 23%,#fff5c8,#e4bd30 50%,#795513)}
+.boot-cue{top:139px;background:linear-gradient(90deg,#174461,#cdedf2,#d7a65f,#53dded);box-shadow:0 0 14px #71d9e6}
+.boot-title{font-weight:900;color:#e9f8ff;letter-spacing:10px;text-shadow:0 0 35px #58d6ed4d}.boot-title em{color:#8eeaf2}.boot-sub{color:#a7cbd9;letter-spacing:2px}.boot-track{background:#12394e;border:1px solid #459eb071;height:7px}.boot-track span{background:linear-gradient(90deg,#5385f8,#77e8f6);box-shadow:0 0 18px #6eeaf7}.boot-percent{color:#9af2f5}.boot button{color:#a5e9ef;border:1px solid #5cd4e273;border-radius:7px;padding:9px 16px;background:#0c273999}
+@keyframes scan{from{top:0}to{top:100%}}
+.start-overlay{z-index:12}
+.start-card{position:relative;display:grid;grid-template-columns:1.05fr .95fr;align-items:center;width:min(94vw,900px);min-height:470px;padding:46px 52px;border:1px solid #60dcec91;border-radius:21px;background:radial-gradient(circle at 78% 20%,#163f5b 0,#0b2639 30%,#071726 73%);box-shadow:0 25px 90px #000e,0 0 62px #30d3e92c,inset 0 1px #c4f7ff28;overflow:hidden}
+.start-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#a2f5ff 50%,transparent)}
+.start-copy{position:relative;z-index:2}.start-card h1{font-size:clamp(43px,5vw,68px);line-height:1.14;margin:19px 0 20px;letter-spacing:2px}.start-card p{max-width:390px;color:#bdd5df;font-size:14px;line-height:1.9}
+.start-btn{display:flex;align-items:center;justify-content:space-between;gap:50px;margin-top:28px;padding:15px 19px;min-width:226px;border:1px solid #b1fcff;border-radius:7px;background:linear-gradient(105deg,#b6faff,#63dce9);color:#052332;font-size:15px;font-weight:850;box-shadow:0 10px 28px #32d7ea4d,inset 0 1px #fff9}.start-btn span{font-size:23px;line-height:1}.start-btn:hover{filter:brightness(1.12);transform:translateY(-2px)}
+.start-foot{margin-top:28px;color:#80b7c5;font-size:10px;letter-spacing:1.4px}
+.start-signal{display:flex;align-items:center;gap:9px;width:max-content;max-width:100%;padding:7px 11px;border:1px solid #7de9ef6e;border-radius:3px;background:#0a3645a8;color:#a7f6fb;font-size:10px;font-weight:850;letter-spacing:2.4px}.start-signal b{margin-left:20px;color:#65b9cb;font-weight:700}.signal-dot{width:6px;height:6px;border-radius:50%;background:#8cf9ee;box-shadow:0 0 12px #8cf9ee}
+.start-wordmark{position:relative;width:max-content;max-width:100%;margin:18px 0 13px;color:#eafaff;font-family:"Arial Narrow","Bahnschrift SemiCondensed","Segoe UI",sans-serif;font-size:clamp(54px,5.4vw,76px);font-weight:950;line-height:.88;letter-spacing:-5px;text-shadow:0 7px 22px #000a}.start-wordmark span{display:block;color:#8af6ff;text-shadow:0 0 27px #36dcef80}.start-wordmark i{position:absolute;right:-34px;bottom:6px;color:#75ebf294;font-size:33px;font-style:normal;font-weight:400;letter-spacing:0}
+.start-title{display:flex;align-items:baseline;gap:13px;margin:17px 0 9px!important;padding:0 0 11px;border-bottom:1px solid #79dce05a;color:#eefaff;font-size:27px!important;font-weight:850;letter-spacing:1.8px;line-height:1.2!important}.start-title span{color:#94c8d5;font-size:12px;font-weight:600;letter-spacing:1px}
+.start-card .start-copy>p{font-size:13px;line-height:1.75;margin:10px 0 0}.start-card .start-btn{margin-top:20px}.start-card .start-foot{margin-top:19px}.music-toggle[aria-pressed="true"]{border-color:#76e5ef;color:#a8f7fb;box-shadow:0 0 12px #39deee37}
+.start-visual{position:relative;height:310px;display:grid;place-items:center;perspective:800px}.start-visual>span{position:absolute;bottom:5px;color:#79e8ef;font-size:10px;letter-spacing:2px}
+.start-table{position:relative;width:360px;height:235px;border:13px solid #1e2e36;border-radius:18px;background:radial-gradient(circle at 55% 43%,#24c933,#087e1d 100%);box-shadow:0 25px 40px #000b,inset 0 0 25px #001f07a6,0 0 0 2px #81dbe45e;transform:rotateX(25deg) rotateZ(-13deg)}
+.start-table{background:radial-gradient(circle at 55% 43%,#3294c7,#0b416a 100%);box-shadow:0 25px 40px #000b,inset 0 0 25px #001c3ba6,0 0 0 2px #81dbe45e}
+.angle-panel{width:100%;flex:none;margin:7px 0 8px;padding:3px 0 8px;border-bottom:1px solid #7fe5f22d;user-select:none}
+.angle-head,.angle-foot{display:flex;justify-content:space-between;align-items:center;color:#a9d5e1}
+.angle-head{font-size:10px;font-weight:700}.angle-head b{color:#93f4ff;font-size:13px;font-variant-numeric:tabular-nums}
+.angle-ruler{position:relative;display:block;width:100%;height:31px;margin-top:5px;border:1px solid #5aa8be91;border-radius:5px;background:linear-gradient(180deg,#071625,#102d42 75%,#0b253a);box-shadow:inset 0 0 9px #0008,0 0 12px #3ed8f51d;overflow:hidden;touch-action:none;cursor:ew-resize;outline:none}
+.angle-ruler:focus-visible{outline:2px solid #b0f7ff;outline-offset:2px}
+.angle-ticks{position:absolute;inset:3px 0 4px;background-image:repeating-linear-gradient(90deg,transparent 0 9px,#b7ebf888 9px 10px),repeating-linear-gradient(90deg,transparent 0 49px,#d5faff 49px 51px,transparent 51px 100px);background-size:100px 10px,100px 22px;background-position-x:var(--tick-offset,0px);background-repeat:repeat-x;opacity:.9}
+.angle-needle{position:absolute;left:50%;top:0;bottom:0;width:2px;transform:translateX(-50%);background:#9cf6ff;box-shadow:0 0 8px #8cf5ff}
+.angle-needle::before{content:"";position:absolute;left:-4px;top:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #a7f9ff}
+.angle-foot{margin-top:4px;font-size:7px;white-space:nowrap}.angle-foot span:nth-child(2){color:#70adbe}
+.start-table::before{content:"";position:absolute;inset:-17px;border:1px solid #8de6ed76;border-radius:21px;box-shadow:0 0 22px #60e2ef38}.start-table::after{content:"";position:absolute;inset:12px;border:1px solid #caf5db22;border-radius:3px}
+.start-ball{position:absolute;z-index:2;display:grid;place-items:center;width:33px;height:33px;border-radius:50%;font-size:14px;font-weight:900;font-style:normal;color:#f5f8f7;box-shadow:inset -7px -9px 9px #0009,0 8px 9px #0009}.start-ball.a{left:115px;top:87px;background:radial-gradient(circle at 30% 20%,#5b6876,#111722 68%)}.start-ball.b{right:94px;top:125px;background:radial-gradient(circle at 30% 20%,#fff1a5,#f0c521 60%,#8b6714)}
+.start-trace{position:absolute;left:138px;top:106px;width:115px;border-top:2px dashed #b2faff;transform:rotate(23deg);filter:drop-shadow(0 0 8px #81edfc)}.start-cue{position:absolute;left:11px;top:102px;width:98px;height:5px;transform:rotate(-9deg);border-radius:4px;background:linear-gradient(90deg,#482a23,#c29664,#fcecc2,#8be6eb)}
+@media (max-width:700px){.start-card{width:min(96vw,900px);padding:28px;min-height:0}.start-visual{transform:scale(.75)}.place-cue{font-size:9px;min-height:29px}.music-toggle{font-size:9px!important;padding:6px!important}}
+@media (max-height:500px){.start-card{min-height:0;max-height:94svh;padding:18px 27px;grid-template-columns:1fr .8fr}.start-signal{font-size:7px;padding:5px 7px}.start-signal b{margin-left:6px}.start-wordmark{font-size:43px;margin:10px 0 5px;letter-spacing:-3px}.start-wordmark i{font-size:20px;right:-21px}.start-title{font-size:18px!important;margin:8px 0 5px!important;padding-bottom:5px}.start-title span{font-size:8px}.start-card .start-copy>p{font-size:9px;line-height:1.4;margin:5px 0}.start-btn{margin-top:11px;padding:9px 14px;font-size:12px;min-width:0}.start-card .start-btn{margin-top:10px}.start-card .start-foot{margin-top:8px;font-size:8px}.start-visual{height:235px;transform:scale(.7)}.boot-scene{transform:scale(.6);margin:-20px 0}.boot-title{font-size:32px}.boot-track{margin-top:10px}.place-cue{min-height:27px;margin:2px 0;font-size:8px}}
+@media (max-height:500px){.angle-panel{margin:2px 0 3px;padding:0 0 3px}.angle-head{font-size:7px}.angle-head b{font-size:9px}.angle-ruler{height:20px;margin-top:2px}.angle-foot{display:none}}
+@media (max-width:700px){.angle-head{font-size:8px}.angle-head b{font-size:10px}.angle-ruler{height:24px}.angle-foot{display:none}}
+.music-panel{position:absolute;z-index:80;top:64px;right:18px;width:min(350px,calc(100% - 36px));padding:14px;border:1px solid #327a98;border-radius:14px;background:#091c2bf5;box-shadow:0 16px 45px #0009;color:#d9f4ff}
+.music-panel[hidden]{display:block;visibility:hidden;pointer-events:none}.music-panel-head,.music-panel-foot{display:flex;align-items:center;justify-content:space-between;gap:12px}.music-panel-head strong{font-size:17px}.music-panel-head small{margin-left:8px;font-size:9px;letter-spacing:2px;color:#79b5ca}.music-panel button{border:1px solid #356580;background:#123247;color:#d8f6ff;border-radius:7px;padding:5px 9px;cursor:pointer}.music-panel-head button{font-size:20px;padding:0 8px}.music-panel p{font-size:11px;color:#95bdcf;line-height:1.5;min-height:17px}.music-panel iframe{display:block;border:0;border-radius:8px;background:#142c3c}.music-panel-foot{margin-top:12px;font-size:10px}.music-panel-foot a{color:#9bddea}.music-panel-foot button{font-size:10px}
+@media (orientation:portrait) and (max-width:700px){.start-card{max-height:95%;width:96%;padding:12px 22px}.start-wordmark{font-size:38px}.start-title{font-size:17px!important}.start-card .start-copy>p{font-size:8px}.start-visual{height:200px;transform:scale(.55)}.start-foot{font-size:7px}.place-cue{min-height:25px}}
+
+
+
+
+    .ai-test-card{position:relative;max-height:calc(100% - 28px);overflow:auto}
+    .ai-test-card h2{font-size:24px;margin:12px 0 18px}
+    .ai-test-card label{display:block;margin:12px 0 8px;font-size:16px}
+    .ai-test-card select{display:block;width:100%;padding:12px;border-radius:8px;background:#0b1d35;color:#eef4fc;border:1px solid #466887;font-size:16px}
+    .ai-test-card p{font-size:14px;line-height:1.6;margin:16px 0}
+    .ai-test-card .start-btn{margin-top:8px}
+    .top-actions{flex-wrap:wrap}
+
+#mobile-pool-preview{position:relative!important;inset:auto!important;transform:none!important;transform-origin:initial!important;width:100%!important;min-height:0!important;overflow:visible!important;background:#050a18;color:#e2f0fb;font-family:system-ui,sans-serif}
+#mobile-pool-preview .app{width:100%;height:auto;min-height:640px;max-width:none;overflow:visible;padding:0}
+#mobile-pool-preview .topbar{position:relative;inset:auto;height:auto;min-height:54px;padding:10px;display:flex;flex-wrap:wrap;gap:10px}
+#mobile-pool-preview .brand strong{font-size:16px}
+#mobile-pool-preview .brand small{font-size:12px}
+#mobile-pool-preview .top-actions{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+#mobile-pool-preview .top-actions button{min-height:44px;font-size:14px;padding:8px 10px}
+#mobile-pool-preview #musicBtn,#mobile-pool-preview #fullBtn,#mobile-pool-preview .boot,#mobile-pool-preview footer,#mobile-pool-preview .angle-foot,#mobile-pool-preview .cue-bottom{display:none!important}
+#mobile-pool-preview .layout{display:flex;flex-direction:column;height:auto;padding:0;gap:0}
+#mobile-pool-preview .arena{display:block;position:relative;min-height:0;padding:0}
+#mobile-pool-preview .scorebar{position:relative;inset:auto;width:100%;height:52px;padding:0 10px;grid-template-columns:1fr 74px 1fr;border-radius:0}
+#mobile-pool-preview .player{gap:6px}
+#mobile-pool-preview .player b{font-size:14px}
+#mobile-pool-preview .player small{font-size:12px}
+#mobile-pool-preview .player-number{display:none}
+#mobile-pool-preview .score{font-size:20px;min-width:20px}
+#mobile-pool-preview .game-label span{font-size:14px}
+#mobile-pool-preview .game-label small{font-size:12px}
+#mobile-pool-preview .table-wrap{position:relative;display:block;padding:0;width:100%;border:0}
+#mobile-pool-preview .table-wrap canvas{width:100%;height:auto!important;aspect-ratio:1400/790;max-width:none;display:block;touch-action:none}
+#mobile-pool-preview .status{position:relative;inset:auto;height:auto;min-height:48px;width:100%;max-width:none;font-size:14px;line-height:1.5;padding:8px 12px;white-space:normal;overflow-wrap:anywhere;border-radius:0}
+#mobile-pool-preview .controls{height:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;padding:12px;align-items:start;border-radius:0}
+#mobile-pool-preview .control-head,#mobile-pool-preview .angle-panel,#mobile-pool-preview .shoot,#mobile-pool-preview .place-cue,#mobile-pool-preview .tip,#mobile-pool-preview .spec{grid-column:1/-1;width:100%;margin:0}
+#mobile-pool-preview .control-head{padding:0;gap:4px}
+#mobile-pool-preview .control-head span,#mobile-pool-preview .angle-head,#mobile-pool-preview .spin-group>div:first-child span,#mobile-pool-preview .power-group .control-line span{font-size:14px}
+#mobile-pool-preview .control-head small,#mobile-pool-preview .spin-group>div:first-child small{font-size:12px}
+#mobile-pool-preview .angle-head b,#mobile-pool-preview .power-group .control-line b{font-size:16px}
+#mobile-pool-preview .angle-ruler{height:44px}
+#mobile-pool-preview .spin-group{grid-column:1;grid-row:3/5;display:flex;align-items:center;padding:0;margin:0;border:0}
+#mobile-pool-preview .spin-pad{width:88px;height:88px}
+#mobile-pool-preview .spin-dot{width:18px;height:18px}
+#mobile-pool-preview .small-button{font-size:14px;min-height:44px;min-width:72px}
+#mobile-pool-preview .power-group{grid-column:2;grid-row:3;margin:0;padding:0;border:0}
+#mobile-pool-preview #power{min-height:44px;margin:8px 0 0}
+#mobile-pool-preview .power-ends{font-size:12px}
+#mobile-pool-preview .cue-meter{grid-column:2;grid-row:4;height:116px;min-height:116px;margin:0;display:block}
+#mobile-pool-preview .cue-track{height:110px;width:60px;margin:0 auto}
+#mobile-pool-preview .cue-stick-vertical{width:16px}
+#mobile-pool-preview .shoot,#mobile-pool-preview .place-cue{font-size:16px;min-height:48px;margin:0}
+#mobile-pool-preview .tip{font-size:14px;line-height:1.5;padding:0}
+#mobile-pool-preview .spec{font-size:12px;padding:0}
+#mobile-pool-preview .spec small{font-size:12px}
+#mobile-pool-preview .overlay{position:absolute;inset:0;padding:76px 10px 10px;align-items:flex-start;min-height:0;background:#030b17eb}
+#mobile-pool-preview .overlay.hidden{display:none}
+#mobile-pool-preview .menu-card{position:relative;width:100%;max-width:520px;max-height:none;overflow:visible;margin:0;padding:22px 18px}
+#mobile-pool-preview .menu-card h1{font-size:28px;line-height:1.2}
+#mobile-pool-preview .menu-card h2{font-size:24px}
+#mobile-pool-preview .menu-card p{font-size:14px;line-height:1.5}
+#mobile-pool-preview .menu-card button{min-height:44px;font-size:14px}
+#mobile-pool-preview .menu-card .close{width:44px;height:44px;font-size:24px}
+#mobile-pool-preview .menu-foot{font-size:12px}
+#mobile-pool-preview .difficulty-select{flex-wrap:wrap}
+#mobile-pool-preview .difficulty-select span{font-size:14px}
+#mobile-pool-preview .mode-card small{font-size:12px}
+#mobile-pool-preview .ai-test-card label,#mobile-pool-preview .ai-test-card select{font-size:16px}
+#mobile-pool-preview .start-btn{font-size:16px;min-height:48px}
+#mobile-pool-preview .eyebrow{font-size:12px}
+#mobile-pool-preview .menu-card button,#mobile-pool-preview .controls button,#mobile-pool-preview .topbar button,#mobile-pool-preview select{cursor:inherit}
+#mobile-pool-preview [hidden]{display:none!important}
+@media(min-width:620px){#mobile-pool-preview .controls{grid-template-columns:1fr 1fr}#mobile-pool-preview .app{min-height:800px}}
+#mobile-pool-preview .mobile-game-surface{position:relative;width:100%}
+#mobile-pool-preview .topbar{z-index:100}
+#mobile-pool-preview #landscapeBtn{min-height:44px;min-width:64px;background:#efcd79;color:#102127;border:1px solid #ffe3a2;font-weight:700}
+#mobile-pool-preview.is-landscape{height:var(--landscape-width);overflow:hidden!important}
+#mobile-pool-preview.is-landscape .mobile-game-surface{width:var(--landscape-width);height:var(--landscape-height);transform-origin:top left;transform:translateX(var(--landscape-height)) rotate(90deg)}
+#mobile-pool-preview.is-landscape .app{height:100%;min-height:0;overflow:hidden}
+#mobile-pool-preview.is-landscape .topbar{height:54px;min-height:54px;flex-wrap:nowrap;padding:5px 10px;gap:8px;background:#071222}
+#mobile-pool-preview.is-landscape .brand small{display:none}
+#mobile-pool-preview.is-landscape .top-actions{flex-wrap:nowrap}
+#mobile-pool-preview.is-landscape .layout{height:calc(100% - 54px);display:grid;grid-template-columns:minmax(0,1fr) 184px;gap:0}
+#mobile-pool-preview.is-landscape .arena{height:100%;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+#mobile-pool-preview.is-landscape .scorebar{height:40px;flex:0 0 40px}
+#mobile-pool-preview.is-landscape .player{gap:5px}
+#mobile-pool-preview.is-landscape .player small,#mobile-pool-preview.is-landscape .game-label small{font-size:11px}
+#mobile-pool-preview.is-landscape .table-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+#mobile-pool-preview.is-landscape .table-wrap canvas{width:min(100%,var(--landscape-table-width));height:auto!important;flex:none}
+#mobile-pool-preview.is-landscape .status{min-height:44px;height:44px;flex:0 0 44px;font-size:12px;line-height:1.35;padding:4px 8px;overflow:auto}
+#mobile-pool-preview.is-landscape .controls{height:100%;min-height:0;overflow:auto;align-content:start;grid-template-columns:1fr 1fr;gap:6px;padding:8px}
+#mobile-pool-preview.is-landscape .control-head,#mobile-pool-preview.is-landscape .tip,#mobile-pool-preview.is-landscape .spec,#mobile-pool-preview.is-landscape .cue-meter,#mobile-pool-preview.is-landscape .spin-group small,#mobile-pool-preview.is-landscape .power-ends{display:none}
+#mobile-pool-preview.is-landscape .angle-panel{grid-column:1/-1;grid-row:1}
+#mobile-pool-preview.is-landscape .angle-head{margin:0;font-size:12px}
+#mobile-pool-preview.is-landscape .angle-head b{font-size:13px}
+#mobile-pool-preview.is-landscape .angle-ruler{height:44px;margin:4px 0 0}
+#mobile-pool-preview.is-landscape .power-group{grid-column:1/-1;grid-row:2}
+#mobile-pool-preview.is-landscape #power{margin:0;min-height:44px}
+#mobile-pool-preview.is-landscape .spin-group{grid-column:1;grid-row:3;gap:4px}
+#mobile-pool-preview.is-landscape .spin-pad{width:60px;height:60px}
+#mobile-pool-preview.is-landscape .spin-group>div:first-child span{font-size:12px}
+#mobile-pool-preview.is-landscape .small-button{min-width:60px;padding:4px}
+#mobile-pool-preview.is-landscape .shoot{grid-column:2;grid-row:3;align-self:end;min-height:48px;padding:8px;font-size:16px}
+#mobile-pool-preview.is-landscape .place-cue{grid-column:1/-1;grid-row:4;font-size:14px}
+#mobile-pool-preview.is-landscape .overlay{height:100%;padding:60px 12px 8px;overflow:auto}
+#mobile-pool-preview.is-landscape .menu-card{padding:12px 16px;max-width:520px}
+#mobile-pool-preview.is-landscape .menu-card h1{font-size:24px;margin:8px 0}
+#mobile-pool-preview.is-landscape .menu-card h2{font-size:20px;margin:4px 0 8px}
+#mobile-pool-preview.is-landscape .menu-card p{font-size:13px;margin:6px 0;line-height:1.4}
+#mobile-pool-preview.is-landscape .ai-test-card{display:grid;grid-template-columns:1fr 1fr;column-gap:12px;row-gap:4px}
+#mobile-pool-preview.is-landscape .ai-test-card .eyebrow,#mobile-pool-preview.is-landscape .ai-test-card h2,#mobile-pool-preview.is-landscape #aiTestExpectation,#mobile-pool-preview.is-landscape #runAITest{grid-column:1/-1}
+#mobile-pool-preview.is-landscape .ai-test-card label{font-size:13px;margin:0}
+#mobile-pool-preview.is-landscape .ai-test-card label[for="aiTestScene"]{grid-column:1;grid-row:3}
+#mobile-pool-preview.is-landscape #aiTestScene{grid-column:1;grid-row:4}
+#mobile-pool-preview.is-landscape .ai-test-card label[for="aiTestDifficulty"]{grid-column:2;grid-row:3}
+#mobile-pool-preview.is-landscape #aiTestDifficulty{grid-column:2;grid-row:4}
+#mobile-pool-preview.is-landscape .ai-test-card select{margin:0;min-height:44px;font-size:14px}
+
+#mobile-pool-preview #fullBtn{display:inline-flex!important;align-items:center;justify-content:center;min-width:68px;min-height:44px;color:#eef4fc;background:#193348;border:1px solid #7bc7db}
+#mobile-pool-preview #fullBtn[aria-pressed="true"]{color:#102127;background:#efcd79}
+#mobile-pool-preview .overlay{padding-top:calc(var(--preview-header-height,124px) + 8px)}
+#mobile-pool-preview:fullscreen{width:100vw!important;height:100vh!important;height:100dvh!important;max-width:none!important;overflow:auto!important;background:#050a18}
+#mobile-pool-preview:-webkit-full-screen{width:100vw!important;height:100vh!important;max-width:none!important;overflow:auto!important;background:#050a18}
+#mobile-pool-preview.is-fullscreen .topbar{position:sticky;top:0}
+#mobile-pool-preview.is-fullscreen.is-landscape{overflow:hidden!important}
+#mobile-pool-preview #fullscreenFeedback{position:absolute;z-index:200;top:100%;left:8px;right:8px;padding:10px 12px;color:#eef4fc;background:#193348;border-radius:8px;line-height:1.5;font-size:14px}
+#mobile-pool-preview.is-landscape .topbar{gap:6px}
+#mobile-pool-preview.is-landscape .top-actions{gap:5px}
+#mobile-pool-preview.is-landscape .top-actions button{padding:8px}
+
+</style>
+<div class="mobile-game-surface">
+
+  <div class="boot" id="boot" aria-label="正在启动光域球场">
+    <div class="boot-system">SYSTEM / NEON POOL <span>● LINK ACTIVE</span></div>
+    <div class="boot-scene"><div class="boot-orbit orbit-one"></div><div class="boot-orbit orbit-two"></div><div class="boot-ball boot-eight">8</div><div class="boot-ball boot-nine">9</div><div class="boot-cue"></div></div>
+    <div class="boot-title">NEON <em>POOL</em></div><div class="boot-sub">正在同步球台轨迹与碰撞模型</div><div class="boot-track"><span id="bootProgress"></span></div><div class="boot-percent" id="bootPercent">0%</div><button id="skipBoot" type="button">直接进入 →</button>
+  </div>
+  <div class="app">
+    <header class="topbar" id="previewTopbar">
+      <div class="brand"><div><strong>光域台球</strong><small>NEON POOL / 8·9 BALL</small></div></div>
+      <div class="top-actions"><button id="landscapeBtn" class="quiet" type="button" aria-label="切换横屏显示" aria-pressed="false">横屏 ↷</button><button id="aiTestsBtn" class="quiet" type="button">AI测试</button><button id="musicBtn" class="quiet music-toggle" type="button" aria-label="切换 Lullaby 背景音乐" aria-pressed="false">♫ Lullaby 关</button><button id="rulesBtn" class="quiet" type="button">规则</button><button id="newBtn" class="quiet" type="button">新开一局</button><button id="fullBtn" class="quiet" type="button" aria-label="全屏预览游戏" aria-pressed="false">全屏 ⛶</button></div>
+    <span id="fullscreenFeedback" role="status" aria-live="polite" hidden></span>
+    </header>
+    <main class="layout">
+      <section class="arena" aria-label="台球桌">
+        <div class="scorebar"><div class="player active" id="player0"><span class="player-number">01</span><div><b>玩家 1</b><small id="group0">待分组</small></div><span id="score0" class="score">0</span></div><div class="game-label"><span id="modeLabel">八球</span><small id="turnLabel">准备开球</small></div><div class="player" id="player1"><span class="player-number">02</span><div><b id="player2Name">玩家 2</b><small id="group1">待分组</small></div><span id="score1" class="score">0</span></div></div>
+        <div class="table-wrap"><canvas id="game" width="1400" height="790" aria-label="台球游戏画面"></canvas></div>
+        <div class="status"><span class="status-dot"></span><span id="statusText">选择八球或九球开始</span></div>
+      </section>
+      <aside class="controls">
+        <div class="control-head"><span>击球控制台</span><small>拖动球台调整瞄准</small></div>
+        <div class="angle-panel"><div class="angle-head"><span>精密瞄准</span><b id="angleReadout">0.000°</b></div><div id="angleRuler" class="angle-ruler" role="slider" aria-label="横向拖动刻度尺调整瞄准角" aria-valuemin="-180" aria-valuemax="180" aria-valuenow="0"><span class="angle-ticks"></span><span class="angle-needle"></span></div><div class="angle-foot"><span>−1°</span><span>每格 0.1°</span><span>＋1°</span></div></div>
+        <div class="spin-group"><div><span>击球点</span><small>拖动白点控制旋转</small></div><div class="spin-pad" id="spinPad" role="slider" aria-label="击球点"><div class="spin-cross"></div><div id="spinDot" class="spin-dot"></div></div><button id="resetSpin" type="button" class="small-button">居中</button></div>
+        <div class="power-group"><div class="control-line"><span>出杆力度</span><b id="powerReadout">56%</b></div><input id="power" type="range" min="5" max="100" value="56" aria-label="击球力度"><div class="power-ends"><span>轻推</span><span>强力</span></div></div>
+        <div class="cue-meter" id="cueMeter" role="slider" aria-label="拉动球杆控制击球力度" aria-valuemin="5" aria-valuemax="100" aria-valuenow="56"><div class="cue-track"><div class="cue-power" id="cuePower"></div><div class="cue-stick-vertical" id="cueStick"><span class="cue-tip"></span><span class="cue-inlay"></span></div><span class="cue-bottom">向下拉 · 松手击球</span></div></div>
+        <button id="placeCueBtn" class="place-cue" type="button" hidden>确认白球位置</button>
+        <button id="shootBtn" class="shoot" type="button">击 球 <span>→</span></button>
+        <div class="tip" id="tipText">拖动画面瞄准；拉动球杆松手击球，或调节力度后点击击球。</div>
+        <div class="spec"><span>球台参数</span><small>球径 57.15 mm · 六袋入口均约 98.3 mm</small></div>
+      </aside>
+    </main>
+    <footer>桌面：拖动瞄准 / 拖动刻度尺精调 / 拉杆击球 · ← → 每次 0.01° · 空格击球 · F 全屏　/　平板：拖动瞄准 / 刻度尺精调 / 拉杆击球</footer>
+  </div>
+  <div class="overlay start-overlay" id="startOverlay"><div class="start-card"><div class="start-copy"><div class="start-signal"><span class="signal-dot"></span>SYSTEM READY <b>01 / 02</b></div><div class="start-wordmark">NEON <span>POOL</span><i>∞</i></div><h1 class="start-title">光域台球<span>读懂角度，驾驭轨迹。</span></h1><p>踏入未来球场。两种经典玩法、精细击球点与可预见的球路，在这里，由你掌控。</p><button id="startBtn" class="start-btn" type="button">进入球场 <span>↗</span></button><div class="start-foot">08 / 八球对决　　09 / 九球挑战</div></div><div class="start-visual" aria-hidden="true"><div class="start-table"><i class="start-ball a">8</i><i class="start-ball b">9</i><i class="start-trace"></i><i class="start-cue"></i></div><span>TRAJECTORY READY</span></div></div></div>
+  <div class="overlay hidden" id="menuOverlay"><div class="menu-card"><div class="eyebrow">MATCH PROTOCOL / 02</div><h1>选择你的<br><em>对局模式。</em></h1><p>设定对手，然后走上球台。精准瞄准，掌控每一次碰撞。</p><div class="opponent-select" aria-label="对手类型"><button id="versusAI" class="selected" type="button">挑战电脑</button><button id="versusLocal" type="button">双人同屏</button></div><div class="difficulty-select" id="difficultySelect" aria-label="电脑难度"><span>电脑难度</span><button type="button" data-difficulty="easy">入门</button><button type="button" data-difficulty="normal" class="selected">标准</button><button type="button" data-difficulty="hard">大师</button></div><div class="mode-grid"><button class="mode-card" type="button" data-mode="eight"><span class="mode-ball black">8</span><span><b>八球对决</b><small>清空己方球，决胜黑八</small></span><span class="arrow">→</span></button><button class="mode-card" type="button" data-mode="nine"><span class="mode-ball yellow">9</span><span><b>九球挑战</b><small>依次碰球，冲击九号</small></span><span class="arrow">→</span></button></div><small class="menu-foot">轨迹预测只显示首碰与碰库前路径</small></div></div>
+  <div class="overlay hidden" id="rulesOverlay"><div class="menu-card rules-card"><button id="closeRules" class="close" type="button" aria-label="关闭">×</button><div class="eyebrow">HOW TO PLAY</div><h2>玩法与操作</h2><p><b>瞄准：</b>在球台上拖动调整方向，在右侧横向拖动刻度尺作精细调整；方向键每次调整 0.01°。辅助线连接母球与首碰球，并显示两球碰后的分离实线；碰库前的预测结束后不延伸到袋口。红线表示首碰球不合法。<b>力度：</b>向下拉右侧球杆，松手击球。<b>旋转：</b>移动击球点；每次出杆后自动回到中杆。也可按空格或点击“击球”。</p><p><b>自由球：</b>点按或拖动台面摆放白球，点击“确认白球位置”；击球前可以点击“重新摆放白球”再次调整。</p><p><b>八球：</b>开球后先分配全色与花色；先打自己的球，清空后合法打进 8 号球即可获胜，无需指定袋口。犯规后对手自由摆放白球。</p><p><b>九球：</b>每杆先碰当前最小号球；合法打进 9 号球获胜。</p><p>进入球场后尝试播放 Enzalla《Lullaby》，顶部音乐键可开关。官方播放器需要联网；浏览器限制自动播放时，点击播放器的播放键即可。也可导入本机音频并循环播放，文件只在当前浏览器里使用；球碰球、碰库与落袋音效会随击球播放。网页包含首球、无碰库、白球落袋及胜负判定。开球流程为适合网页对战的简化规则。</p></div></div>
+
+
+  <div class="overlay hidden" id="aiTestOverlay">
+    <div class="menu-card ai-test-card">
+      <button id="closeAITests" class="close" type="button" aria-label="关闭测试场景">×</button>
+      <div class="eyebrow">AI / 测试版</div>
+      <h2>电脑对手测试</h2>
+      <label for="aiTestScene">选择场景</label>
+      <select id="aiTestScene"></select>
+      <label for="aiTestDifficulty">电脑难度</label>
+      <select id="aiTestDifficulty"><option value="easy">入门</option><option value="normal">标准</option><option value="hard" selected>大师</option></select>
+      <p id="aiTestExpectation" role="status"></p>
+      <button id="runAITest" class="start-btn" type="button">运行场景 →</button>
+
+    </div>
+  </div>
+
+
+
+
+
+</div>
+<script></script>
+<script></script>
+<script>
+
+
+(() => {
+  const fixtures=[{"name": "straight-nine", "label": "九球直接进袋", "entries": [{"n": 0, "x": 50, "y": 25}, {"n": 1, "x": 50, "y": 10}, {"n": 9, "x": 80, "y": 35}]}, {"name": "eight-final", "label": "清台后的黑八", "mode": "eight", "group": "solid", "entries": [{"n": 0, "x": 50, "y": 25}, {"n": 8, "x": 50, "y": 9}]}, {"name": "blocked-middle", "label": "中间球挡住首碰", "entries": [{"n": 0, "x": 22, "y": 25}, {"n": 1, "x": 67, "y": 25}, {"n": 2, "x": 43, "y": 25}, {"n": 9, "x": 78, "y": 37}]}, {"name": "narrow-escape", "label": "多球遮挡解球", "entries": [{"n": 0, "x": 16, "y": 25}, {"n": 1, "x": 83, "y": 25}, {"n": 2, "x": 23, "y": 25}, {"n": 3, "x": 23, "y": 20}, {"n": 4, "x": 23, "y": 30}, {"n": 5, "x": 55, "y": 10}, {"n": 6, "x": 55, "y": 40}, {"n": 9, "x": 72, "y": 35}]}, {"name": "rail-target", "label": "贴库目标球解球", "entries": [{"n": 0, "x": 27, "y": 23}, {"n": 1, "x": 78, "y": 2.3}, {"n": 2, "x": 52, "y": 13}, {"n": 3, "x": 50, "y": 24}, {"n": 9, "x": 68, "y": 35}]}, {"name": "ball-in-hand", "label": "自由球进攻", "hand": true, "entries": [{"n": 0, "x": 12, "y": 25}, {"n": 1, "x": 45, "y": 22}, {"n": 2, "x": 50, "y": 27}, {"n": 9, "x": 78, "y": 36}]}, {"name": "eight-defence", "label": "八球合法目标与遮挡", "mode": "eight", "group": "solid", "entries": [{"n": 0, "x": 20, "y": 25}, {"n": 1, "x": 70, "y": 25}, {"n": 8, "x": 50, "y": 10}, {"n": 9, "x": 41, "y": 25}, {"n": 10, "x": 40, "y": 17}, {"n": 11, "x": 40, "y": 33}]}];
+  const expected={
+    'straight-nine':'先碰 1 号并进袋，白球不落袋。',
+    'eight-final':'合法打进黑八并结束本局。',
+    'blocked-middle':'绕开挡球，先碰 1 号；注意白球的落点。',
+    'narrow-escape':'绕开多球遮挡，先碰 1 号，避免送给对手自由球。',
+    'rail-target':'先碰贴库的 1 号，避免误撞挡球或白球落袋。',
+    'ball-in-hand':'先摆放白球，再选择合法进攻。',
+    'eight-defence':'先碰己方 1 号，不能先碰对方花球或黑八。'
+  };
+  const scene=document.getElementById('aiTestScene');
+  const overlay=document.getElementById('aiTestOverlay');
+  const expectation=document.getElementById('aiTestExpectation');
+  const run=document.getElementById('runAITest');
+  let token=0;
+  for(const fixture of fixtures){const option=document.createElement('option');option.value=fixture.name;option.textContent=fixture.label;scene.appendChild(option);}
+  scene.value='narrow-escape';
+  const update=()=>{expectation.textContent=expected[scene.value];};
+  scene.addEventListener('change',update);update();
+  document.getElementById('newBtn').addEventListener('click',()=>{token++;window.POOL_PREVIEW_SINGLE_SHOT=false;overlay.classList.add('hidden');});
+  document.getElementById('aiTestsBtn').addEventListener('click',()=>{
+    document.getElementById('newBtn').click();document.getElementById('menuOverlay').classList.add('hidden');overlay.classList.remove('hidden');
+  });
+  document.getElementById('closeAITests').addEventListener('click',()=>{
+    overlay.classList.add('hidden');document.getElementById('menuOverlay').classList.remove('hidden');
+  });
+  run.addEventListener('click',async()=>{
+    const current=++token,fixture=fixtures.find(f=>f.name===scene.value);
+    run.disabled=true;overlay.classList.add('hidden');window.POOL_PREVIEW_SINGLE_SHOT=true;
+    try{
+      window.PoolAudio?.unlock();
+      const result=await window.__poolTest.planAI(fixture.entries,fixture.mode||'nine',fixture.group||null,!!fixture.hand,document.getElementById('aiTestDifficulty').value);
+      if(current!==token||!result.plan)return;
+      setTimeout(()=>{if(current===token)window.__poolTest.fireAIPlanTest();},1500);
+    }catch(error){document.getElementById('statusText').textContent='测试场景未能运行：'+error.message;}
+    finally{run.disabled=false;}
+  });
+  // Only the standalone review file uses manual time, allowing the existing
+  // test interface to show a shot at normal speed without changing production.
+  window.advanceTime(0);
+  let previous=performance.now(),lastMoving=-Infinity;
+  function tick(now){
+    const elapsed=Math.min(50,now-previous);previous=now;
+    const state=JSON.parse(window.render_game_to_text());
+    if(state.phase==='moving')lastMoving=now;
+    if(state.phase==='moving'||now-lastMoving<650)window.advanceTime(elapsed);
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();
+
+
+(() => {
+  const root = document.getElementById('mobile-pool-preview');
+  const button = document.getElementById('landscapeBtn');
+  let landscape = false;
+  function syncLayout() {
+    const height = Math.max(1, root.clientWidth || root.getBoundingClientRect().width);
+    const width = Math.max(640, Math.min(960, height * 1.85));
+    root.style.setProperty('--landscape-height', `${height}px`);
+    root.style.setProperty('--landscape-width', `${width}px`);
+    root.style.setProperty('--landscape-table-width', `${Math.max(1, height - 138) * 1400 / 790}px`);
+    root.classList.toggle('is-landscape', landscape);
+    root.style.setProperty('--preview-header-height', `${document.getElementById('previewTopbar').offsetHeight || 124}px`);
+    button.textContent = landscape ? '竖屏 ↶' : '横屏 ↷';
+    button.setAttribute('aria-pressed', String(landscape));
+    button.setAttribute('aria-label', landscape ? '返回竖屏显示' : '切换横屏显示');
+  }
+  button.addEventListener('click', () => { landscape = !landscape; syncLayout(); });
+  window.addEventListener('resize', syncLayout);
+  if (typeof ResizeObserver !== 'undefined') {
+    let lastWidth = -1;
+    new ResizeObserver(() => {
+      const width = root.clientWidth;
+      if (width !== lastWidth) { lastWidth = width; syncLayout(); }
+    }).observe(root);
+  }
+  syncLayout();
+})();
+
+(() => {
+  const root = document.getElementById('mobile-pool-preview');
+  const button = document.getElementById('fullBtn');
+  const feedback = document.getElementById('fullscreenFeedback');
+  let busy = false;
+  function active() {
+    return document.fullscreenElement === root || document.webkitFullscreenElement === root;
+  }
+  function sync() {
+    const entered = active();
+    root.classList.toggle('is-fullscreen', entered);
+    button.textContent = entered ? '退出全屏' : '全屏 ⛶';
+    button.setAttribute('aria-pressed', String(entered));
+    button.setAttribute('aria-label', entered ? '退出全屏预览' : '全屏预览游戏');
+    if (entered) { feedback.hidden = true; feedback.textContent = ''; }
+    window.dispatchEvent(new Event('resize'));
+  }
+  async function toggle() {
+    if (busy) return;
+    busy = true;
+    button.disabled = true;
+    feedback.hidden = true;
+    try {
+      if (active()) {
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if (!exit) throw new Error('Fullscreen unavailable');
+        await exit.call(document);
+      } else {
+        const enter = root.requestFullscreen || root.webkitRequestFullscreen;
+        if (!enter) throw new Error('Fullscreen unavailable');
+        await enter.call(root);
+      }
+      sync();
+    } catch {
+      feedback.textContent = '当前预览环境不允许系统全屏，可使用预览的展开功能。';
+      feedback.hidden = false;
+    } finally {
+      busy = false;
+      button.disabled = false;
+    }
+  }
+  document.addEventListener('fullscreenchange', sync);
+  document.addEventListener('webkitfullscreenchange', sync);
+  window.PoolPreviewFullscreen = { toggle };
+  button.textContent = '全屏 ⛶';
+  button.setAttribute('aria-pressed', 'false');
+})();
+
+const mobilePoolRoot=document.getElementById('mobile-pool-preview');
+mobilePoolRoot.querySelector('#menuOverlay').classList.add('hidden');
+mobilePoolRoot.querySelector('#aiTestOverlay').classList.remove('hidden');
+</script>
+</div>

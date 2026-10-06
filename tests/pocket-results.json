@@ -1,0 +1,43 @@
+{
+  "reproduced": 6,
+  "clear": 120,
+  "blocked": 6,
+  "results": [
+    {
+      "pocket": 0,
+      "oldSlowPocketed": false,
+      "newSlowPocketed": true,
+      "clearPaths": 20
+    },
+    {
+      "pocket": 1,
+      "oldSlowPocketed": false,
+      "newSlowPocketed": true,
+      "clearPaths": 20
+    },
+    {
+      "pocket": 2,
+      "oldSlowPocketed": false,
+      "newSlowPocketed": true,
+      "clearPaths": 20
+    },
+    {
+      "pocket": 3,
+      "oldSlowPocketed": false,
+      "newSlowPocketed": true,
+      "clearPaths": 20
+    },
+    {
+      "pocket": 4,
+      "oldSlowPocketed": false,
+      "newSlowPocketed": true,
+      "clearPaths": 20
+    },
+    {
+      "pocket": 5,
+      "oldSlowPocketed": false,
+      "newSlowPocketed": true,
+      "clearPaths": 20
+    }
+  ]
+}
